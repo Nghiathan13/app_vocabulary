@@ -1,0 +1,129 @@
+.form-wrapper {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 15%;
+}
+
+/* === Header === */
+.form-header {
+  padding-bottom: 28px;
+
+  color: #ffffff;
+}
+
+/* === Body === */
+.form-body {
+  text-align: center;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.field {
+  margin-bottom: 28px;
+}
+
+.field-label {
+  display: block;
+
+  margin-bottom: 0px;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  color: #404040;
+}
+
+.field:has(input:focus) .field-label,
+.field.has-value .field-label {
+  color: #cfcfcf;
+}
+
+.field input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 0px;
+
+  border: none;
+  border-bottom: 1px solid #404040;
+
+  background: transparent;
+
+  font-size: 16px;
+
+  outline: none;
+}
+
+.field input::placeholder {
+  color: #404040;
+}
+
+.field input:focus,
+.field.has-value input {
+  border-bottom-color: #ffffff;
+
+  color: #ffffff;
+}
+
+.type-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 16px;
+}
+
+.type-pill {
+  padding: 5px 14px;
+
+  border: 1px solid #202020;
+  border-radius: 100px;
+
+  background: transparent;
+
+  color: #606060;
+
+  cursor: pointer;
+}
+
+.type-pill:hover {
+  border-color: #303030;
+
+  color: #ababab;
+}
+
+.type-pill.selected {
+  border-color: #ffffff;
+
+  color: #ffffff;
+}
+
+/* === Action === */
+.btn-add {
+  width: 100%;
+  padding: 12px 0;
+
+  border: 1px solid #ffffff;
+  border-radius: 12px;
+
+  background-color: #000000;
+
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+.btn-add:not(:disabled):hover {
+  background: #303030;
+}
+
+.btn-add:disabled {
+  border-color: #202020;
+
+  color: #606060;
+
+  cursor: not-allowed;
+}

@@ -1,0 +1,117 @@
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-group {
+  display: flex;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn {
+  cursor: pointer;
+}
+
+/* === Grid === */
+.word-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 20%)
+    minmax(150px, 20%)
+    minmax(100px, 10%)
+    minmax(150px, 20%)
+    minmax(70px, 5%)
+    minmax(120px, 12.5%)
+    minmax(120px, 12.5%);
+
+  width: 100%;
+  max-height: calc(100vh - 60px);
+
+  text-align: left;
+
+  overflow-y: auto;
+}
+
+.word-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.word-grid::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 1px;
+}
+
+.word-grid::-webkit-scrollbar-thumb:hover {
+  background: #606060;
+}
+
+.grid-header {
+  position: sticky;
+  top: 0;
+
+  background-color: #050505;
+
+  font-weight: bold;
+}
+
+.sortable-th {
+  cursor: pointer;
+}
+
+.sortable-th:hover {
+  color: #ffffff;
+}
+
+.sort-icon {
+  margin-left: 2px;
+
+  font-size: 1.2rem;
+  vertical-align: middle;
+
+  user-select: none;
+}
+
+.grid-cell {
+  word-break: break-word;
+}
+
+/* === Input === */
+.table-input {
+  display: block;
+
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+
+  outline: none;
+  resize: none;
+  field-sizing: content;
+}
+
+.table-input::-webkit-datetime-edit-fields-wrapper,
+.table-input::-webkit-datetime-edit-month-field,
+.table-input::-webkit-datetime-edit-day-field,
+.table-input::-webkit-datetime-edit-year-field {
+  padding: 0;
+}
+
+.table-input:focus {
+  color: #ffffff;
+}
+
+.table-input.modified {
+  color: #ffffff;
+}
+
+.table-input::-webkit-calendar-picker-indicator {
+  display: none;
+}

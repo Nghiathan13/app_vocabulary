@@ -1,0 +1,27 @@
+/* === Layout === */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  width: 100%;
+}
+
+.navbar-left,
+.navbar-right {
+  display: flex;
+  flex: 1;
+}
+
+.navbar-right {
+  justify-content: flex-end;
+}
+
+.navbar-center {
+  display: flex;
+  justify-content: center;
+}
+
+.nav-btn {
+  cursor: pointer;
+}

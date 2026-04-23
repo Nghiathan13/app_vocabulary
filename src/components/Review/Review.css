@@ -1,0 +1,114 @@
+.review-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+
+  outline: none;
+}
+
+.no-review {
+  margin: auto;
+
+  color: #ffffff;
+}
+
+/* === Progress === */
+.progress-cointainer {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 20px;
+
+  text-align: center;
+}
+
+.progress-text {
+  margin-bottom: 8px;
+
+  font-size: 16px;
+  font-weight: 500;
+  color: #bababa;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+
+  border-radius: 4px;
+
+  background: #404040;
+
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+
+  background: #ffffff;
+
+  transition: width 0.3s ease;
+}
+
+/* === Body === */
+.review-card {
+  width: 100%;
+  max-width: 480px;
+  margin: 40px 0 10px 0;
+  padding: 40px 0 60px 0;
+
+  border: 1px solid #606060;
+  border-radius: 16px;
+
+  text-align: center;
+}
+
+.word-header {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 16px;
+
+  margin-bottom: 12px;
+}
+
+.review-word {
+  margin-bottom: 40px;
+
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.review-type {
+  margin-bottom: 8px;
+
+  font-size: 20px;
+  font-weight: 300;
+  color: #a0a0a0;
+}
+
+.review-ipa {
+  margin-bottom: 8px;
+
+  font-size: 16px;
+  color: #cfcfcf;
+}
+
+.review-hint {
+  font-size: 12px;
+  font-weight: 300;
+  color: #a0a0a0;
+}
+
+.review-meaning {
+  font-size: 20px;
+  color: #ffffff;
+
+  visibility: hidden;
+  opacity: 0;
+}
+
+.review-meaning.show {
+  visibility: visible;
+  opacity: 1;
+}
