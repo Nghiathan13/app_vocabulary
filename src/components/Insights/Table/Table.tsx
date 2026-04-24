@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { save } from "@tauri-apps/plugin-dialog";
 import Database from "@tauri-apps/plugin-sql";
+import * as XLSX from "xlsx";
 import { WordWithId } from "../../../types";
 import "./Table.css";
 
@@ -54,6 +57,54 @@ export default function Table({ words, onRefresh }: TableProps) {
     }
   };
 
+  const handleExportClick = async () => {
+    try {
+      const filePath = await save({
+        title: "Export Excel File",
+        defaultPath: "engvocab.xlsx",
+        filters: [
+          {
+            name: "Excel Workbook",
+            extensions: ["xlsx"],
+          },
+        ],
+      });
+
+      if (!filePath) {
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(
+        sortedWords.map((word) => ({
+          Word: word.word,
+          IPA: word.ipa ?? "",
+          Type: word.type ?? "",
+          Meaning: word.meaning ?? "",
+          Reps: word.reps,
+          "Last Review": word.last_review ?? "",
+          "Next Review": word.next_review ?? "",
+        })),
+      );
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Words");
+
+      const workbookBytes = new Uint8Array(
+        XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "array",
+        }),
+      );
+
+      await invoke("write_binary_file", {
+        path: filePath,
+        bytes: Array.from(workbookBytes),
+      });
+    } catch (error) {
+      console.error("Error exporting words:", error);
+    }
+  };
+
   const handleInputChange = (
     id: number,
     field: keyof WordWithId,
@@ -91,9 +142,14 @@ export default function Table({ words, onRefresh }: TableProps) {
     <div className="table-wrapper">
       <div className="table-actions">
         {!isEditing ? (
-          <button className="edit-btn" onClick={handleEditClick}>
-            Edit
-          </button>
+          <div className="edit-group">
+            <button className="edit-btn" onClick={handleExportClick}>
+              Export
+            </button>
+            <button className="edit-btn" onClick={handleEditClick}>
+              Edit
+            </button>
+          </div>
         ) : (
           <div className="edit-group">
             <button className="save-btn" onClick={handleSaveClick}>
