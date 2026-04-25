@@ -1,4 +1,5 @@
 import { Tab } from "../../types";
+import logo from "../../assets/logo.svg";
 import "./Navbar.css";
 
 interface NavbarProps {
@@ -10,37 +11,49 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        <button
-          className={`nav-btn ${currentTab === "home" ? "active" : ""}`}
-          onClick={() => onTabChange("home")}
-        >
-          Home
+        <button className="nav-logo-btn" onClick={() => onTabChange("home")}>
+          <img src={logo} alt="EngVocab Home" className="nav-logo" />
         </button>
       </div>
 
       <div className="navbar-center">
         <button
-          className={`nav-btn ${currentTab === "review" ? "active" : ""}`}
+          className={`nav-icon-btn ${currentTab === "review" ? "active" : ""}`}
           onClick={() => onTabChange("review")}
+          aria-label="Review"
+          title="Review"
         >
-          Review
+          <span className="material-symbols-outlined">cards_star</span>
         </button>
+
         <button
-          className={`nav-btn ${currentTab === "practice" ? "active" : ""}`}
+          className={`nav-icon-btn ${currentTab === "practice" ? "active" : ""}`}
           onClick={() => onTabChange("practice")}
+          aria-label="Practice"
+          title="Practice"
         >
-          Practice
+          <span className="material-symbols-outlined">exercise</span>
         </button>
+
         <button
-          className={`nav-btn ${currentTab === "insights" ? "active" : ""}`}
+          className={`nav-icon-btn ${currentTab === "insights" ? "active" : ""}`}
           onClick={() => onTabChange("insights")}
+          aria-label="Insights"
+          title="Insights"
         >
-          Insights
+          <span className="material-symbols-outlined">analytics</span>
         </button>
       </div>
 
       <div className="navbar-right">
-        <button className="nav-btn">Setting</button>
+        <button
+          className="nav-settings-btn"
+          type="button"
+          aria-label="Settings"
+          title="Settings"
+        >
+          <span className="material-symbols-outlined">settings</span>
+        </button>
       </div>
     </nav>
   );
