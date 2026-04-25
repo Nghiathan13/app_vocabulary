@@ -115,3 +115,160 @@
 .table-input::-webkit-calendar-picker-indicator {
   display: none;
 }
+
+.import-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.import-modal {
+  width: min(500px, calc(100vw - 32px));
+  max-height: min(80vh, 720px);
+  padding: 16px;
+
+  overflow: hidden;
+
+  background: #050505;
+  border: 1px solid #2a2a2a;
+}
+
+.import-modal-header,
+.import-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.import-file-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.import-modal-body {
+  margin-top: 16px;
+  max-height: calc(80vh - 120px);
+
+  overflow-y: auto;
+}
+
+.import-modal-footer {
+  margin-top: 32px;
+}
+
+.import-file-card {
+  margin-top: 16px;
+  padding: 8px;
+
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+}
+
+.import-file-card.valid {
+  border-color: #4caf50;
+}
+
+.import-file-card.invalid {
+  border-color: #f44336;
+}
+
+.import-file-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.import-file-name {
+  display: block;
+
+  color: #606060;
+  text-align: left;
+  word-break: break-all;
+}
+
+.import-file-detail {
+  color: #bababa;
+}
+
+.import-file-detail,
+.import-file-error,
+.import-empty,
+.import-scanning {
+  margin: 12px 0 0;
+  text-align: left;
+}
+
+.import-file-error {
+  color: #f44336;
+}
+
+.import-modal-action {
+  cursor: pointer;
+}
+
+.import-add-btn {
+  width: 100%;
+  padding: 12px 0;
+
+  border: 1px solid #ffffff;
+  border-radius: 12px;
+
+  background-color: #000000;
+
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+.import-add-btn:not(:disabled):hover {
+  background: #303030;
+}
+
+.import-add-btn:disabled {
+  border-color: #202020;
+
+  color: #606060;
+
+  cursor: not-allowed;
+}
+
+.import-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px;
+
+  border: 1px solid #606060;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+
+  cursor: pointer;
+}
+
+.import-icon-btn:hover:not(:disabled) {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.import-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.import-icon-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.import-file-remove-btn {
+  flex-shrink: 0;
+  margin-top: 0;
+}

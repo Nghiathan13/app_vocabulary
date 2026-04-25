@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { save } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import Database from "@tauri-apps/plugin-sql";
 import * as XLSX from "xlsx";
 import { WordWithId } from "../../../types";
+import ImportModal from "./ImportModal";
+import { buildImportPreviewFiles, ImportPreviewFile } from "./importPreview";
 import "./Table.css";
 
 interface TableProps {
@@ -19,6 +21,14 @@ export default function Table({ words, onRefresh }: TableProps) {
   >("word");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set());
+
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importPaths, setImportPaths] = useState<string[]>([]);
+  const [importPreviewFiles, setImportPreviewFiles] = useState<
+    ImportPreviewFile[]
+  >([]);
+  const [isScanningImportFiles, setIsScanningImportFiles] = useState(false);
+  const [isAddingImportedWords, setIsAddingImportedWords] = useState(false);
 
   const handleEditClick = () => {
     setEditedWords(JSON.parse(JSON.stringify(words)));
@@ -54,6 +64,82 @@ export default function Table({ words, onRefresh }: TableProps) {
       onRefresh();
     } catch (error) {
       console.error("Error saving words:", error);
+    }
+  };
+
+  const mergeUniquePaths = (paths: string[]) => Array.from(new Set(paths));
+
+  const handlePickImportFiles = async () => {
+    const selected = await open({
+      title: "Select files to import",
+      multiple: true,
+    });
+
+    if (!selected) {
+      return;
+    }
+
+    const selectedPaths = Array.isArray(selected) ? selected : [selected];
+
+    setImportPaths((prev) => mergeUniquePaths([...prev, ...selectedPaths]));
+  };
+
+  const handleOpenImportModal = async () => {
+    setIsImportModalOpen(true);
+    await handlePickImportFiles();
+  };
+
+  const handleCloseImportModal = () => {
+    setIsImportModalOpen(false);
+    setImportPaths([]);
+    setImportPreviewFiles([]);
+    setIsScanningImportFiles(false);
+    setIsAddingImportedWords(false);
+  };
+
+  const handleRemoveImportFile = (path: string) => {
+    setImportPaths((prev) => prev.filter((item) => item !== path));
+  };
+
+  const handleAddImportedWords = async () => {
+    if (isAddingImportedWords) {
+      return;
+    }
+
+    try {
+      setIsAddingImportedWords(true);
+
+      const db = await Database.load("sqlite:vocabulary.db");
+      const draftWords = importPreviewFiles.flatMap((file) => file.draftWords);
+
+      for (const word of draftWords) {
+        await db.execute(
+          `INSERT OR IGNORE INTO words (
+            word,
+            ipa,
+            type,
+            meaning,
+            reps,
+            last_review,
+            next_review
+          ) VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            0,
+            NULL,
+            date('now', 'localtime', '+1 day')
+          )`,
+          [word.word, word.ipa, word.type, word.meaning],
+        );
+      }
+
+      handleCloseImportModal();
+      onRefresh();
+    } catch (error) {
+      console.error("Error importing words:", error);
+      setIsAddingImportedWords(false);
     }
   };
 
@@ -138,11 +224,47 @@ export default function Table({ words, onRefresh }: TableProps) {
       : valB.localeCompare(valA);
   });
 
+  useEffect(() => {
+    if (!isImportModalOpen) {
+      return;
+    }
+
+    let isActive = true;
+
+    const scanFiles = async () => {
+      setIsScanningImportFiles(true);
+
+      const previews = await buildImportPreviewFiles(importPaths, words);
+
+      if (!isActive) {
+        return;
+      }
+
+      setImportPreviewFiles(previews);
+      setIsScanningImportFiles(false);
+    };
+
+    void scanFiles();
+
+    return () => {
+      isActive = false;
+    };
+  }, [importPaths, isImportModalOpen, words]);
+
+  const canAddImportedWords =
+    !isScanningImportFiles &&
+    !isAddingImportedWords &&
+    importPreviewFiles.length > 0 &&
+    importPreviewFiles.every((file) => file.isValid);
+
   return (
     <div className="table-wrapper">
       <div className="table-actions">
         {!isEditing ? (
           <div className="edit-group">
+            <button className="edit-btn" onClick={handleOpenImportModal}>
+              Import
+            </button>
             <button className="edit-btn" onClick={handleExportClick}>
               Export
             </button>
@@ -161,6 +283,7 @@ export default function Table({ words, onRefresh }: TableProps) {
           </div>
         )}
       </div>
+
       <div className="word-grid">
         {/* Header */}
         <div
@@ -350,6 +473,17 @@ export default function Table({ words, onRefresh }: TableProps) {
           </div>
         ))}
       </div>
+      <ImportModal
+        isOpen={isImportModalOpen}
+        files={importPreviewFiles}
+        isScanning={isScanningImportFiles}
+        isAdding={isAddingImportedWords}
+        canAdd={canAddImportedWords}
+        onAdd={handleAddImportedWords}
+        onClose={handleCloseImportModal}
+        onPickFiles={handlePickImportFiles}
+        onRemoveFile={handleRemoveImportFile}
+      />
     </div>
   );
 }
