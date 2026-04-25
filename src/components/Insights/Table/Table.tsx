@@ -8,6 +8,71 @@ import ImportModal from "./ImportModal";
 import { buildImportPreviewFiles, ImportPreviewFile } from "./importPreview";
 import "./Table.css";
 
+const SEARCH_DELAY_MS = 200;
+const DIACRITICS_REGEX = /[\u0300-\u036f]/g;
+const NUMBER_SEARCH_REGEX = /^\d+$/;
+
+type SearchMatchColumn = "word" | "type" | "meaning" | "reps" | null;
+
+const normalizeSearchText = (value: string | null | undefined) =>
+  (value ?? "")
+    .normalize("NFD")
+    .replace(DIACRITICS_REGEX, "")
+    .toLowerCase()
+    .trim();
+
+const hasDiacritics = (value: string) => value.normalize("NFD") !== value;
+
+const getSearchMatchColumn = (
+  word: WordWithId,
+  rawQuery: string,
+): SearchMatchColumn => {
+  const query = rawQuery.trim();
+
+  if (!query) {
+    return null;
+  }
+
+  if (NUMBER_SEARCH_REGEX.test(query)) {
+    return String(word.reps).includes(query) ? "reps" : null;
+  }
+
+  if (hasDiacritics(query)) {
+    return (word.meaning ?? "").toLowerCase().includes(query.toLowerCase())
+      ? "meaning"
+      : null;
+  }
+
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (normalizeSearchText(word.word).includes(normalizedQuery)) {
+    return "word";
+  }
+
+  if (normalizeSearchText(word.type).includes(normalizedQuery)) {
+    return "type";
+  }
+
+  if (normalizeSearchText(word.meaning).includes(normalizedQuery)) {
+    return "meaning";
+  }
+
+  return null;
+};
+
+const getSearchPriority = (column: Exclude<SearchMatchColumn, null>) => {
+  switch (column) {
+    case "word":
+      return 0;
+    case "type":
+      return 1;
+    case "meaning":
+      return 2;
+    case "reps":
+      return 3;
+  }
+};
+
 interface TableProps {
   words: WordWithId[];
   onRefresh: () => void;
@@ -29,6 +94,9 @@ export default function Table({ words, onRefresh }: TableProps) {
   >([]);
   const [isScanningImportFiles, setIsScanningImportFiles] = useState(false);
   const [isAddingImportedWords, setIsAddingImportedWords] = useState(false);
+
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearchInput, setDebouncedSearchInput] = useState("");
 
   const handleEditClick = () => {
     setEditedWords(JSON.parse(JSON.stringify(words)));
@@ -213,6 +281,19 @@ export default function Table({ words, onRefresh }: TableProps) {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setDebouncedSearchInput("");
+  };
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchInput(searchInput.trim());
+    }, SEARCH_DELAY_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
+
   const sortedWords = [...(isEditing ? editedWords : words)].sort((a, b) => {
     if (sortColumn === "reps") {
       return sortOrder === "asc" ? a.reps - b.reps : b.reps - a.reps;
@@ -223,6 +304,31 @@ export default function Table({ words, onRefresh }: TableProps) {
       ? valA.localeCompare(valB)
       : valB.localeCompare(valA);
   });
+
+  const displayedWords = (() => {
+    if (!debouncedSearchInput) {
+      return sortedWords;
+    }
+
+    return sortedWords
+      .map((word) => ({
+        word,
+        matchColumn: getSearchMatchColumn(word, debouncedSearchInput),
+      }))
+      .filter(
+        (
+          item,
+        ): item is {
+          word: WordWithId;
+          matchColumn: Exclude<SearchMatchColumn, null>;
+        } => item.matchColumn !== null,
+      )
+      .sort(
+        (a, b) =>
+          getSearchPriority(a.matchColumn) - getSearchPriority(b.matchColumn),
+      )
+      .map((item) => item.word);
+  })();
 
   useEffect(() => {
     if (!isImportModalOpen) {
@@ -260,28 +366,59 @@ export default function Table({ words, onRefresh }: TableProps) {
   return (
     <div className="table-wrapper">
       <div className="table-actions">
-        {!isEditing ? (
-          <div className="edit-group">
-            <button className="edit-btn" onClick={handleOpenImportModal}>
-              Import
-            </button>
-            <button className="edit-btn" onClick={handleExportClick}>
-              Export
-            </button>
-            <button className="edit-btn" onClick={handleEditClick}>
-              Edit
-            </button>
+        <div className="table-actions-side table-actions-left">
+          {!isEditing ? (
+            <div className="edit-group">
+              <button className="edit-btn" onClick={handleOpenImportModal}>
+                Import
+              </button>
+              <button className="edit-btn" onClick={handleExportClick}>
+                Export
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="table-actions-center">
+          <div className="table-search">
+            <input
+              className="table-search-input"
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search"
+              spellCheck={false}
+            />
+            {searchInput && (
+              <button
+                className="table-search-clear"
+                onClick={handleClearSearch}
+                type="button"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="edit-group">
-            <button className="save-btn" onClick={handleSaveClick}>
-              Save
-            </button>
-            <button className="cancel-btn" onClick={handleCancelClick}>
-              Cancel
-            </button>
-          </div>
-        )}
+        </div>
+
+        <div className="table-actions-side table-actions-right">
+          {!isEditing ? (
+            <div className="edit-group">
+              <button className="edit-btn" onClick={handleEditClick}>
+                Edit
+              </button>
+            </div>
+          ) : (
+            <div className="edit-group">
+              <button className="save-btn" onClick={handleSaveClick}>
+                Save
+              </button>
+              <button className="cancel-btn" onClick={handleCancelClick}>
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="word-grid">
@@ -345,7 +482,7 @@ export default function Table({ words, onRefresh }: TableProps) {
         </div>
 
         {/* Rows */}
-        {sortedWords.map((w) => (
+        {displayedWords.map((w) => (
           <div key={w.id} style={{ display: "contents" }}>
             <div className="grid-cell">
               {isEditing ? (
