@@ -4,12 +4,19 @@ import { Word } from "../../types";
 import "./Review.css";
 
 export default function Review() {
+  // === STATE ===
   const [reviewWords, setReviewWords] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // === REFS ===
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // === DERIVED STATE ===
+  const currentWord = reviewWords[currentIndex];
+
+  // === FUNCTIONS ===
   const loadReviewWords = async () => {
     setIsLoading(true);
     try {
@@ -17,7 +24,7 @@ export default function Review() {
 
       const result = await db.select<Word[]>(
         `SELECT * FROM words 
-         WHERE next_review <= date('now', 'localtime') OR next_review IS NULL 
+         WHERE next_review <= date('now', 'localtime')
          ORDER BY next_review ASC`,
       );
 
@@ -31,18 +38,7 @@ export default function Review() {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    loadReviewWords();
-  }, []);
-
-  useEffect(() => {
-    if (!isLoading && wrapperRef.current) {
-      wrapperRef.current.focus();
-    }
-  }, [isLoading, currentIndex, showMeaning]);
-
-  const currentWord = reviewWords[currentIndex];
-
+  // === HANDLERS ===
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (!currentWord) return;
 
@@ -54,7 +50,7 @@ export default function Review() {
 
     if (showMeaning && (e.key === "1" || e.key === "4")) {
       const isForgot = e.key === "1";
-      const newReps = isForgot ? currentWord.reps : currentWord.reps + 1;
+      const newReps = isForgot ? 0 : currentWord.reps + 1;
 
       let daysToAdd = 1;
       if (!isForgot) {
@@ -113,6 +109,18 @@ export default function Review() {
     }
   };
 
+  // === EFFECTS ===
+  useEffect(() => {
+    loadReviewWords();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && wrapperRef.current) {
+      wrapperRef.current.focus();
+    }
+  }, [isLoading, currentIndex, showMeaning]);
+
+  // === RENDER ===
   if (isLoading) {
     return <p>Loading</p>;
   }
@@ -126,13 +134,14 @@ export default function Review() {
   }
 
   return (
-    <div 
-      className="review-wrapper" 
-      onKeyDown={handleKeyDown} 
-      tabIndex={0} 
+    <div
+      className="review-wrapper"
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
       ref={wrapperRef}
     >
-      <div className="progress-cointainer">
+      {/* === PROGRESS === */}
+      <div className="progress-container">
         <div className="progress-text">
           {currentIndex + 1}/{reviewWords.length}
         </div>
@@ -146,6 +155,7 @@ export default function Review() {
         </div>
       </div>
 
+      {/* === CARD === */}
       <div className="review-card">
         <div className="review-word">
           <div className="word-header">
@@ -160,6 +170,7 @@ export default function Review() {
         </div>
       </div>
 
+      {/* === HINT === */}
       <div className="review-hint">
         {!showMeaning ? <p>space</p> : <p>1 • 4</p>}
       </div>

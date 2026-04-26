@@ -1,4 +1,4 @@
-import { ImportPreviewFile } from "./importPreview";
+import { ImportPreviewFile } from "./_tableImport";
 
 interface ImportModalProps {
   isOpen: boolean;

@@ -11,28 +11,38 @@ const WORD_TYPES: { value: WordType; label: string }[] = [
 ];
 
 export default function Home() {
+  // === STATE ===
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
   const [type, setType] = useState<string>("");
   const [meanings, setMeanings] = useState<Record<string, string>>({});
   const [isCustomType, setIsCustomType] = useState(false);
 
+  // === DERIVED STATE ===
+  const activeMeanings =
+    !type || isCustomType
+      ? [meanings["default"] || ""]
+      : type.split(" / ").map((t) => meanings[t] || "");
+
+  const isFormValid = Boolean(
+    word.trim() && ipa.trim() && type && activeMeanings.every((m) => m.trim()),
+  );
+
+  // === HANDLERS ===
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const filteredValue = value.replace(/[^a-z\s'-]/g, "");
+    const filteredValue = value.toLowerCase().replace(/[^a-z\s'-]/g, "");
     setWord(filteredValue);
   };
 
-  const activeMeanings = (!type || isCustomType) 
-    ? [meanings["default"] || ""] 
-    : type.split(' / ').map(t => meanings[t] || "");
-
   const handleAdd = async () => {
-    if (!word.trim() || !ipa.trim() || !type || !activeMeanings.every(m => m.trim())) return;
+    if (!isFormValid) return;
     try {
       const db = await Database.load("sqlite:vocabulary.db");
 
-      const finalMeaning = activeMeanings.map(v => v.trim().toLowerCase()).join(' / ');
+      const finalMeaning = activeMeanings
+        .map((v) => v.trim().toLowerCase())
+        .join(" / ");
 
       await db.execute(
         `INSERT INTO words (word, ipa, type, meaning, reps, last_review, next_review) 
@@ -62,29 +72,31 @@ export default function Home() {
       return;
     }
 
-    let currentTypes = type ? type.split(' / ') : [];
-    
+    let currentTypes = type ? type.split(" / ") : [];
+
     if (currentTypes.includes(value)) {
       currentTypes = currentTypes.filter((t) => t !== value);
     } else {
       currentTypes.push(value);
     }
-    
+
     currentTypes.sort((a, b) => {
-      const indexA = WORD_TYPES.findIndex(t => t.value === a);
-      const indexB = WORD_TYPES.findIndex(t => t.value === b);
+      const indexA = WORD_TYPES.findIndex((t) => t.value === a);
+      const indexB = WORD_TYPES.findIndex((t) => t.value === b);
       return indexA - indexB;
     });
 
-    setType(currentTypes.join(' / '));
+    setType(currentTypes.join(" / "));
   };
 
   return (
     <div className="form-wrapper">
+      {/* === HEADER === */}
       <div className="form-header">
         <h1>English Vocabulary</h1>
       </div>
 
+      {/* === BODY === */}
       <div className="form-body">
         <div className="field-row">
           <div className={`field${word ? " has-value" : ""}`}>
@@ -125,7 +137,9 @@ export default function Home() {
           </label>
           <div className="type-pills">
             {WORD_TYPES.map(({ value, label }) => {
-              const isSelected = !isCustomType && (type ? type.split(' / ').includes(value) : false);
+              const isSelected =
+                !isCustomType &&
+                (type ? type.split(" / ").includes(value) : false);
               return (
                 <button
                   key={value}
@@ -161,43 +175,48 @@ export default function Home() {
           )}
         </div>
 
-        <div className={`field${activeMeanings.some(v => v) ? " has-value" : ""}`}>
+        <div
+          className={`field${activeMeanings.some((v) => v) ? " has-value" : ""}`}
+        >
           <label className="field-label" htmlFor="meaning">
             MEANING
           </label>
-          {(!type || isCustomType) ? (
+          {!type || isCustomType ? (
             <input
               type="text"
               name="meaning-default"
               value={meanings["default"] || ""}
-              onChange={(e) => setMeanings({ ...meanings, default: e.target.value })}
+              onChange={(e) =>
+                setMeanings({ ...meanings, default: e.target.value })
+              }
               placeholder=""
               autoComplete="off"
               spellCheck={false}
             />
           ) : (
-            type.split(' / ').map((t) => (
-              <input
-                key={`meaning-${t}`}
-                type="text"
-                name={`meaning-${t}`}
-                value={meanings[t] || ""}
-                onChange={(e) => setMeanings({ ...meanings, [t]: e.target.value })}
-                placeholder={t}
-                autoComplete="off"
-                spellCheck={false}
-              />
-            ))
+            type
+              .split(" / ")
+              .map((t) => (
+                <input
+                  key={`meaning-${t}`}
+                  type="text"
+                  name={`meaning-${t}`}
+                  value={meanings[t] || ""}
+                  onChange={(e) =>
+                    setMeanings({ ...meanings, [t]: e.target.value })
+                  }
+                  placeholder={t}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              ))
           )}
         </div>
       </div>
 
+      {/* === ACTION === */}
       <div className="form-actions">
-        <button
-          className="btn-add"
-          onClick={handleAdd}
-          disabled={!word.trim() || !ipa.trim() || !type || !activeMeanings.every(m => m.trim())}
-        >
+        <button className="btn-add" onClick={handleAdd} disabled={!isFormValid}>
           Add
         </button>
       </div>
