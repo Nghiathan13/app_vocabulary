@@ -1,4 +1,4 @@
-/* === Layout === */
+/* === LAYOUT === */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -13,7 +13,6 @@
 .navbar-right {
   display: flex;
   flex: 1;
-  /* align-items: center; */
 }
 
 .navbar-center {
@@ -25,10 +24,7 @@
   justify-content: flex-end;
 }
 
-.nav-btn {
-  cursor: pointer;
-}
-
+/* === LEFT === */
 .nav-logo-btn {
   display: inline-flex;
   align-items: center;
@@ -46,6 +42,11 @@
   display: block;
   width: 56px;
   height: 56px;
+}
+
+/* === CENTER === */
+.nav-btn {
+  cursor: pointer;
 }
 
 .nav-icon-btn {
@@ -94,6 +95,7 @@
   font-size: 28px;
 }
 
+/* === RIGHT === */
 .nav-settings-btn {
   display: inline-flex;
   align-items: center;

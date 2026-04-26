@@ -10,15 +10,15 @@
   padding: 0;
 }
 
-html {
+html,
+body,
+#root {
   height: 100%;
 
   overflow: hidden;
 }
 
 body {
-  height: 100%;
-
   background-color: #050505;
 
   font-family:
@@ -27,12 +27,6 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-
-  overflow: hidden;
-}
-
-#root {
-  min-height: 100%;
 }
 
 .container {
@@ -41,5 +35,5 @@ body {
   align-items: center;
 
   width: 100%;
-  min-height: 100dvh;
+  height: 100%;
 }

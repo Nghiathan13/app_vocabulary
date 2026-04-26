@@ -10,12 +10,14 @@ interface NavbarProps {
 export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
   return (
     <nav className="navbar">
+      {/* === LEFT === */}
       <div className="navbar-left">
         <button className="nav-logo-btn" onClick={() => onTabChange("home")}>
           <img src={logo} alt="EngVocab Home" className="nav-logo" />
         </button>
       </div>
 
+      {/* === CENTER === */}
       <div className="navbar-center">
         <button
           className={`nav-icon-btn ${currentTab === "review" ? "active" : ""}`}
@@ -45,6 +47,7 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
         </button>
       </div>
 
+      {/* === RIGHT === */}
       <div className="navbar-right">
         <button
           className="nav-settings-btn"

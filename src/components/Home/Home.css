@@ -1,17 +1,18 @@
+/* === LAYOUT === */
 .form-wrapper {
   width: 100%;
   max-width: 480px;
   margin-top: 15%;
 }
 
-/* === Header === */
+/* === HEADER === */
 .form-header {
   padding-bottom: 28px;
 
   color: #ffffff;
 }
 
-/* === Body === */
+/* === BODY === */
 .form-body {
   text-align: center;
 }
@@ -101,7 +102,7 @@
   color: #ffffff;
 }
 
-/* === Action === */
+/* === ACTION === */
 .btn-add {
   width: 100%;
   padding: 12px 0;

@@ -8,9 +8,11 @@ import "./Insights.css";
 type SubTab = "table" | "chart";
 
 export default function Insights() {
+  // === STATE ===
   const [currentSubTab, setCurrentSubTab] = useState<SubTab>("table");
   const [words, setWords] = useState<WordWithId[]>([]);
 
+  // === FUNCTIONS ===
   const fetchWords = useCallback(async () => {
     try {
       const db = await Database.load("sqlite:vocabulary.db");
@@ -23,13 +25,14 @@ export default function Insights() {
     }
   }, []);
 
+  // === EFFECTS ===
   useEffect(() => {
     fetchWords();
   }, [fetchWords]);
 
   return (
     <div className="insights-container">
-      {/* Sub navigation */}
+      {/* === SUB NAVIGATION === */}
       <div className="sub-nav">
         <button
           className={`sub-nav-btn ${currentSubTab === "table" ? "active" : ""}`}
@@ -45,7 +48,7 @@ export default function Insights() {
         </button>
       </div>
 
-      {/* Content */}
+      {/* === CONTENT === */}
       <div className="insights-content">
         {currentSubTab === "table" ? (
           <Table words={words} onRefresh={fetchWords} />

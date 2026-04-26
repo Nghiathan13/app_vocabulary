@@ -14,8 +14,8 @@
   color: #ffffff;
 }
 
-/* === Progress === */
-.progress-cointainer {
+/* === PROGRESS === */
+.progress-container {
   width: 100%;
   max-width: 480px;
   margin-top: 20px;
@@ -50,7 +50,7 @@
   transition: width 0.3s ease;
 }
 
-/* === Body === */
+/* === CARD === */
 .review-card {
   width: 100%;
   max-width: 480px;
@@ -94,12 +94,6 @@
   color: #cfcfcf;
 }
 
-.review-hint {
-  font-size: 12px;
-  font-weight: 300;
-  color: #a0a0a0;
-}
-
 .review-meaning {
   font-size: 20px;
   color: #ffffff;
@@ -111,4 +105,11 @@
 .review-meaning.show {
   visibility: visible;
   opacity: 1;
+}
+
+/* === HINT === */
+.review-hint {
+  font-size: 12px;
+  font-weight: 300;
+  color: #a0a0a0;
 }
