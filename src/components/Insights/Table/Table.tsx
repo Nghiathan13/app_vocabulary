@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import { WordWithId } from "../../../types";
 import Table_Actions from "./Table_Actions";
-import Table_Grid, { TableSortColumn } from "./Table_Grid";
+import Table_Grid, {
+  TableActiveCell,
+  TableEditableField,
+  TableSortColumn,
+} from "./Table_Grid";
 import {
   getSearchMatchColumn,
   getSearchPriority,
@@ -17,6 +21,17 @@ interface TableProps {
   onRefresh: () => void;
 }
 
+const normalizeComparableValue = (
+  field: TableEditableField,
+  value: WordWithId[TableEditableField],
+) => {
+  if (field === "word" || field === "reps") {
+    return value;
+  }
+
+  return value || null;
+};
+
 export default function Table({ words, onRefresh }: TableProps) {
   // === STATE ===
   const [isEditing, setIsEditing] = useState(false);
@@ -24,6 +39,7 @@ export default function Table({ words, onRefresh }: TableProps) {
   const [sortColumn, setSortColumn] = useState<TableSortColumn>("word");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set());
+  const [activeCell, setActiveCell] = useState<TableActiveCell | null>(null);
 
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearchInput, setDebouncedSearchInput] = useState("");
@@ -71,6 +87,8 @@ export default function Table({ words, onRefresh }: TableProps) {
   // -- Edit --
   const handleEditClick = () => {
     setEditedWords(words.map((word) => ({ ...word })));
+    setModifiedFields(new Set());
+    setActiveCell(null);
     setIsEditing(true);
   };
 
@@ -78,6 +96,7 @@ export default function Table({ words, onRefresh }: TableProps) {
     setIsEditing(false);
     setEditedWords([]);
     setModifiedFields(new Set());
+    setActiveCell(null);
   };
 
   const handleSaveClick = async () => {
@@ -112,6 +131,7 @@ export default function Table({ words, onRefresh }: TableProps) {
       setIsEditing(false);
       setEditedWords([]);
       setModifiedFields(new Set());
+      setActiveCell(null);
       onRefresh();
     } catch (error) {
       console.error("Error saving words:", error);
@@ -120,12 +140,35 @@ export default function Table({ words, onRefresh }: TableProps) {
 
   const handleInputChange = (
     id: number,
-    field: keyof WordWithId,
-    value: any,
+    field: TableEditableField,
+    value: WordWithId[TableEditableField],
   ) => {
-    setModifiedFields((prev) => new Set(prev).add(`${id}-${field}`));
+    const originalWord = words.find((word) => word.id === id);
+
+    if (!originalWord) {
+      return;
+    }
+
+    const nextValue = normalizeComparableValue(field, value);
+    const originalValue = normalizeComparableValue(field, originalWord[field]);
+    const fieldKey = `${id}-${field}`;
+
+    setModifiedFields((prev) => {
+      const next = new Set(prev);
+
+      if (nextValue === originalValue) {
+        next.delete(fieldKey);
+      } else {
+        next.add(fieldKey);
+      }
+
+      return next;
+    });
+
     setEditedWords((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, [field]: value } : w)),
+      prev.map((word) =>
+        word.id === id ? { ...word, [field]: nextValue } : word,
+      ),
     );
   };
 
@@ -174,8 +217,11 @@ export default function Table({ words, onRefresh }: TableProps) {
         sortColumn={sortColumn}
         sortOrder={sortOrder}
         modifiedFields={modifiedFields}
+        activeCell={activeCell}
         onSortToggle={handleSortToggle}
         onInputChange={handleInputChange}
+        onCellActivate={setActiveCell}
+        onCellDeactivate={() => setActiveCell(null)}
       />
     </div>
   );

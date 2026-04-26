@@ -129,6 +129,15 @@
   word-break: break-word;
 }
 
+.grid-cell.editable-cell {
+  cursor: text;
+}
+
+.grid-cell.active-cell,
+.grid-cell.modified-cell {
+  color: #ffffff;
+}
+
 /* === Input === */
 .table-input {
   display: block;
