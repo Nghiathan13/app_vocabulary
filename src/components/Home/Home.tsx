@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import { WordType } from "../../types";
 import "./Home.css";
@@ -17,6 +17,12 @@ export default function Home() {
   const [type, setType] = useState<string>("");
   const [meanings, setMeanings] = useState<Record<string, string>>({});
   const [isCustomType, setIsCustomType] = useState(false);
+  const wordInputRef = useRef<HTMLInputElement>(null);
+
+  // === EFFECTS ===
+  useEffect(() => {
+    wordInputRef.current?.focus();
+  }, []);
 
   // === DERIVED STATE ===
   const activeMeanings =
@@ -60,6 +66,7 @@ export default function Home() {
       setType("");
       setMeanings({});
       setIsCustomType(false);
+      wordInputRef.current?.focus();
     } catch (error) {
       console.error("Lỗi khi thêm từ:", error);
     }
@@ -104,6 +111,7 @@ export default function Home() {
               WORD
             </label>
             <input
+              ref={wordInputRef}
               type="text"
               name="word"
               id="word"
@@ -112,6 +120,7 @@ export default function Home() {
               placeholder="executive"
               autoComplete="off"
               spellCheck={false}
+              autoFocus
             />
           </div>
 
