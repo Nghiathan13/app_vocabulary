@@ -156,7 +156,14 @@
 
   outline: none;
   resize: none;
+}
+
+textarea.table-input {
   field-sizing: content;
+}
+
+input.table-input {
+  height: 1lh;
 }
 
 .table-input::-webkit-datetime-edit-fields-wrapper,

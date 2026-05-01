@@ -94,6 +94,27 @@
   color: #cfcfcf;
 }
 
+.pronounce-btn {
+  margin-right: 4px;
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: inherit;
+  vertical-align: middle;
+
+  cursor: pointer;
+}
+
+.pronounce-btn:hover {
+  color: #ffffff;
+}
+
+.pronounce-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
 .review-meaning {
   font-size: 20px;
   color: #ffffff;

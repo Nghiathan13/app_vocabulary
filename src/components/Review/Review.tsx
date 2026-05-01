@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import { Word } from "../../types";
 import "./Review.css";
@@ -12,6 +12,7 @@ export default function Review() {
 
   // === REFS ===
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // === DERIVED STATE ===
   const currentWord = reviewWords[currentIndex];
@@ -36,9 +37,39 @@ export default function Review() {
       setReviewWords([]);
     }
     setIsLoading(false);
+    audioRef.current = null;
   };
 
   // === HANDLERS ===
+  const handlePronounce = useCallback(async () => {
+    if (!currentWord) return;
+
+    const lookupWord = currentWord.word.split(/\s/)[0];
+
+    try {
+      const res = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(lookupWord)}`,
+      );
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const audioUrl = data[0]?.phonetics?.find(
+        (p: { audio?: string }) => p.audio && p.audio.includes("uk"),
+      )?.audio
+        || data[0]?.phonetics?.find(
+          (p: { audio?: string }) => p.audio,
+        )?.audio;
+
+      if (!audioUrl) return;
+
+      audioRef.current?.pause();
+      audioRef.current = new Audio(audioUrl);
+      audioRef.current.play().catch(() => {});
+    } catch {
+      // silently fail if network is unavailable
+    }
+  }, [currentWord]);
+
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (!currentWord) return;
 
@@ -162,7 +193,18 @@ export default function Review() {
             <h2>{currentWord.word}</h2>
             <span className="review-type">({currentWord.type || ""})</span>
           </div>
-          {currentWord.ipa && <p className="review-ipa">/{currentWord.ipa}/</p>}
+          {currentWord.ipa && (
+            <p className="review-ipa">
+              <button
+                className="pronounce-btn"
+                onClick={handlePronounce}
+                type="button"
+              >
+                <span className="material-symbols-outlined">volume_up</span>
+              </button>
+              /{currentWord.ipa}/
+            </p>
+          )}
         </div>
 
         <div className={`review-meaning ${showMeaning ? "show" : ""}`}>
