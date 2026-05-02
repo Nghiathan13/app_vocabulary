@@ -9,6 +9,7 @@ import { buildImportPreviewFiles, ImportPreviewFile } from "./_tableImport";
 
 interface TableActionsProps {
   isEditing: boolean;
+  hasChanges: boolean;
   searchInput: string;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
@@ -22,6 +23,7 @@ interface TableActionsProps {
 
 export default function Table_Actions({
   isEditing,
+  hasChanges,
   searchInput,
   onSearchChange,
   onClearSearch,
@@ -227,11 +229,21 @@ export default function Table_Actions({
         <div className="table-actions-side table-actions-left">
           {!isEditing ? (
             <div className="edit-group">
-              <button className="edit-btn" onClick={handleOpenImportModal}>
-                Import
+              <button
+                className="edit-btn has-tooltip tooltip-left"
+                onClick={handleOpenImportModal}
+                data-tooltip="Import"
+                aria-label="Import"
+              >
+                <span className="material-symbols-outlined">upload</span>
               </button>
-              <button className="edit-btn" onClick={handleExportClick}>
-                Export
+              <button
+                className="edit-btn has-tooltip tooltip-center"
+                onClick={handleExportClick}
+                data-tooltip="Export"
+                aria-label="Export"
+              >
+                <span className="material-symbols-outlined">download</span>
               </button>
             </div>
           ) : null}
@@ -262,17 +274,34 @@ export default function Table_Actions({
         <div className="table-actions-side table-actions-right">
           {!isEditing ? (
             <div className="edit-group">
-              <button className="edit-btn" onClick={onEdit}>
-                Edit
+              <button
+                className="edit-btn has-tooltip tooltip-right"
+                onClick={onEdit}
+                data-tooltip="Edit (Ctrl+E)"
+                aria-label="Edit"
+              >
+                <span className="material-symbols-outlined">edit</span>
               </button>
             </div>
           ) : (
             <div className="edit-group">
-              <button className="save-btn" onClick={onSave}>
-                Save
-              </button>
-              <button className="cancel-btn" onClick={onCancel}>
-                Cancel
+              {hasChanges && (
+                <button
+                  className="save-btn has-tooltip tooltip-center"
+                  onClick={onSave}
+                  data-tooltip="Save"
+                  aria-label="Save"
+                >
+                  <span className="material-symbols-outlined">check</span>
+                </button>
+              )}
+              <button
+                className="cancel-btn has-tooltip tooltip-right"
+                onClick={onCancel}
+                data-tooltip="Cancel"
+                aria-label="Cancel"
+              >
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
           )}

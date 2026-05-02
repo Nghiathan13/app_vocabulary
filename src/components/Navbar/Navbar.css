@@ -3,9 +3,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   width: 100%;
-
   margin-bottom: 4px;
 }
 
@@ -17,7 +15,7 @@
 
 .navbar-center {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .navbar-right {
@@ -29,11 +27,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   padding: 0;
 
-  border: none;
   background: transparent;
+  border: none;
 
   cursor: pointer;
 }
@@ -55,25 +52,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  width: 84px;
+  width: 88px;
   height: 56px;
 
+  background: transparent;
   border: none;
   border-radius: 8px;
-  background: transparent;
 
-  color: #a0a0a0;
+  color: rgb(120, 120, 120);
 
   cursor: pointer;
 }
 
 .nav-icon-btn:hover {
-  background: #303030;
+  background: rgb(60, 60, 60, 0.5);
 }
 
 .nav-icon-btn.active {
-  color: #ffffff;
+  color: rgb(210, 210, 210);
 }
 
 .nav-icon-btn.active:hover {
@@ -81,18 +77,20 @@
 }
 
 .nav-icon-btn.active::after {
-  content: "";
   position: absolute;
-  left: -6px;
-  right: -6px;
+  left: -8px;
+  right: -8px;
   bottom: -4px;
 
   height: 2px;
-  background: #ffffff;
+
+  background: rgb(210, 210, 210);
+
+  content: "";
 }
 
 .nav-icon-btn .material-symbols-outlined {
-  font-size: 28px;
+  font-size: 32px;
 }
 
 /* === RIGHT === */
@@ -100,21 +98,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   padding-right: 8px;
 
-  border: none;
   background: transparent;
+  border: none;
 
-  color: #808080;
+  color: rgb(120, 120, 120);
 
   cursor: pointer;
 }
 
 .nav-settings-btn:hover {
-  color: #ffffff;
+  color: rgb(210, 210, 210);
 }
 
 .nav-settings-btn .material-symbols-outlined {
-  font-size: 40px;
+  font-size: 36px;
 }

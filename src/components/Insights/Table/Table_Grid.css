@@ -1,0 +1,152 @@
+/* === Grid Table === */
+.word-grid-main-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: calc(100vh - 132px);
+}
+
+.word-grid-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+
+    font-size: 16px;
+    text-align: left;
+    color: rgb(120, 120, 120);
+}
+
+.word-grid-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.word-grid-container::-webkit-scrollbar-thumb {
+    background: rgb(60, 60, 60);
+    border-radius: 1px;
+}
+
+.word-grid-container::-webkit-scrollbar-thumb:hover {
+    background: rgb(90, 90, 90);
+}
+
+.grid-header-row {
+    z-index: 10;
+
+    display: grid;
+    grid-template-columns: minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 10%) minmax(150px, 20%) minmax(70px, 5%) minmax(120px, 12.5%) minmax(120px, 12.5%);
+    padding-right: 6px;
+
+    background-color: rgb(15, 15, 15);
+    border-top: 1px solid rgb(60, 60, 60);
+    border-bottom: 1px solid rgb(60, 60, 60);
+
+    text-align: left;
+}
+
+.word-grid-inner {
+    position: relative;
+    width: 100%;
+}
+
+.word-grid-row {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: grid;
+    grid-template-columns: minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 10%) minmax(150px, 20%) minmax(70px, 5%) minmax(120px, 12.5%) minmax(120px, 12.5%);
+    align-items: stretch;
+    width: 100%;
+
+    border-bottom: 1px solid rgb(30, 30, 30);
+}
+
+.word-grid-row:hover {
+    background-color: rgb(30, 30, 30, 0.5);
+}
+
+.grid-header {
+    padding: 4px 0;
+
+    font-weight: bold;
+}
+
+.sortable-th {
+    cursor: pointer;
+}
+
+.sortable-th:hover {
+    color: rgb(210, 210, 210);
+}
+
+.sort-icon {
+    margin-left: 2px;
+
+    font-size: 20px;
+    vertical-align: middle;
+
+    user-select: none;
+}
+
+.grid-cell {
+    padding: 6px 0;
+
+    word-break: break-word;
+}
+
+.word-grid-container.is-editing .grid-cell {
+    cursor: text;
+}
+
+.grid-cell.active-cell,
+.grid-cell.modified-cell {
+    color: rgb(210, 210, 210);
+}
+
+/* === Input Grid Table === */
+.table-input {
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+
+    background: transparent;
+    border: none;
+    outline: none;
+
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+
+    resize: none;
+}
+
+textarea.table-input {
+    field-sizing: content;
+}
+
+input.table-input {
+    height: 1lh;
+}
+
+.table-input::-webkit-datetime-edit-fields-wrapper,
+.table-input::-webkit-datetime-edit-month-field,
+.table-input::-webkit-datetime-edit-day-field,
+.table-input::-webkit-datetime-edit-year-field {
+    padding: 0;
+}
+
+.table-input:focus {
+    color: #ffffff;
+}
+
+.table-input.modified {
+    color: #ffffff;
+}
+
+.table-input::-webkit-calendar-picker-indicator {
+    display: none;
+}

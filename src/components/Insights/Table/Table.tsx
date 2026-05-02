@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import { WordWithId } from "../../../types";
 import Table_Actions from "./Table_Actions";
@@ -45,20 +45,23 @@ export default function Table({ words, onRefresh }: TableProps) {
   const [debouncedSearchInput, setDebouncedSearchInput] = useState("");
 
   // === DERIVED STATE ===
-  const sortedWords = [...(isEditing ? editedWords : words)].sort((a, b) => {
-    if (sortColumn === "reps") {
-      return sortOrder === "asc" ? a.reps - b.reps : b.reps - a.reps;
-    }
+  const sortedWords = useMemo(() => {
+    const source = isEditing ? editedWords : words;
+    return [...source].sort((a, b) => {
+      if (sortColumn === "reps") {
+        return sortOrder === "asc" ? a.reps - b.reps : b.reps - a.reps;
+      }
 
-    const valA = (a[sortColumn] || "").toLowerCase();
-    const valB = (b[sortColumn] || "").toLowerCase();
+      const valA = (a[sortColumn] || "").toLowerCase();
+      const valB = (b[sortColumn] || "").toLowerCase();
 
-    return sortOrder === "asc"
-      ? valA.localeCompare(valB)
-      : valB.localeCompare(valA);
-  });
+      return sortOrder === "asc"
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    });
+  }, [isEditing, editedWords, words, sortColumn, sortOrder]);
 
-  const displayedWords = (() => {
+  const displayedWords = useMemo(() => {
     if (!debouncedSearchInput) {
       return sortedWords;
     }
@@ -81,25 +84,25 @@ export default function Table({ words, onRefresh }: TableProps) {
           getSearchPriority(a.matchColumn) - getSearchPriority(b.matchColumn),
       )
       .map((item) => item.word);
-  })();
+  }, [sortedWords, debouncedSearchInput]);
 
   // === HANDLERS ===
   // -- Edit --
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
     setEditedWords(words.map((word) => ({ ...word })));
     setModifiedFields(new Set());
     setActiveCell(null);
     setIsEditing(true);
-  };
+  }, [words]);
 
-  const handleCancelClick = () => {
+  const handleCancelClick = useCallback(() => {
     setIsEditing(false);
     setEditedWords([]);
     setModifiedFields(new Set());
     setActiveCell(null);
-  };
+  }, []);
 
-  const handleSaveClick = async () => {
+  const handleSaveClick = useCallback(async () => {
     try {
       const db = await Database.load("sqlite:vocabulary.db");
 
@@ -136,58 +139,80 @@ export default function Table({ words, onRefresh }: TableProps) {
     } catch (error) {
       console.error("Error saving words:", error);
     }
-  };
+  }, [editedWords, modifiedFields, onRefresh]);
 
-  const handleInputChange = (
-    id: number,
-    field: TableEditableField,
-    value: WordWithId[TableEditableField],
-  ) => {
-    const originalWord = words.find((word) => word.id === id);
+  const handleInputChange = useCallback(
+    (
+      id: number,
+      field: TableEditableField,
+      value: WordWithId[TableEditableField],
+    ) => {
+      const originalWord = words.find((word) => word.id === id);
 
-    if (!originalWord) {
-      return;
-    }
-
-    const nextValue = normalizeComparableValue(field, value);
-    const originalValue = normalizeComparableValue(field, originalWord[field]);
-    const fieldKey = `${id}-${field}`;
-
-    setModifiedFields((prev) => {
-      const next = new Set(prev);
-
-      if (nextValue === originalValue) {
-        next.delete(fieldKey);
-      } else {
-        next.add(fieldKey);
+      if (!originalWord) {
+        return;
       }
 
-      return next;
-    });
+      const nextValue = normalizeComparableValue(field, value);
+      const originalValue = normalizeComparableValue(
+        field,
+        originalWord[field],
+      );
+      const fieldKey = `${id}-${field}`;
 
-    setEditedWords((prev) =>
-      prev.map((word) =>
-        word.id === id ? { ...word, [field]: nextValue } : word,
-      ),
-    );
-  };
+      setModifiedFields((prev) => {
+        const next = new Set(prev);
+
+        if (nextValue === originalValue) {
+          next.delete(fieldKey);
+        } else {
+          next.add(fieldKey);
+        }
+
+        return next;
+      });
+
+      setEditedWords((prev) =>
+        prev.map((word) =>
+          word.id === id ? { ...word, [field]: nextValue } : word,
+        ),
+      );
+    },
+    [words],
+  );
 
   // -- Search --
-  const handleSortToggle = (col: TableSortColumn) => {
-    if (sortColumn === col) {
-      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortColumn(col);
-      setSortOrder("asc");
-    }
-  };
+  const handleSortToggle = useCallback(
+    (col: TableSortColumn) => {
+      if (sortColumn === col) {
+        setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      } else {
+        setSortColumn(col);
+        setSortOrder("asc");
+      }
+    },
+    [sortColumn],
+  );
 
-  const handleClearSearch = () => {
+  const handleClearSearch = useCallback(() => {
     setSearchInput("");
     setDebouncedSearchInput("");
-  };
+  }, []);
 
   // === EFFECTS ===
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        if (!isEditing) {
+          handleEditClick();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEditing, handleEditClick]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearchInput(searchInput.trim());
@@ -200,6 +225,7 @@ export default function Table({ words, onRefresh }: TableProps) {
     <div className="table-wrapper">
       <Table_Actions
         isEditing={isEditing}
+        hasChanges={modifiedFields.size > 0}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
         onClearSearch={handleClearSearch}

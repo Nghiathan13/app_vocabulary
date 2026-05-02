@@ -1,0 +1,160 @@
+/* === Import Modal === */
+.import-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.import-modal {
+    width: min(500px, calc(100vw - 32px));
+    max-height: min(80vh, 720px);
+    padding: 16px;
+
+    background: rgb(5, 5, 5);
+    border: 1px solid rgb(90, 90, 90);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.import-modal-header,
+.import-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.import-file-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.import-modal-body {
+    max-height: calc(80vh - 120px);
+    margin-top: 16px;
+
+    overflow-y: auto;
+}
+
+.import-modal-footer {
+    margin-top: 32px;
+}
+
+/* -- Import File -- */
+.import-file-card {
+    padding: 8px;
+    margin-top: 16px;
+
+    border: 1px solid rgb(60, 60, 60);
+    border-radius: 12px;
+}
+
+.import-file-card.valid {
+    border-color: rgb(60, 180, 60);
+}
+
+.import-file-card.invalid {
+    border-color: rgb(240, 60, 60);
+}
+
+.import-file-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.import-file-name {
+    display: block;
+
+    text-align: left;
+    word-break: break-all;
+    color: rgb(180, 180, 180);
+}
+
+.import-file-detail {
+    color: rgb(180, 180, 180);
+}
+
+.import-file-detail,
+.import-file-error,
+.import-empty,
+.import-scanning {
+    margin: 12px 0 0;
+    text-align: left;
+}
+
+.import-file-error {
+    color: rgb(240, 60, 60);
+}
+
+.import-modal-action {
+    cursor: pointer;
+}
+
+/* -- Button Add -- */
+.import-add-btn {
+    width: 100%;
+    padding: 12px 0;
+
+    background-color: #000000;
+    border: 1px solid rgb(210, 210, 210);
+    border-radius: 12px;
+
+    font-size: 16px;
+    color: rgb(210, 210, 210);
+
+    cursor: pointer;
+}
+
+.import-add-btn:not(:disabled):hover {
+    background: rgb(60, 60, 60);
+}
+
+.import-add-btn:disabled {
+    border-color: rgb(60, 60, 60);
+
+    color: rgb(60, 60, 60);
+
+    cursor: not-allowed;
+}
+
+/* -- Button Close -- */
+.import-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+
+    background: transparent;
+    border: 1px solid rgb(90, 90, 90);
+    border-radius: 4px;
+
+    color: rgb(90, 90, 90);
+
+    cursor: pointer;
+}
+
+.import-icon-btn:hover:not(:disabled) {
+    border-color: rgb(180, 180, 180);
+    color: rgb(180, 180, 180);
+}
+
+.import-icon-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.import-icon-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.import-file-remove-btn {
+    flex-shrink: 0;
+    margin-top: 0;
+}
