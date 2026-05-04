@@ -106,6 +106,15 @@
   color: rgb(180, 180, 180);
 }
 
+.pronounce-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pronounce-btn.disabled:hover {
+  color: rgb(120, 120, 120); /* Giữ nguyên màu khi bị disabled */
+}
+
 .pronounce-btn .material-symbols-outlined {
   font-size: 20px;
 }

@@ -77,6 +77,7 @@ export default function Table_Grid({
     getScrollElement: () => parentRef.current,
     estimateSize: () => 24,
     overscan: 10,
+    getItemKey: (index) => words[index].id,
   });
 
   const isActiveCell = (id: number, field: TableEditableField) =>

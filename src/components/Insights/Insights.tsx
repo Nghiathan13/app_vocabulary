@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import Database from "@tauri-apps/plugin-sql";
+import { useState } from "react";
 import { WordWithId } from "../../types";
 import Table from "./Table/Table";
 import Chart from "./Chart/Chart";
@@ -7,28 +6,14 @@ import "./Insights.css";
 
 type SubTab = "table" | "chart";
 
-export default function Insights() {
+interface InsightsProps {
+  words: WordWithId[];
+  onRefresh: () => void;
+}
+
+export default function Insights({ words, onRefresh }: InsightsProps) {
   // === STATE ===
   const [currentSubTab, setCurrentSubTab] = useState<SubTab>("table");
-  const [words, setWords] = useState<WordWithId[]>([]);
-
-  // === FUNCTIONS ===
-  const fetchWords = useCallback(async () => {
-    try {
-      const db = await Database.load("sqlite:vocabulary.db");
-      const result = await db.select<WordWithId[]>(
-        "SELECT rowid as id, * FROM words ORDER BY word ASC",
-      );
-      setWords(result);
-    } catch (error) {
-      console.error("Error fetching words:", error);
-    }
-  }, []);
-
-  // === EFFECTS ===
-  useEffect(() => {
-    fetchWords();
-  }, [fetchWords]);
 
   return (
     <div className="insights-container">
@@ -38,20 +23,20 @@ export default function Insights() {
           className={`sub-nav-btn ${currentSubTab === "table" ? "active" : ""}`}
           onClick={() => setCurrentSubTab("table")}
         >
-          Table
+          <span className="material-symbols-outlined">table_rows</span>
         </button>
         <button
           className={`sub-nav-btn ${currentSubTab === "chart" ? "active" : ""}`}
           onClick={() => setCurrentSubTab("chart")}
         >
-          Chart
+          <span className="material-symbols-outlined">bar_chart</span>
         </button>
       </div>
 
       {/* === CONTENT === */}
       <div className="insights-content">
         {currentSubTab === "table" ? (
-          <Table words={words} onRefresh={fetchWords} />
+          <Table words={words} onRefresh={onRefresh} />
         ) : (
           <Chart words={words} />
         )}

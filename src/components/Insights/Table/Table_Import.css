@@ -37,7 +37,7 @@
 }
 
 .import-modal-body {
-    max-height: calc(80vh - 120px);
+    max-height: calc(80vh - 160px);
     margin-top: 16px;
 
     overflow-y: auto;
@@ -93,8 +93,34 @@
     color: rgb(240, 60, 60);
 }
 
+/* -- Button Import -- */
 .import-modal-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+
+    background: transparent;
+    border: 1px solid rgb(60, 60, 60);
+    border-radius: 4px;
+
+    color: rgb(60, 60, 60);
+
     cursor: pointer;
+}
+
+.import-modal-action .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.import-modal-action:hover:not(:disabled) {
+    border-color: rgb(180, 180, 180);
+    color: rgb(180, 180, 180);
+}
+
+.import-modal-action:disabled {
+    opacity: 0.5;
+    cursor: default;
 }
 
 /* -- Button Add -- */
@@ -102,12 +128,12 @@
     width: 100%;
     padding: 12px 0;
 
-    background-color: #000000;
-    border: 1px solid rgb(210, 210, 210);
+    background-color: transparent;
+    border: 1px solid rgb(180, 180, 180);
     border-radius: 12px;
 
     font-size: 16px;
-    color: rgb(210, 210, 210);
+    color: rgb(180, 180, 180);
 
     cursor: pointer;
 }
@@ -132,10 +158,10 @@
     padding: 4px;
 
     background: transparent;
-    border: 1px solid rgb(90, 90, 90);
+    border: 1px solid rgb(60, 60, 60);
     border-radius: 4px;
 
-    color: rgb(90, 90, 90);
+    color: rgb(60, 60, 60);
 
     cursor: pointer;
 }

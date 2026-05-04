@@ -235,6 +235,8 @@ export default function Table({ words, onRefresh }: TableProps) {
         onRefresh={onRefresh}
         existingWords={words}
         wordsToExport={displayedWords}
+        editedWords={editedWords}
+        modifiedFields={modifiedFields}
       />
 
       <Table_Grid

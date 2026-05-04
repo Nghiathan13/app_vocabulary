@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import Database from "@tauri-apps/plugin-sql";
 import * as XLSX from "xlsx";
 import { WordWithId } from "../../../types";
 import ImportModal from "./Table_Import";
+import SaveModal, { WordChange } from "./Table_SaveModal";
 import { buildImportPreviewFiles, ImportPreviewFile } from "./_tableImport";
+import { TableEditableField } from "./Table_Grid";
 
 interface TableActionsProps {
   isEditing: boolean;
@@ -19,6 +21,8 @@ interface TableActionsProps {
   onRefresh: () => void;
   existingWords: WordWithId[];
   wordsToExport: WordWithId[];
+  editedWords: WordWithId[];
+  modifiedFields: Set<string>;
 }
 
 export default function Table_Actions({
@@ -33,6 +37,8 @@ export default function Table_Actions({
   onRefresh,
   existingWords,
   wordsToExport,
+  editedWords,
+  modifiedFields,
 }: TableActionsProps) {
   // === STATE ===
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -43,7 +49,31 @@ export default function Table_Actions({
   const [isScanningImportFiles, setIsScanningImportFiles] = useState(false);
   const [isAddingImportedWords, setIsAddingImportedWords] = useState(false);
 
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
   // === DERIVED STATE ===
+  const changes = useMemo<WordChange[]>(() => {
+    const list: WordChange[] = [];
+
+    modifiedFields.forEach((fieldKey) => {
+      const [idStr, field] = fieldKey.split("-");
+      const id = Number(idStr);
+      const originalWord = existingWords.find((w) => w.id === id);
+      const editedWord = editedWords.find((w) => w.id === id);
+
+      if (originalWord && editedWord) {
+        list.push({
+          word: originalWord.word,
+          field,
+          oldValue: String(originalWord[field as TableEditableField] ?? ""),
+          newValue: String(editedWord[field as TableEditableField] ?? ""),
+        });
+      }
+    });
+
+    return list.sort((a, b) => a.word.localeCompare(b.word));
+  }, [modifiedFields, existingWords, editedWords]);
+
   const canAddImportedWords =
     !isScanningImportFiles &&
     !isAddingImportedWords &&
@@ -110,16 +140,30 @@ export default function Table_Actions({
     });
 
     if (!selected) {
-      return;
+      return null;
     }
 
-    const selectedPaths = Array.isArray(selected) ? selected : [selected];
-    setImportPaths((prev) => mergeUniquePaths([...prev, ...selectedPaths]));
+    return Array.isArray(selected) ? selected : [selected];
   };
 
   const handleOpenImportModal = async () => {
-    setIsImportModalOpen(true);
-    await handlePickImportFiles();
+    const selectedPaths = await handlePickImportFiles();
+    if (selectedPaths) {
+      setImportPaths(selectedPaths);
+      setIsImportModalOpen(true);
+    }
+  };
+
+  const handleAddMoreFiles = async () => {
+    const selectedPaths = await handlePickImportFiles();
+    if (selectedPaths) {
+      setImportPaths((prev) => mergeUniquePaths([...prev, ...selectedPaths]));
+    }
+  };
+
+  const handleConfirmSave = async () => {
+    await onSave();
+    setIsSaveModalOpen(false);
   };
 
   const handleCloseImportModal = () => {
@@ -288,7 +332,7 @@ export default function Table_Actions({
               {hasChanges && (
                 <button
                   className="save-btn has-tooltip tooltip-center"
-                  onClick={onSave}
+                  onClick={() => setIsSaveModalOpen(true)}
                   data-tooltip="Save"
                   aria-label="Save"
                 >
@@ -317,8 +361,16 @@ export default function Table_Actions({
         canAdd={canAddImportedWords}
         onAdd={handleAddImportedWords}
         onClose={handleCloseImportModal}
-        onPickFiles={handlePickImportFiles}
+        onPickFiles={handleAddMoreFiles}
         onRemoveFile={handleRemoveImportFile}
+      />
+
+      {/* === SAVE MODAL === */}
+      <SaveModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onSave={handleConfirmSave}
+        changes={changes}
       />
     </>
   );

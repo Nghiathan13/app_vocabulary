@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Database from "@tauri-apps/plugin-sql";
+import { writeFile, exists } from "@tauri-apps/plugin-fs";
+import { appConfigDir, join } from "@tauri-apps/api/path";
 import { WordType } from "../../types";
 import "./Home.css";
 
@@ -10,7 +12,11 @@ const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "adverb", label: "adv" },
 ];
 
-export default function Home() {
+interface HomeProps {
+  onWordAdded?: () => void;
+}
+
+export default function Home({ onWordAdded }: HomeProps) {
   // === STATE ===
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
@@ -41,6 +47,39 @@ export default function Home() {
     setWord(filteredValue);
   };
 
+  const downloadAudio = async (wordToDownload: string) => {
+    // Chỉ tải cho từ đơn
+    if (wordToDownload.includes(" ")) return;
+
+    try {
+      const configDir = await appConfigDir();
+      const audioDir = await join(configDir, "audio");
+      const filePath = await join(audioDir, `${wordToDownload}.mp3`);
+
+      // Kiểm tra xem file đã tồn tại chưa
+      if (await exists(filePath)) return;
+
+      // Gọi API lấy link audio
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(wordToDownload)}`);
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const audioUrl = data[0]?.phonetics?.find((p: any) => p.audio && p.audio.includes("uk"))?.audio 
+                    || data[0]?.phonetics?.find((p: any) => p.audio)?.audio;
+
+      if (!audioUrl) return;
+
+      // Tải và lưu file
+      const audioResponse = await fetch(audioUrl);
+      const buffer = await audioResponse.arrayBuffer();
+      await writeFile(filePath, new Uint8Array(buffer));
+      
+      console.log(`Đã tải âm thanh cho từ: ${wordToDownload}`);
+    } catch (error) {
+      console.error(`Lỗi khi tải audio cho ${wordToDownload}:`, error);
+    }
+  };
+
   const handleAdd = async () => {
     if (!isFormValid) return;
     try {
@@ -61,12 +100,19 @@ export default function Home() {
         ],
       );
 
+      // Tải audio ngầm (không đợi)
+      downloadAudio(word.trim().toLowerCase());
+
       setWord("");
       setIpa("");
       setType("");
       setMeanings({});
       setIsCustomType(false);
       wordInputRef.current?.focus();
+      
+      if (onWordAdded) {
+        onWordAdded();
+      }
     } catch (error) {
       console.error("Lỗi khi thêm từ:", error);
     }
