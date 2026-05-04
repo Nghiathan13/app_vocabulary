@@ -49,7 +49,7 @@
 }
 
 .table-search-input::placeholder {
-  color: rgb(120, 120, 120, 0.6);
+  color: rgb(45, 45, 45);
 }
 
 .table-search-clear {
@@ -106,7 +106,7 @@
 .edit-btn:hover,
 .save-btn:hover,
 .cancel-btn:hover {
-  background: rgb(120, 120, 120, 0.3);
+  background: rgb(60, 60, 60, 0.5);
 }
 
 .has-tooltip {

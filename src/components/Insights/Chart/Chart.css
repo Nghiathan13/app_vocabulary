@@ -1,3 +1,32 @@
 .chart-wrapper {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 132px);
+  /* Matches Table_Grid max-height */
+  padding: 24px 0;
+  box-sizing: border-box;
+}
+
+.chart-container {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgb(120, 120, 120);
+  font-size: 16px;
+}
+
+.chart-footer {
+  margin-top: 16px;
+  padding-right: 8px;
+  text-align: right;
+  color: rgb(120, 120, 120);
+  font-size: 14px;
 }

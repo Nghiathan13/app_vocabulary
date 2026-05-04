@@ -1,14 +1,29 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
+import { exists } from "@tauri-apps/plugin-fs";
+import { appConfigDir, join } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/core";
 import { Word } from "../../types";
 import "./Review.css";
 
-export default function Review() {
+const getLocalDateString = (daysToAdd = 0) => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysToAdd);
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().split("T")[0];
+};
+
+interface ReviewProps {
+  onReviewUpdate?: (word: string, updates: Partial<Word>) => void;
+}
+
+export default function Review({ onReviewUpdate }: ReviewProps) {
   // === STATE ===
   const [reviewWords, setReviewWords] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasAudio, setHasAudio] = useState(false);
 
   // === REFS ===
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -37,38 +52,15 @@ export default function Review() {
       setReviewWords([]);
     }
     setIsLoading(false);
-    audioRef.current = null;
   };
 
   // === HANDLERS ===
-  const handlePronounce = useCallback(async () => {
-    if (!currentWord) return;
-
-    const lookupWord = currentWord.word.split(/\s/)[0];
-
-    try {
-      const res = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(lookupWord)}`,
-      );
-      if (!res.ok) return;
-
-      const data = await res.json();
-      const audioUrl = data[0]?.phonetics?.find(
-        (p: { audio?: string }) => p.audio && p.audio.includes("uk"),
-      )?.audio
-        || data[0]?.phonetics?.find(
-          (p: { audio?: string }) => p.audio,
-        )?.audio;
-
-      if (!audioUrl) return;
-
-      audioRef.current?.pause();
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.play().catch(() => {});
-    } catch {
-      // silently fail if network is unavailable
+  const handlePronounce = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => { });
     }
-  }, [currentWord]);
+  }, []);
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (!currentWord) return;
@@ -115,17 +107,16 @@ export default function Review() {
       try {
         const db = await Database.load("sqlite:vocabulary.db");
         const newNextReview =
-          daysToAdd > 0
-            ? `date('now', 'localtime', '+${daysToAdd} days')`
-            : null;
+          daysToAdd > 0 ? getLocalDateString(daysToAdd) : null;
+        const newLastReview = getLocalDateString(0);
 
         await db.execute(
           `UPDATE words 
            SET reps = $1, 
-               last_review = date('now', 'localtime'),
-               next_review = ${newNextReview ? newNextReview : "NULL"}
-           WHERE word = $2`,
-          [newReps, currentWord.word],
+               last_review = $2,
+               next_review = $3
+           WHERE word = $4`,
+          [newReps, newLastReview, newNextReview, currentWord.word],
         );
 
         if (currentIndex + 1 < reviewWords.length) {
@@ -134,6 +125,14 @@ export default function Review() {
         } else {
           setTimeout(() => loadReviewWords(), 300);
         }
+
+        if (onReviewUpdate) {
+          onReviewUpdate(currentWord.word, {
+            reps: newReps,
+            last_review: newLastReview,
+            next_review: newNextReview,
+          });
+        }
       } catch (error) {
         console.error("Lỗi update review:", error);
       }
@@ -141,6 +140,48 @@ export default function Review() {
   };
 
   // === EFFECTS ===
+  useEffect(() => {
+    if (!currentWord) {
+      audioRef.current = null;
+      return;
+    }
+
+    const loadAudio = async () => {
+      try {
+        const configDir = await appConfigDir();
+        const audioPath = await join(configDir, "audio", `${currentWord.word}.mp3`);
+
+        const fileExists = await exists(audioPath);
+        if (fileExists) {
+          // Sử dụng hàm read_binary_file có sẵn trong lib.rs để đọc trực tiếp dữ liệu
+          const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
+          const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
+          const assetUrl = URL.createObjectURL(blob);
+
+          const audio = new Audio(assetUrl);
+          audio.preload = "auto";
+          audioRef.current = audio;
+          setHasAudio(true);
+        } else {
+          audioRef.current = null;
+          setHasAudio(false);
+        }
+      } catch (error) {
+        console.error("Lỗi khi load audio cục bộ:", error);
+        audioRef.current = null;
+        setHasAudio(false);
+      }
+    };
+
+    loadAudio();
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, [currentWord]);
+
   useEffect(() => {
     loadReviewWords();
   }, []);
@@ -196,9 +237,10 @@ export default function Review() {
           {currentWord.ipa && (
             <p className="review-ipa">
               <button
-                className="pronounce-btn"
-                onClick={handlePronounce}
+                className={`pronounce-btn ${!hasAudio ? "disabled" : ""}`}
+                onClick={hasAudio ? handlePronounce : undefined}
                 type="button"
+                title={hasAudio ? "Phát âm" : "Không có file âm thanh"}
               >
                 <span className="material-symbols-outlined">volume_up</span>
               </button>

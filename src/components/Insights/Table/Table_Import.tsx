@@ -36,7 +36,7 @@ export default function ImportModal({
             onClick={onPickFiles}
             disabled={isAdding}
           >
-            Import
+            <span className="material-symbols-outlined">upload</span>
           </button>
 
           <button
