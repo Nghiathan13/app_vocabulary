@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
+import { readDir } from "@tauri-apps/plugin-fs";
+import { appConfigDir, join } from "@tauri-apps/api/path";
 import "./App.css";
 import { Tab, WordWithId } from "./types";
 import Navbar from "./components/Navbar/Navbar";
@@ -19,7 +21,28 @@ function App() {
       const result = await db.select<WordWithId[]>(
         "SELECT rowid as id, * FROM words ORDER BY word ASC",
       );
-      setGlobalWords(result);
+
+      // --- QUÉT THƯ MỤC AUDIO ---
+      let audioFiles = new Set<string>();
+      try {
+        const configDir = await appConfigDir();
+        const audioDir = await join(configDir, "audio");
+        const entries = await readDir(audioDir);
+        audioFiles = new Set(entries.map((e) => e.name.toLowerCase()));
+      } catch (error) {
+        console.warn("Không thể quét thư mục audio:", error);
+      }
+
+      // --- GỘP DỮ LIỆU ---
+      const wordsWithAudio = result.map((w) => {
+        const fileName = w.word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
+        return {
+          ...w,
+          hasAudio: audioFiles.has(`${fileName}.mp3`),
+        };
+      });
+
+      setGlobalWords(wordsWithAudio);
     } catch (error) {
       console.error("Error fetching words:", error);
     } finally {

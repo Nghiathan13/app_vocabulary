@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
-import { exists } from "@tauri-apps/plugin-fs";
+import { readDir } from "@tauri-apps/plugin-fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
-import { Word } from "../../types";
+import { WordWithId } from "../../types";
 import "./Review.css";
 
 const getLocalDateString = (daysToAdd = 0) => {
@@ -14,12 +14,12 @@ const getLocalDateString = (daysToAdd = 0) => {
 };
 
 interface ReviewProps {
-  onReviewUpdate?: (word: string, updates: Partial<Word>) => void;
+  onReviewUpdate?: (word: string, updates: Partial<WordWithId>) => void;
 }
 
 export default function Review({ onReviewUpdate }: ReviewProps) {
   // === STATE ===
-  const [reviewWords, setReviewWords] = useState<Word[]>([]);
+  const [reviewWords, setReviewWords] = useState<WordWithId[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,13 +38,32 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
     try {
       const db = await Database.load("sqlite:vocabulary.db");
 
-      const result = await db.select<Word[]>(
-        `SELECT * FROM words 
+      const result = await db.select<WordWithId[]>(
+        `SELECT rowid as id, * FROM words 
          WHERE next_review <= date('now', 'localtime')
          ORDER BY next_review ASC`,
       );
 
-      setReviewWords(result || []);
+      // --- QUÉT THƯ MỤC AUDIO ---
+      let audioFiles = new Set<string>();
+      try {
+        const configDir = await appConfigDir();
+        const audioDir = await join(configDir, "audio");
+        const entries = await readDir(audioDir);
+        audioFiles = new Set(entries.map((e) => e.name.toLowerCase()));
+      } catch (error) {
+        console.warn("Không thể quét thư mục audio:", error);
+      }
+
+      const wordsWithAudio = result.map((w) => {
+        const fileName = w.word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
+        return {
+          ...w,
+          hasAudio: audioFiles.has(`${fileName}.mp3`),
+        };
+      });
+
+      setReviewWords(wordsWithAudio);
       setCurrentIndex(0);
       setShowMeaning(false);
     } catch (error) {
@@ -65,9 +84,19 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (!currentWord) return;
 
-    if (e.key === " " && !showMeaning) {
+    if (e.key === " ") {
       e.preventDefault();
-      setShowMeaning(true);
+      if (!showMeaning) {
+        setShowMeaning(true);
+      }
+      return;
+    }
+
+    if (e.key.toLowerCase() === "a") {
+      e.preventDefault();
+      if (hasAudio) {
+        handlePronounce();
+      }
       return;
     }
 
@@ -148,12 +177,11 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
 
     const loadAudio = async () => {
       try {
-        const configDir = await appConfigDir();
-        const audioPath = await join(configDir, "audio", `${currentWord.word}.mp3`);
+        if (currentWord.hasAudio) {
+          const configDir = await appConfigDir();
+          const fileName = currentWord.word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
+          const audioPath = await join(configDir, "audio", `${fileName}.mp3`);
 
-        const fileExists = await exists(audioPath);
-        if (fileExists) {
-          // Sử dụng hàm read_binary_file có sẵn trong lib.rs để đọc trực tiếp dữ liệu
           const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
           const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
           const assetUrl = URL.createObjectURL(blob);
@@ -237,10 +265,10 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
           {currentWord.ipa && (
             <p className="review-ipa">
               <button
-                className={`pronounce-btn ${!hasAudio ? "disabled" : ""}`}
+                className={`pronounce-btn has-tooltip tooltip-center ${!hasAudio ? "disabled" : ""}`}
                 onClick={hasAudio ? handlePronounce : undefined}
                 type="button"
-                title={hasAudio ? "Phát âm" : "Không có file âm thanh"}
+                data-tooltip={hasAudio ? "Pronunciation (A)" : "Không có file âm thanh"}
               >
                 <span className="material-symbols-outlined">volume_up</span>
               </button>

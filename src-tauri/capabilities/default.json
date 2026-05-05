@@ -21,6 +21,13 @@
     {
       "identifier": "fs:allow-write-file",
       "allow": [{ "path": "$APPCONFIG/audio/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "$APPCONFIG/audio" },
+        { "path": "$APPCONFIG/audio/**" }
+      ]
     }
   ]
 }

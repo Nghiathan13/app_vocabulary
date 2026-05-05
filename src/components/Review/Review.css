@@ -104,6 +104,7 @@
 
 .pronounce-btn:hover {
   color: rgb(180, 180, 180);
+  scale: 1.1;
 }
 
 .pronounce-btn.disabled {
@@ -112,7 +113,8 @@
 }
 
 .pronounce-btn.disabled:hover {
-  color: rgb(120, 120, 120); /* Giữ nguyên màu khi bị disabled */
+  color: rgb(120, 120, 120);
+  /* Giữ nguyên màu khi bị disabled */
 }
 
 .pronounce-btn .material-symbols-outlined {

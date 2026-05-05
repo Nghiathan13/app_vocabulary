@@ -1,5 +1,7 @@
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { invoke } from "@tauri-apps/api/core";
+import { appConfigDir, join } from "@tauri-apps/api/path";
 import { WordWithId } from "../../../types";
 
 export type TableSortColumn =
@@ -75,7 +77,7 @@ export default function Table_Grid({
   const rowVirtualizer = useVirtualizer({
     count: words.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 24,
+    estimateSize: () => 35,
     overscan: 10,
     getItemKey: (index) => words[index].id,
   });
@@ -105,9 +107,27 @@ export default function Table_Grid({
     onCellActivate({ id, field });
   };
 
+  const playAudio = async (word: string) => {
+    try {
+      const configDir = await appConfigDir();
+      const fileName = word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
+      const audioPath = await join(configDir, "audio", `${fileName}.mp3`);
+
+      const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
+      const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
+      const assetUrl = URL.createObjectURL(blob);
+
+      const audio = new Audio(assetUrl);
+      audio.play();
+    } catch (error) {
+      console.error("Lỗi phát âm thanh trong bảng:", error);
+    }
+  };
+
   return (
     <div className="word-grid-main-wrapper">
       <div className="grid-header-row">
+        <div className="grid-header audio-th"></div>
         <div
           className="grid-header sortable-th"
           onClick={() => onSortToggle("word")}
@@ -195,6 +215,14 @@ export default function Table_Grid({
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
+                <div className="grid-cell audio-cell">
+                  <button
+                    className={`table-audio-btn ${w.hasAudio ? "active" : "disabled"}`}
+                    onClick={() => w.hasAudio && playAudio(w.word)}
+                  >
+                    <span className="material-symbols-outlined">volume_up</span>
+                  </button>
+                </div>
                 <div
                   className={getCellClassName(w.id, "word")}
                   onClick={() => handleCellClick(w.id, "word")}
