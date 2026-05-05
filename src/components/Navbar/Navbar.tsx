@@ -43,7 +43,7 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
           aria-label="Insights"
           title="Insights"
         >
-          <span className="material-symbols-outlined">analytics</span>
+          <span className="material-symbols-outlined">database</span>
         </button>
       </div>
 

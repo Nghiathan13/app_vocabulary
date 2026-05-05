@@ -12,4 +12,5 @@ export type Word = {
 
 export interface WordWithId extends Word {
   id: number;
+  hasAudio?: boolean;
 }

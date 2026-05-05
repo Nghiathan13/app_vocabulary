@@ -23,13 +23,13 @@ export default function Insights({ words, onRefresh }: InsightsProps) {
           className={`sub-nav-btn ${currentSubTab === "table" ? "active" : ""}`}
           onClick={() => setCurrentSubTab("table")}
         >
-          <span className="material-symbols-outlined">table_rows</span>
+          <span className="material-symbols-outlined">table</span>
         </button>
         <button
           className={`sub-nav-btn ${currentSubTab === "chart" ? "active" : ""}`}
           onClick={() => setCurrentSubTab("chart")}
         >
-          <span className="material-symbols-outlined">bar_chart</span>
+          <span className="material-symbols-outlined">insert_chart</span>
         </button>
       </div>
 

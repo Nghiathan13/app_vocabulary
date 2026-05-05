@@ -48,35 +48,83 @@ export default function Home({ onWordAdded }: HomeProps) {
   };
 
   const downloadAudio = async (wordToDownload: string) => {
-    // Chỉ tải cho từ đơn
-    if (wordToDownload.includes(" ")) return;
-
     try {
       const configDir = await appConfigDir();
       const audioDir = await join(configDir, "audio");
-      const filePath = await join(audioDir, `${wordToDownload}.mp3`);
+      
+      // Tên file: thay khoảng trắng và các ký tự đặc biệt (như /) bằng _
+      const fileName = wordToDownload.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_"); 
+      const filePath = await join(audioDir, `${fileName}.mp3`);
 
-      // Kiểm tra xem file đã tồn tại chưa
+      // Đã có file rồi thì thôi
       if (await exists(filePath)) return;
 
-      // Gọi API lấy link audio
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(wordToDownload)}`);
-      if (!response.ok) return;
+      // Lọc bỏ nội dung trong ngoặc đơn để API đọc chuẩn (ví dụ: "in charge (of st)" -> "in charge")
+      const cleanWord = wordToDownload.replace(/\s*\([^)]*\)/g, "").trim();
 
-      const data = await response.json();
-      const audioUrl = data[0]?.phonetics?.find((p: any) => p.audio && p.audio.includes("uk"))?.audio 
-                    || data[0]?.phonetics?.find((p: any) => p.audio)?.audio;
+      let audioBuffer: ArrayBuffer | null = null;
 
-      if (!audioUrl) return;
+      // ── Bước 1: Thử FreeDictionary (chỉ cho từ đơn sau khi đã lọc ngoặc) ──
+      if (!cleanWord.includes(" ")) {
+        try {
+          const response = await fetch(
+            `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(cleanWord)}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            const audioUrl =
+              data[0]?.phonetics?.find((p: any) => p.audio?.includes("uk"))?.audio ||
+              data[0]?.phonetics?.find((p: any) => p.audio)?.audio;
 
-      // Tải và lưu file
-      const audioResponse = await fetch(audioUrl);
-      const buffer = await audioResponse.arrayBuffer();
-      await writeFile(filePath, new Uint8Array(buffer));
-      
-      console.log(`Đã tải âm thanh cho từ: ${wordToDownload}`);
+            if (audioUrl) {
+              const audioResponse = await fetch(audioUrl);
+              if (audioResponse.ok) {
+                audioBuffer = await audioResponse.arrayBuffer();
+              }
+            }
+          }
+        } catch {
+          // Fallback bên dưới
+        }
+      }
+
+      // ── Bước 2: Fallback VoiceRSS ──
+      if (!audioBuffer) {
+        const VOICERSS_KEY = import.meta.env.VITE_VOICERSS_KEY;
+        if (!VOICERSS_KEY) {
+          console.error("Thiếu VOICERSS_KEY trong file .env");
+          return;
+        }
+
+        const params = new URLSearchParams({
+          key: VOICERSS_KEY,
+          hl: "en-gb",
+          src: cleanWord, // Dùng cleanWord đã lọc ngoặc
+          c: "MP3",
+          f: "44khz_16bit_stereo",
+        });
+
+        const voiceResponse = await fetch(
+          `https://api.voicerss.org/?${params.toString()}`
+        );
+
+        const contentType = voiceResponse.headers.get("content-type") || "";
+        if (voiceResponse.ok && contentType.includes("audio")) {
+          audioBuffer = await voiceResponse.arrayBuffer();
+        } else {
+          const errText = await voiceResponse.text();
+          console.error("VoiceRSS error:", errText);
+          return;
+        }
+      }
+
+      // ── Bước 3: Lưu file ──
+      if (audioBuffer) {
+        await writeFile(filePath, new Uint8Array(audioBuffer));
+        console.log(`Đã tải audio: ${fileName}.mp3`);
+      }
     } catch (error) {
-      console.error(`Lỗi khi tải audio cho ${wordToDownload}:`, error);
+      console.error(`Lỗi khi tải audio cho "${wordToDownload}":`, error);
     }
   };
 
