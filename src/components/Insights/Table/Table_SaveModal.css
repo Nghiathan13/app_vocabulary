@@ -1,91 +1,99 @@
 .save-modal {
-    width: min(600px, calc(100vw - 32px));
+  width: min(600px, calc(100vw - 32px));
 }
 
 .save-changes-table-wrapper {
-    border: 1px solid rgb(60, 60, 60);
-    border-radius: 12px;
-    overflow: hidden;
-    background: transparent;
+  background: transparent;
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .save-changes-header {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr 1.5fr;
-    padding: 8px 12px;
-    background: rgb(30, 30, 30, 0.5);
-    border-bottom: 1px solid rgb(60, 60, 60);
-    font-weight: bold;
-    color: rgb(180, 180, 180);
-    text-align: left;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.5fr;
+  padding: 8px 12px;
+
+  background: rgb(30, 30, 30, 0.5);
+  border-bottom: 1px solid rgb(60, 60, 60);
+
+  font-weight: bold;
+  text-align: left;
+  color: rgb(180, 180, 180);
 }
 
 .save-changes-body {
-    max-height: 400px;
-    overflow-y: auto;
+  max-height: 400px;
+
+  overflow-y: auto;
 }
 
 .save-changes-row {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr 1.5fr;
-    padding: 8px 12px;
-    background: transparent;
-    border-bottom: 1px solid rgb(40, 40, 40);
-    color: rgb(150, 150, 150);
-    text-align: left;
-    font-size: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.5fr;
+  padding: 8px 12px;
+
+  background: transparent;
+  border-bottom: 1px solid rgb(40, 40, 40);
+
+  font-size: 14px;
+  text-align: left;
+  color: rgb(150, 150, 150);
 }
 
 .save-changes-row:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .save-col-word {
-    font-weight: bold;
-    color: rgb(200, 200, 200);
+  font-weight: bold;
+  color: rgb(200, 200, 200);
 }
 
 .save-col-old {
-    color: rgb(240, 100, 100, 0.8);
-    word-break: break-word;
+  word-break: break-word;
+  color: rgb(240, 100, 100, 0.8);
 }
 
 .save-col-new {
-    color: rgb(100, 240, 100, 0.8);
-    word-break: break-word;
+  word-break: break-word;
+  color: rgb(100, 240, 100, 0.8);
 }
 
 .save-changes-body::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 
 .save-changes-body::-webkit-scrollbar-thumb {
-    background: rgb(60, 60, 60);
-    border-radius: 3px;
+  background: rgb(60, 60, 60);
+  border-radius: 3px;
 }
 
 /* -- Button Save -- */
 .save-confirm-btn {
-    width: 100%;
-    padding: 12px 0;
+  width: 100%;
+  padding: 12px 0;
 
-    background-color: transparent;
-    border: 1px solid rgb(60, 60, 60);
-    border-radius: 12px;
+  background-color: transparent;
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 12px;
 
-    font-size: 16px;
-    color: rgb(60, 60, 60);
+  font-size: 16px;
+  color: rgb(60, 60, 60);
 
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .save-confirm-btn:not(:disabled):hover {
-    color: rgb(180, 180, 180);
-    border: 1px solid rgb(180, 180, 180);
+  border: 1px solid rgb(180, 180, 180);
+
+  color: rgb(180, 180, 180);
 }
 
 .save-confirm-btn:disabled {
-    border-color: rgb(60, 60, 60);
-    color: rgb(60, 60, 60);
-    cursor: not-allowed;
+  border-color: rgb(60, 60, 60);
+
+  color: rgb(60, 60, 60);
+
+  cursor: not-allowed;
 }

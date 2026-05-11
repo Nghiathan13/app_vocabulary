@@ -1,4 +1,7 @@
+// -- React --
 import { useMemo } from "react";
+
+// -- Library --
 import {
   BarChart,
   Bar,
@@ -8,7 +11,11 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
+
+// -- Types & Utils --
 import { WordWithId } from "../../../types";
+
+// -- Style --
 import "./Chart.css";
 
 interface ChartProps {
@@ -16,6 +23,7 @@ interface ChartProps {
 }
 
 export default function Chart({ words }: ChartProps) {
+  // === DERIVED STATE ===
   const chartData = useMemo(() => {
     const counts: Record<number, number> = {};
     for (const word of words) {
@@ -31,6 +39,7 @@ export default function Chart({ words }: ChartProps) {
       .sort((a, b) => a.rawReps - b.rawReps);
   }, [words]);
 
+  // === RENDER ===
   return (
     <div className="chart-wrapper">
       <div className="chart-container">

@@ -1,198 +1,235 @@
 /* === Grid Table === */
 .word-grid-main-wrapper {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-height: calc(100vh - 170px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100vh - 170px);
 }
 
 .word-grid-container {
-    display: flex;
-    flex: 1;
-    width: 100%;
+  display: flex;
+  flex: 1;
+  width: 100%;
 
-    overflow-y: auto;
-    scrollbar-gutter: stable;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 
-    font-size: 16px;
-    text-align: left;
-    color: rgb(120, 120, 120);
+  font-size: 16px;
+  text-align: left;
+  color: rgb(120, 120, 120);
 }
 
 .word-grid-container::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 
 .word-grid-container::-webkit-scrollbar-thumb {
-    background: rgb(60, 60, 60);
-    border-radius: 1px;
+  background: rgb(60, 60, 60);
+  border-radius: 1px;
 }
 
 .word-grid-container::-webkit-scrollbar-thumb:hover {
-    background: rgb(90, 90, 90);
+  background: rgb(90, 90, 90);
 }
 
 .grid-header-row {
-    z-index: 10;
+  z-index: 10;
 
-    display: grid;
-    grid-template-columns: 50px minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 15%) minmax(150px, 30%) 70px 130px 130px;
-    padding-right: 6px;
+  display: grid;
+  grid-template-columns:
+    50px minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 15%)
+    minmax(150px, 30%) 70px 130px 130px;
+  padding-right: 6px;
 
-    background-color: rgb(15, 15, 15);
-    border-top: 1px solid rgb(60, 60, 60);
-    border-bottom: 1px solid rgb(60, 60, 60);
+  background-color: rgb(15, 15, 15);
+  border-top: 1px solid rgb(60, 60, 60);
+  border-bottom: 1px solid rgb(60, 60, 60);
 
-    text-align: left;
+  text-align: left;
 }
 
 .word-grid-inner {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 .word-grid-row {
-    position: absolute;
-    top: 0;
-    left: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
 
-    display: grid;
-    grid-template-columns: 50px minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 15%) minmax(150px, 30%) 70px 130px 130px;
-    align-items: center;
-    width: 100%;
+  display: grid;
+  grid-template-columns:
+    50px minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 15%)
+    minmax(150px, 30%) 70px 130px 130px;
+  align-items: center;
+  width: 100%;
 
-    border-bottom: 1px solid rgb(30, 30, 30);
+  border-bottom: 1px solid rgb(30, 30, 30);
 }
 
 .word-grid-row:hover {
-    background-color: rgb(30, 30, 30, 0.5);
-    z-index: 50;
+  z-index: 50;
+
+  background-color: rgb(30, 30, 30, 0.5);
 }
 
 .grid-header {
-    padding: 4px 0;
+  padding: 4px 0;
 
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .sortable-th {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .sortable-th:hover {
-    color: rgb(210, 210, 210);
+  color: rgb(210, 210, 210);
 }
 
 .sort-icon {
-    margin-left: 2px;
+  margin-left: 2px;
 
-    font-size: 20px;
-    vertical-align: middle;
+  font-size: 20px;
+  vertical-align: middle;
 
-    user-select: none;
+  user-select: none;
 }
 
 .grid-cell {
-    padding: 6px 0;
+  padding: 6px 0;
 
-    word-break: break-word;
+  word-break: break-word;
 }
 
 .word-grid-container.is-editing .grid-cell {
-    cursor: text;
+  cursor: text;
 }
 
 .grid-cell.active-cell,
 .grid-cell.modified-cell {
-    color: rgb(210, 210, 210);
+  color: rgb(210, 210, 210);
 }
 
 /* === Input Grid Table === */
 .table-input {
-    display: block;
-    width: 100%;
-    padding: 0;
-    margin: 0;
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
 
-    background: transparent;
-    border: none;
-    outline: none;
+  background: transparent;
+  border: none;
+  outline: none;
 
-    font-family: inherit;
-    font-size: inherit;
-    color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 
-    resize: none;
+  resize: none;
 }
 
 textarea.table-input {
-    field-sizing: content;
+  field-sizing: content;
 }
 
 input.table-input {
-    height: 1lh;
+  height: 1lh;
 }
 
 .table-input::-webkit-datetime-edit-fields-wrapper,
 .table-input::-webkit-datetime-edit-month-field,
 .table-input::-webkit-datetime-edit-day-field,
 .table-input::-webkit-datetime-edit-year-field {
-    padding: 0;
+  padding: 0;
 }
 
 .table-input:focus {
-    color: #ffffff;
+  color: #ffffff;
 }
 
 .table-input.modified {
-    color: #ffffff;
+  color: #ffffff;
 }
 
 .table-input::-webkit-calendar-picker-indicator {
-    display: none;
+  display: none;
 }
 
 /* === Audio Column === */
 .audio-cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .table-audio-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    position: relative;
-    /* Tạo context cho tooltip */
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+
+  background: none;
+  border: none;
+
+  transition: all 0.2s ease;
 }
 
 .table-audio-btn:hover {
-    z-index: 100;
-    /* Nổi lên trên cùng khi có tooltip */
+  z-index: 100;
 }
 
 .table-audio-btn span {
-    font-size: 20px;
+  font-size: 20px;
 }
 
 .table-audio-btn.active {
-    color: rgb(120, 120, 120);
-    cursor: pointer;
+  color: rgb(120, 120, 120);
+
+  cursor: pointer;
 }
 
 .table-audio-btn.active:hover {
-    color: rgb(180, 180, 180);
-    transform: scale(1.1);
+  color: rgb(180, 180, 180);
+
+  transform: scale(1.1);
 }
 
 .table-audio-btn.disabled {
-    color: rgb(60, 60, 60);
-    opacity: 0.3;
-    cursor: not-allowed;
+  opacity: 0.3;
+
+  color: rgb(60, 60, 60);
+
+  cursor: not-allowed;
+}
+
+/* === Delete Styles === */
+.table-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+
+  background: none;
+  border: none;
+
+  color: rgb(120, 120, 120);
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table-delete-btn:hover {
+  color: rgb(255, 69, 58);
+
+  transform: scale(1.1);
+}
+
+.table-delete-btn span {
+  font-size: 20px;
 }

@@ -1,8 +1,15 @@
+// -- React --
 import { useRef } from "react";
+
+// -- Library --
 import { useVirtualizer } from "@tanstack/react-virtual";
+
+// -- Tauri --
 import { invoke } from "@tauri-apps/api/core";
-import { appConfigDir, join } from "@tauri-apps/api/path";
+
+// -- Types & Utils --
 import { WordWithId } from "../../../types";
+import { formatDisplayDate, getAudioPath } from "../../../utils";
 
 export type TableSortColumn =
   | "word"
@@ -40,15 +47,8 @@ interface TableGridProps {
   ) => void;
   onCellActivate: (cell: TableActiveCell) => void;
   onCellDeactivate: () => void;
+  onDelete: (id: number, word: string) => void;
 }
-
-const formatDate = (value: string | null) => {
-  if (!value) {
-    return "-";
-  }
-
-  return value.split("-").slice(1).concat(value.split("-")[0]).join("/");
-};
 
 const moveTextareaCaretToEnd = (
   event: React.FocusEvent<HTMLTextAreaElement>,
@@ -71,9 +71,12 @@ export default function Table_Grid({
   onInputChange,
   onCellActivate,
   onCellDeactivate,
+  onDelete,
 }: TableGridProps) {
+  // === REFS ===
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // === STATE ===
   const rowVirtualizer = useVirtualizer({
     count: words.length,
     getScrollElement: () => parentRef.current,
@@ -82,6 +85,7 @@ export default function Table_Grid({
     getItemKey: (index) => words[index].id,
   });
 
+  // === FUNCTIONS ===
   const isActiveCell = (id: number, field: TableEditableField) =>
     activeCell?.id === id && activeCell.field === field;
 
@@ -99,19 +103,9 @@ export default function Table_Grid({
     return classes.join(" ");
   };
 
-  const handleCellClick = (id: number, field: TableEditableField) => {
-    if (!isEditing || isActiveCell(id, field)) {
-      return;
-    }
-
-    onCellActivate({ id, field });
-  };
-
   const playAudio = async (word: string) => {
     try {
-      const configDir = await appConfigDir();
-      const fileName = word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
-      const audioPath = await join(configDir, "audio", `${fileName}.mp3`);
+      const audioPath = await getAudioPath(word);
 
       const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
       const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
@@ -124,8 +118,18 @@ export default function Table_Grid({
     }
   };
 
+  // === HANDLERS ===
+  const handleCellClick = (id: number, field: TableEditableField) => {
+    if (!isEditing || isActiveCell(id, field)) {
+      return;
+    }
+
+    onCellActivate({ id, field });
+  };
+
+  // === RENDER ===
   return (
-    <div className="word-grid-main-wrapper">
+    <div className={`word-grid-main-wrapper ${isEditing ? "is-editing" : ""}`}>
       <div className="grid-header-row">
         <div className="grid-header audio-th"></div>
         <div
@@ -216,12 +220,21 @@ export default function Table_Grid({
                 }}
               >
                 <div className="grid-cell audio-cell">
-                  <button
-                    className={`table-audio-btn ${w.hasAudio ? "active" : "disabled"}`}
-                    onClick={() => w.hasAudio && playAudio(w.word)}
-                  >
-                    <span className="material-symbols-outlined">volume_up</span>
-                  </button>
+                  {isEditing ? (
+                    <button
+                      className="table-delete-btn"
+                      onClick={() => onDelete(w.id, w.word)}
+                    >
+                      <span className="material-symbols-outlined">delete</span>
+                    </button>
+                  ) : (
+                    <button
+                      className={`table-audio-btn ${w.hasAudio ? "active" : "disabled"}`}
+                      onClick={() => w.hasAudio && playAudio(w.word)}
+                    >
+                      <span className="material-symbols-outlined">volume_up</span>
+                    </button>
+                  )}
                 </div>
                 <div
                   className={getCellClassName(w.id, "word")}
@@ -342,7 +355,7 @@ export default function Table_Grid({
                       onBlur={onCellDeactivate}
                     />
                   ) : (
-                    formatDate(w.last_review)
+                    formatDisplayDate(w.last_review)
                   )}
                 </div>
 
@@ -362,7 +375,7 @@ export default function Table_Grid({
                       onBlur={onCellDeactivate}
                     />
                   ) : (
-                    formatDate(w.next_review)
+                    formatDisplayDate(w.next_review)
                   )}
                 </div>
               </div>

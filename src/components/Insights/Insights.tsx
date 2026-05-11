@@ -1,7 +1,14 @@
+// -- React --
 import { useState } from "react";
-import { WordWithId } from "../../types";
+
+// -- Components --
 import Table from "./Table/Table";
 import Chart from "./Chart/Chart";
+
+// -- Types & Utils --
+import { WordWithId } from "../../types";
+
+// -- Style --
 import "./Insights.css";
 
 type SubTab = "table" | "chart";
@@ -9,12 +16,18 @@ type SubTab = "table" | "chart";
 interface InsightsProps {
   words: WordWithId[];
   onRefresh: () => void;
+  onWordDeleted: (wordId: number) => void;
 }
 
-export default function Insights({ words, onRefresh }: InsightsProps) {
+export default function Insights({
+  words,
+  onRefresh,
+  onWordDeleted,
+}: InsightsProps) {
   // === STATE ===
   const [currentSubTab, setCurrentSubTab] = useState<SubTab>("table");
 
+  // === RENDER ===
   return (
     <div className="insights-container">
       {/* === SUB NAVIGATION === */}
@@ -36,7 +49,11 @@ export default function Insights({ words, onRefresh }: InsightsProps) {
       {/* === CONTENT === */}
       <div className="insights-content">
         {currentSubTab === "table" ? (
-          <Table words={words} onRefresh={onRefresh} />
+          <Table
+            words={words}
+            onRefresh={onRefresh}
+            onWordDeleted={onWordDeleted}
+          />
         ) : (
           <Chart words={words} />
         )}

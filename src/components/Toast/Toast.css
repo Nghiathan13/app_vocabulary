@@ -1,0 +1,41 @@
+.toast-container {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 220px;
+  max-width: 320px;
+  padding: 10px 20px;
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 8px;
+  background: rgb(20, 20, 20);
+  font-size: 14px;
+  color: rgb(210, 210, 210);
+  animation: toast-in 0.25s ease-out;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.toast-success {
+  border-color: rgb(56, 142, 60);
+}
+
+.toast-error {
+  border-color: rgb(198, 40, 40);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

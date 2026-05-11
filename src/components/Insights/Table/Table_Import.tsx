@@ -1,3 +1,4 @@
+// -- Types & Utils --
 import { ImportPreviewFile } from "./_tableImport";
 
 interface ImportModalProps {
@@ -23,6 +24,7 @@ export default function ImportModal({
   onPickFiles,
   onRemoveFile,
 }: ImportModalProps) {
+  // === RENDER ===
   if (!isOpen) {
     return null;
   }

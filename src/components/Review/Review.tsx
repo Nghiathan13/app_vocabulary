@@ -1,17 +1,18 @@
+// -- React --
 import { useState, useEffect, useRef, useCallback } from "react";
+
+// -- Tauri --
 import Database from "@tauri-apps/plugin-sql";
 import { readDir } from "@tauri-apps/plugin-fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
-import { WordWithId } from "../../types";
-import "./Review.css";
 
-const getLocalDateString = (daysToAdd = 0) => {
-  const date = new Date();
-  date.setDate(date.getDate() + daysToAdd);
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffset).toISOString().split("T")[0];
-};
+// -- Types & Utils --
+import { WordWithId } from "../../types";
+import { getAudioFileName, getAudioPath, getLocalDateString } from "../../utils";
+
+// -- Style --
+import "./Review.css";
 
 interface ReviewProps {
   onReviewUpdate?: (word: string, updates: Partial<WordWithId>) => void;
@@ -56,10 +57,10 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
       }
 
       const wordsWithAudio = result.map((w) => {
-        const fileName = w.word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
+        const fileName = getAudioFileName(w.word);
         return {
           ...w,
-          hasAudio: audioFiles.has(`${fileName}.mp3`),
+          hasAudio: audioFiles.has(fileName.toLowerCase()),
         };
       });
 
@@ -178,9 +179,7 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
     const loadAudio = async () => {
       try {
         if (currentWord.hasAudio) {
-          const configDir = await appConfigDir();
-          const fileName = currentWord.word.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_");
-          const audioPath = await join(configDir, "audio", `${fileName}.mp3`);
+          const audioPath = await getAudioPath(currentWord.word);
 
           const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
           const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
@@ -195,7 +194,7 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
           setHasAudio(false);
         }
       } catch (error) {
-        console.error("Lỗi khi load audio cục bộ:", error);
+        console.error("Lỗi khi khi load audio cục bộ:", error);
         audioRef.current = null;
         setHasAudio(false);
       }
