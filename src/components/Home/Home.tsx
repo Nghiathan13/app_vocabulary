@@ -1,9 +1,14 @@
+// -- React --
 import { useState, useEffect, useRef } from "react";
-import Database from "@tauri-apps/plugin-sql";
-import { writeFile, exists } from "@tauri-apps/plugin-fs";
-import { appConfigDir, join } from "@tauri-apps/api/path";
-import { WordType } from "../../types";
+
+// -- Types & Utils --
+import { WordType, WordWithId } from "../../types";
+import { downloadAudio } from "../../services/audio";
+import { insertWord } from "../../services/words";
+
+// -- Style --
 import "./Home.css";
+import { useToast } from "../Toast/ToastProvider";
 
 const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "noun", label: "noun" },
@@ -13,22 +18,22 @@ const WORD_TYPES: { value: WordType; label: string }[] = [
 ];
 
 interface HomeProps {
-  onWordAdded?: () => void;
+  onWordAdded?: (newWord: WordWithId) => void;
+  onWordAudioReady?: (wordId: number) => void;
 }
 
-export default function Home({ onWordAdded }: HomeProps) {
+export default function Home({ onWordAdded, onWordAudioReady }: HomeProps) {
   // === STATE ===
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
   const [type, setType] = useState<string>("");
   const [meanings, setMeanings] = useState<Record<string, string>>({});
   const [isCustomType, setIsCustomType] = useState(false);
-  const wordInputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // === EFFECTS ===
-  useEffect(() => {
-    wordInputRef.current?.focus();
-  }, []);
+  // === REFS ===
+  const wordInputRef = useRef<HTMLInputElement>(null);
+  const { showToast } = useToast();
 
   // === DERIVED STATE ===
   const activeMeanings =
@@ -47,109 +52,46 @@ export default function Home({ onWordAdded }: HomeProps) {
     setWord(filteredValue);
   };
 
-  const downloadAudio = async (wordToDownload: string) => {
-    try {
-      const configDir = await appConfigDir();
-      const audioDir = await join(configDir, "audio");
-      
-      // Tên file: thay khoảng trắng và các ký tự đặc biệt (như /) bằng _
-      const fileName = wordToDownload.toLowerCase().replace(/[\s/\\?%*:|"<>+]+/g, "_"); 
-      const filePath = await join(audioDir, `${fileName}.mp3`);
-
-      // Đã có file rồi thì thôi
-      if (await exists(filePath)) return;
-
-      // Lọc bỏ nội dung trong ngoặc đơn để API đọc chuẩn (ví dụ: "in charge (of st)" -> "in charge")
-      const cleanWord = wordToDownload.replace(/\s*\([^)]*\)/g, "").trim();
-
-      let audioBuffer: ArrayBuffer | null = null;
-
-      // ── Bước 1: Thử FreeDictionary (chỉ cho từ đơn sau khi đã lọc ngoặc) ──
-      if (!cleanWord.includes(" ")) {
-        try {
-          const response = await fetch(
-            `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(cleanWord)}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            const audioUrl =
-              data[0]?.phonetics?.find((p: any) => p.audio?.includes("uk"))?.audio ||
-              data[0]?.phonetics?.find((p: any) => p.audio)?.audio;
-
-            if (audioUrl) {
-              const audioResponse = await fetch(audioUrl);
-              if (audioResponse.ok) {
-                audioBuffer = await audioResponse.arrayBuffer();
-              }
-            }
-          }
-        } catch {
-          // Fallback bên dưới
-        }
-      }
-
-      // ── Bước 2: Fallback VoiceRSS ──
-      if (!audioBuffer) {
-        const VOICERSS_KEY = import.meta.env.VITE_VOICERSS_KEY;
-        if (!VOICERSS_KEY) {
-          console.error("Thiếu VOICERSS_KEY trong file .env");
-          return;
-        }
-
-        const params = new URLSearchParams({
-          key: VOICERSS_KEY,
-          hl: "en-gb",
-          src: cleanWord, // Dùng cleanWord đã lọc ngoặc
-          c: "MP3",
-          f: "44khz_16bit_stereo",
-        });
-
-        const voiceResponse = await fetch(
-          `https://api.voicerss.org/?${params.toString()}`
-        );
-
-        const contentType = voiceResponse.headers.get("content-type") || "";
-        if (voiceResponse.ok && contentType.includes("audio")) {
-          audioBuffer = await voiceResponse.arrayBuffer();
-        } else {
-          const errText = await voiceResponse.text();
-          console.error("VoiceRSS error:", errText);
-          return;
-        }
-      }
-
-      // ── Bước 3: Lưu file ──
-      if (audioBuffer) {
-        await writeFile(filePath, new Uint8Array(audioBuffer));
-        console.log(`Đã tải audio: ${fileName}.mp3`);
-      }
-    } catch (error) {
-      console.error(`Lỗi khi tải audio cho "${wordToDownload}":`, error);
-    }
-  };
-
   const handleAdd = async () => {
-    if (!isFormValid) return;
-    try {
-      const db = await Database.load("sqlite:vocabulary.db");
+    if (!isFormValid || isSubmitting) return;
+    setIsSubmitting(true);
 
+    try {
+      const normalizedWord = word.trim().toLowerCase();
+      const normalizedType = type.trim().toLowerCase();
+      const normalizedIpa = ipa.trim();
       const finalMeaning = activeMeanings
         .map((v) => v.trim().toLowerCase())
         .join(" / ");
+      const newWord = await insertWord({
+        word: normalizedWord,
+        ipa: normalizedIpa,
+        type: normalizedType,
+        meaning: finalMeaning,
+      });
 
-      await db.execute(
-        `INSERT INTO words (word, ipa, type, meaning, reps, last_review, next_review) 
-         VALUES ($1, $2, $3, $4, 0, NULL, date('now', 'localtime', '+1 day'))`,
-        [
-          word.trim().toLowerCase(),
-          ipa.trim(),
-          type.trim().toLowerCase(),
-          finalMeaning,
-        ],
-      );
+      onWordAdded?.(newWord);
+      showToast({
+        message: `Added "${normalizedWord}"`,
+        type: "success",
+      });
 
-      // Tải audio ngầm (không đợi)
-      downloadAudio(word.trim().toLowerCase());
+      void (async () => {
+        const hasAudio = await downloadAudio(normalizedWord);
+        if (hasAudio) {
+          onWordAudioReady?.(newWord.id);
+          showToast({
+            message: `Audio ready for "${normalizedWord}"`,
+            type: "success",
+          });
+          return;
+        }
+
+        showToast({
+          message: `Failed to download audio for "${normalizedWord}"`,
+          type: "error",
+        });
+      })();
 
       setWord("");
       setIpa("");
@@ -157,12 +99,13 @@ export default function Home({ onWordAdded }: HomeProps) {
       setMeanings({});
       setIsCustomType(false);
       wordInputRef.current?.focus();
-      
-      if (onWordAdded) {
-        onWordAdded();
-      }
     } catch (error) {
-      console.error("Lỗi khi thêm từ:", error);
+      showToast({
+        message: 'Failed to add word',
+        type: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -190,6 +133,12 @@ export default function Home({ onWordAdded }: HomeProps) {
     setType(currentTypes.join(" / "));
   };
 
+  // === EFFECTS ===
+  useEffect(() => {
+    wordInputRef.current?.focus();
+  }, []);
+
+  // === RENDER ===
   return (
     <div className="form-wrapper">
       {/* === HEADER === */}
@@ -234,6 +183,7 @@ export default function Home({ onWordAdded }: HomeProps) {
             />
           </div>
         </div>
+
         <div className={`field${type || isCustomType ? " has-value" : ""}`}>
           <label className="field-label" htmlFor="type">
             TYPE
@@ -319,7 +269,11 @@ export default function Home({ onWordAdded }: HomeProps) {
 
       {/* === ACTION === */}
       <div className="form-actions">
-        <button className="btn-add" onClick={handleAdd} disabled={!isFormValid}>
+        <button
+          className="btn-add"
+          onClick={handleAdd}
+          disabled={!isFormValid || isSubmitting}
+        >
           Add
         </button>
       </div>

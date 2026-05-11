@@ -24,6 +24,7 @@
 
 .table-actions-center {
   width: 100%;
+
   justify-self: center;
 }
 
@@ -132,7 +133,9 @@
   color: rgb(210, 210, 210);
 
   pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
   content: attr(data-tooltip);
 }
 
@@ -143,11 +146,13 @@
 
 .tooltip-left::after {
   left: 0;
+
   transform: translateY(0);
 }
 
 .tooltip-center::after {
   left: 50%;
+
   transform: translateX(-50%);
 }
 
@@ -157,6 +162,7 @@
 
 .tooltip-right::after {
   right: 0;
+
   transform: translateY(0);
 }
 

@@ -10,6 +10,11 @@ fn read_binary_file(path: String) -> Result<Vec<u8>, String> {
     std::fs::read(path).map_err(|error| error.to_string())
 }
 
+#[tauri::command]
+fn remove_file(path: String) -> Result<(), String> {
+    std::fs::remove_file(path).map_err(|error| error.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let migrations = vec![
@@ -32,7 +37,8 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             write_binary_file,
-            read_binary_file
+            read_binary_file,
+            remove_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

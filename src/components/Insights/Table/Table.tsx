@@ -1,17 +1,28 @@
+// -- React --
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+// -- Tauri --
 import Database from "@tauri-apps/plugin-sql";
-import { WordWithId } from "../../../types";
+import { invoke } from "@tauri-apps/api/core";
+
+// -- Components --
 import Table_Actions from "./Table_Actions";
 import Table_Grid, {
   TableActiveCell,
   TableEditableField,
   TableSortColumn,
 } from "./Table_Grid";
+
+// -- Types & Utils --
+import { WordWithId } from "../../../types";
+import { getAudioPath } from "../../../utils";
 import {
   getSearchMatchColumn,
   getSearchPriority,
   type SearchMatchColumn,
 } from "./_tableSearch";
+
+// -- Style --
 import "./Table.css";
 
 const SEARCH_DELAY_MS = 100;
@@ -19,6 +30,7 @@ const SEARCH_DELAY_MS = 100;
 interface TableProps {
   words: WordWithId[];
   onRefresh: () => void;
+  onWordDeleted: (wordId: number) => void;
 }
 
 const normalizeComparableValue = (
@@ -32,7 +44,11 @@ const normalizeComparableValue = (
   return value || null;
 };
 
-export default function Table({ words, onRefresh }: TableProps) {
+export default function Table({
+  words,
+  onRefresh,
+  onWordDeleted,
+}: TableProps) {
   // === STATE ===
   const [isEditing, setIsEditing] = useState(false);
   const [editedWords, setEditedWords] = useState<WordWithId[]>([]);
@@ -181,6 +197,37 @@ export default function Table({ words, onRefresh }: TableProps) {
     [words],
   );
 
+  const handleDelete = useCallback(
+    async (id: number, word: string) => {
+      try {
+        const db = await Database.load("sqlite:vocabulary.db");
+
+        // 1. Delete from Database
+        await db.execute("DELETE FROM words WHERE rowid = $1", [id]);
+
+        // 2. Delete Audio File
+        try {
+          const audioPath = await getAudioPath(word);
+          await invoke("remove_file", { path: audioPath });
+        } catch (fileError) {
+          // Ignore if file doesn't exist or can't be deleted
+          console.warn("Could not delete audio file:", fileError);
+        }
+
+        // 3. Update global state
+        onWordDeleted(id);
+
+        // If we are editing, update the editedWords state too
+        if (isEditing) {
+          setEditedWords((prev) => prev.filter((w) => w.id !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting word:", error);
+      }
+    },
+    [isEditing, onWordDeleted],
+  );
+
   // -- Search --
   const handleSortToggle = useCallback(
     (col: TableSortColumn) => {
@@ -213,6 +260,7 @@ export default function Table({ words, onRefresh }: TableProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isEditing, handleEditClick]);
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearchInput(searchInput.trim());
@@ -221,6 +269,7 @@ export default function Table({ words, onRefresh }: TableProps) {
     return () => window.clearTimeout(timeoutId);
   }, [searchInput]);
 
+  // === RENDER ===
   return (
     <div className="table-wrapper">
       <Table_Actions
@@ -250,6 +299,7 @@ export default function Table({ words, onRefresh }: TableProps) {
         onInputChange={handleInputChange}
         onCellActivate={setActiveCell}
         onCellDeactivate={() => setActiveCell(null)}
+        onDelete={handleDelete}
       />
     </div>
   );

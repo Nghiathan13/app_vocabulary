@@ -1,4 +1,7 @@
+// -- Types & Utils --
 import { Tab } from "../../types";
+
+// -- Style --
 import logo from "../../assets/logo.svg";
 import "./Navbar.css";
 
@@ -8,6 +11,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
+  // === RENDER ===
   return (
     <nav className="navbar">
       {/* === LEFT === */}

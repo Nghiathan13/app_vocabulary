@@ -1,3 +1,4 @@
+// -- Style --
 import "./Table_SaveModal.css";
 
 export interface WordChange {
@@ -20,6 +21,7 @@ export default function SaveModal({
   onSave,
   changes,
 }: SaveModalProps) {
+  // === RENDER ===
   if (!isOpen) {
     return null;
   }

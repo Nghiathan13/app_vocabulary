@@ -1,11 +1,20 @@
+// -- React --
 import { useEffect, useMemo, useState } from "react";
+
+// -- Library --
+import * as XLSX from "xlsx";
+
+// -- Tauri --
 import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import Database from "@tauri-apps/plugin-sql";
-import * as XLSX from "xlsx";
-import { WordWithId } from "../../../types";
+
+// -- Components --
 import ImportModal from "./Table_Import";
 import SaveModal, { WordChange } from "./Table_SaveModal";
+
+// -- Types & Utils --
+import { WordWithId } from "../../../types";
 import { buildImportPreviewFiles, ImportPreviewFile } from "./_tableImport";
 import { TableEditableField } from "./Table_Grid";
 
@@ -266,9 +275,9 @@ export default function Table_Actions({
     };
   }, [importPaths, isImportModalOpen, existingWords]);
 
+  // === RENDER ===
   return (
     <>
-      {/* === TABLE ACTION === */}
       <div className="table-actions">
         <div className="table-actions-side table-actions-left">
           {!isEditing ? (
@@ -352,7 +361,6 @@ export default function Table_Actions({
         </div>
       </div>
 
-      {/* === IMPORT MODAL === */}
       <ImportModal
         isOpen={isImportModalOpen}
         files={importPreviewFiles}
@@ -365,7 +373,6 @@ export default function Table_Actions({
         onRemoveFile={handleRemoveImportFile}
       />
 
-      {/* === SAVE MODAL === */}
       <SaveModal
         isOpen={isSaveModalOpen}
         onClose={() => setIsSaveModalOpen(false)}
