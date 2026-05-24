@@ -21,6 +21,11 @@ import {
   getAudioPath,
   getLocalDateString,
 } from "../../shared/lib/utils";
+import { getSpacedRepetitionUpdate } from "../../features/review/lib/spacedRepetition";
+import {
+  compareTypingAnswer,
+  getTypingAnswer,
+} from "../../features/review/lib/typing";
 
 // -- Style --
 import "./Review.css";
@@ -45,14 +50,6 @@ const getInitialReviewMode = (): ReviewMode => {
   return localStorage.getItem(REVIEW_MODE_STORAGE_KEY) === "typing"
     ? "typing"
     : "flashcard";
-};
-
-const normalizeTypingAnswer = (value: string) => {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
-};
-
-const getTypingAnswer = (word: string) => {
-  return word.replace(/\s*\([^)]*\)/g, "").trim().replace(/\s+/g, " ");
 };
 
 const splitTypeLabels = (type: string | null) => {
@@ -285,9 +282,7 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
 
     const submittedAnswer = typedAnswer.trim();
     setTypingResult({
-      isCorrect:
-        normalizeTypingAnswer(submittedAnswer) ===
-        normalizeTypingAnswer(getTypingAnswer(currentWord.word)),
+      isCorrect: compareTypingAnswer(currentWord.word, submittedAnswer),
       submittedAnswer,
     });
   };
@@ -297,36 +292,10 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
       return;
     }
 
-    const newReps = isForgot ? 0 : currentWord.reps + 1;
-
-    let daysToAdd = 1;
-    if (!isForgot) {
-      switch (currentWord.reps) {
-        case 0:
-          daysToAdd = 2;
-          break;
-        case 1:
-          daysToAdd = 4;
-          break;
-        case 2:
-          daysToAdd = 7;
-          break;
-        case 3:
-          daysToAdd = 15;
-          break;
-        case 4:
-          daysToAdd = 30;
-          break;
-        case 5:
-          daysToAdd = 60;
-          break;
-        case 6:
-          daysToAdd = 0;
-          break;
-        default:
-          daysToAdd = 60;
-      }
-    }
+    const { nextReps: newReps, daysToAdd } = getSpacedRepetitionUpdate(
+      currentWord.reps,
+      isForgot,
+    );
 
     try {
       const db = await Database.load("sqlite:vocabulary.db");
