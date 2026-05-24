@@ -80,3 +80,25 @@ export async function updateWordReview({
     [reps, lastReview, nextReview, word],
   );
 }
+
+export async function updateWordFields(word: WordWithId): Promise<void> {
+  const db = await Database.load("sqlite:vocabulary.db");
+  await db.execute(
+    "UPDATE words SET word = $1, ipa = $2, type = $3, meaning = $4, reps = $5, last_review = $6, next_review = $7 WHERE rowid = $8",
+    [
+      word.word,
+      word.ipa,
+      word.type,
+      word.meaning,
+      word.reps,
+      word.last_review,
+      word.next_review,
+      word.id,
+    ],
+  );
+}
+
+export async function deleteWordById(id: number): Promise<void> {
+  const db = await Database.load("sqlite:vocabulary.db");
+  await db.execute("DELETE FROM words WHERE rowid = $1", [id]);
+}
