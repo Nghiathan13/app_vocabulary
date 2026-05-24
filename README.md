@@ -74,6 +74,18 @@ The app reads SQLite `rowid` as `id` in queries. `created_at` is not shown in th
 
 Migrations run automatically through the Tauri SQL plugin (`sqlite:vocabulary.db` in `tauri.conf.json`).
 
+## Release
+
+Installable Linux packages are available on the GitHub Releases page.
+
+Current release: `v0.1.0`
+
+Available packages:
+- `.deb` for Debian/Ubuntu-based systems
+- `.rpm` for RPM-based systems
+
+AppImage is not included in the first release because AppImage bundling failed during `linuxdeploy`.
+
 ## Development
 
 ```bash
