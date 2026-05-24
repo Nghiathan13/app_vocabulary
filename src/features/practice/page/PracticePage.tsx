@@ -1,4 +1,4 @@
-export default function Practice() {
+export default function PracticePage() {
   // === RENDER ===
   return (
     <div style={{ padding: "20px", textAlign: "center", color: "#606060" }}>

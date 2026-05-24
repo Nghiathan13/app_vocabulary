@@ -11,7 +11,7 @@ import Navbar from "./components/Navbar/Navbar";
 import AddWordPage from "./features/add-word/page/AddWordPage";
 import ReviewPage from "./features/review/page/ReviewPage";
 import VocabularyPage from "./features/vocabulary/page/VocabularyPage";
-import Practice from "./components/Practice/Practice";
+import PracticePage from "./features/practice/page/PracticePage";
 import { ToastProvider } from "./shared/ui/Toast/ToastProvider";
 
 // -- Types & Utils --
@@ -208,7 +208,7 @@ function App() {
             {currentTab === "review" && (
               <ReviewPage onReviewUpdate={handleReviewUpdate} />
             )}
-            {currentTab === "practice" && <Practice />}
+            {currentTab === "practice" && <PracticePage />}
             {currentTab === "insights" && (
               <VocabularyPage
                 words={globalWords}
