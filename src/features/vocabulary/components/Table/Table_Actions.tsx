@@ -7,13 +7,12 @@ import * as XLSX from "xlsx";
 // -- Tauri --
 import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
-import Database from "@tauri-apps/plugin-sql";
-
 // -- Components --
 import ImportModal from "./Table_Import";
 import SaveModal, { WordChange } from "./Table_SaveModal";
 
 // -- Types & Utils --
+import { importWords } from "../../../../entities/word/api/words";
 import { WordWithId } from "../../../../entities/word/model/types";
 import { buildImportPreviewFiles, ImportPreviewFile } from "../../lib/tableImport";
 import { TableEditableField } from "./Table_Grid";
@@ -190,55 +189,15 @@ export default function Table_Actions({
   const handleAddImportedWords = async () => {
     if (isAddingImportedWords) return;
 
-    let db: Awaited<ReturnType<typeof Database.load>> | null = null;
-    let hasTransaction = false;
-
     try {
       setIsAddingImportedWords(true);
 
-      db = await Database.load("sqlite:vocabulary.db");
       const draftWords = importPreviewFiles.flatMap((file) => file.draftWords);
-
-      await db.execute("BEGIN TRANSACTION");
-      hasTransaction = true;
-
-      for (const word of draftWords) {
-        await db.execute(
-          `INSERT OR IGNORE INTO words (
-            word,
-            ipa,
-            type,
-            meaning,
-            reps,
-            last_review,
-            next_review
-          ) VALUES (
-            $1,
-            $2,
-            $3,
-            $4,
-            0,
-            NULL,
-            date('now', 'localtime', '+1 day')
-          )`,
-          [word.word, word.ipa, word.type, word.meaning],
-        );
-      }
-
-      await db.execute("COMMIT");
-      hasTransaction = false;
+      await importWords(draftWords);
 
       handleCloseImportModal();
       onRefresh();
     } catch (error) {
-      if (db && hasTransaction) {
-        try {
-          await db.execute("ROLLBACK");
-        } catch (rollbackError) {
-          console.error("Rollback failed:", rollbackError);
-        }
-      }
-
       console.error("Error importing words:", error);
       setIsAddingImportedWords(false);
     }

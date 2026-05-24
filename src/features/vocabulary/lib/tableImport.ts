@@ -1,13 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import * as XLSX from "xlsx";
-import { WordWithId } from "../../../entities/word/model/types";
-
-export interface ImportDraftWord {
-  word: string;
-  ipa: string | null;
-  type: string | null;
-  meaning: string | null;
-}
+import {
+  WordImportDraft,
+  WordWithId,
+} from "../../../entities/word/model/types";
 
 export interface ImportPreviewFile {
   id: string;
@@ -16,7 +12,7 @@ export interface ImportPreviewFile {
   isValid: boolean;
   errors: string[];
   newWordCount: number;
-  draftWords: ImportDraftWord[];
+  draftWords: WordImportDraft[];
 }
 
 interface ColumnIndexMap {
@@ -83,7 +79,7 @@ const createInvalidPreview = (
 
 const createValidPreview = (
   path: string,
-  draftWords: ImportDraftWord[],
+  draftWords: WordImportDraft[],
 ): ImportPreviewFile => ({
   id: path,
   path,
@@ -136,7 +132,7 @@ const buildSinglePreview = async (
     }
 
     const fileWords = new Set<string>();
-    const draftWords: ImportDraftWord[] = [];
+    const draftWords: WordImportDraft[] = [];
 
     for (const row of dataRows) {
       const normalizedWord = normalizeWord(row[columnIndexMap.word]);
