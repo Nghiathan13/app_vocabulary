@@ -1,0 +1,423 @@
+.review-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+
+  outline: none;
+}
+
+.no-review {
+  margin: auto;
+
+  color: rgb(180, 180, 180);
+}
+
+/* === MODE === */
+.review-mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 20px;
+  padding: 4px;
+
+  background: rgb(25, 25, 25);
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 10px;
+}
+
+.review-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(130, 130, 130);
+
+  cursor: pointer;
+}
+
+.review-mode-btn .material-symbols-outlined {
+  font-size: 17px;
+}
+
+.review-mode-btn:hover {
+  color: rgb(210, 210, 210);
+}
+
+.review-mode-btn.active {
+  background: rgb(55, 55, 55);
+  color: rgb(230, 230, 230);
+}
+
+/* === PROGRESS === */
+.progress-container {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 14px;
+
+  text-align: center;
+}
+
+.progress-text {
+  margin-bottom: 8px;
+
+  font-size: 16px;
+  font-weight: 500;
+  color: rgb(150, 150, 150);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+
+  background: rgb(60, 60, 60);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+
+  background: rgb(210, 210, 210);
+
+  transition: width 0.3s ease;
+}
+
+/* === CARD === */
+.review-card {
+  width: 100%;
+  max-width: 480px;
+  min-height: 320px;
+  margin: 40px 0 10px 0;
+  padding: 40px 0 60px 0;
+
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 16px;
+
+  text-align: center;
+}
+
+.review-card:not(.typing-card) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.word-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.review-word {
+  margin-bottom: 40px;
+
+  font-size: 24px;
+  color: rgb(210, 210, 210);
+}
+
+.type-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.type-pill-review {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.type-pill-phrasal {
+  background: rgba(120, 120, 120, 0.16);
+  color: rgb(165, 165, 165);
+}
+
+.type-pill-adverb {
+  background: rgba(40, 121, 214, 0.18);
+  color: rgb(53, 151, 255);
+}
+
+.type-pill-preposition {
+  background: rgba(91, 87, 184, 0.18);
+  color: rgb(132, 125, 235);
+}
+
+.type-pill-noun {
+  background: rgba(73, 153, 49, 0.18);
+  color: rgb(95, 202, 75);
+}
+
+.type-pill-adjective {
+  background: rgba(194, 109, 31, 0.18);
+  color: rgb(240, 151, 57);
+}
+
+.type-pill-verb {
+  background: rgba(34, 151, 151, 0.18);
+  color: rgb(47, 199, 196);
+}
+
+.type-pill-default {
+  background: rgba(120, 120, 120, 0.16);
+  color: rgb(165, 165, 165);
+}
+
+.review-ipa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin-bottom: 8px;
+
+  font-size: 16px;
+  color: rgb(180, 180, 180);
+}
+
+.pronounce-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  margin-right: 4px;
+  padding: 0;
+
+  background: transparent;
+  border: none;
+
+  color: rgb(120, 120, 120);
+
+  cursor: pointer;
+}
+
+.pronounce-btn:hover {
+  color: rgb(180, 180, 180);
+  scale: 1.1;
+}
+
+.pronounce-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pronounce-btn.disabled:hover {
+  color: rgb(120, 120, 120);
+  /* Giữ nguyên màu khi bị disabled */
+}
+
+.pronounce-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.review-meaning {
+  visibility: hidden;
+  opacity: 0;
+
+  font-size: 20px;
+  color: rgb(180, 180, 180);
+}
+
+.review-meaning.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* === TYPING === */
+.typing-card {
+  padding: 36px 0 44px 0;
+}
+
+.typing-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 32px;
+}
+
+.typing-audio-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+
+.typing-audio-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+
+  background: transparent;
+  border: none;
+
+  color: rgb(120, 120, 120);
+
+  cursor: pointer;
+}
+
+.typing-audio-btn:hover {
+  color: rgb(220, 220, 220);
+}
+
+.typing-audio-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.typing-audio-btn.disabled:hover {
+  color: rgb(120, 120, 120);
+}
+
+.typing-audio-btn .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.review-typing-field {
+  --typing-underline-extra: 28px;
+  --typing-input-max-width: 360px;
+
+  position: relative;
+  width: min(
+    var(--typing-field-width),
+    calc(var(--typing-input-max-width) + var(--typing-underline-extra)),
+    calc(100vw - 96px)
+  );
+  margin-top: 20px;
+
+  transition: width 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.review-typing-measure {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre;
+
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.review-typing-field::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  height: 1px;
+
+  background-color: rgb(75, 75, 75);
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(210, 210, 210, 0.12);
+
+  transition:
+    background-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.review-typing-field.has-value::after {
+  background-color: rgb(210, 210, 210);
+  box-shadow: 0 0 14px rgba(210, 210, 210, 0.36);
+}
+
+.review-typing-input {
+  display: block;
+  width: calc(100% - var(--typing-underline-extra));
+  max-width: var(--typing-input-max-width);
+  height: 38px;
+  margin: 0 auto;
+  padding: 8px 0 4px 0;
+
+  background: transparent;
+  border: none;
+  outline: none;
+
+  text-align: center;
+  font-size: 20px;
+  line-height: 1;
+  color: rgb(220, 220, 220);
+}
+
+.review-typing-input::placeholder {
+  color: rgb(75, 75, 75);
+}
+
+.review-typing-input[readonly] {
+  color: rgb(170, 170, 170);
+}
+
+.typing-result {
+  min-height: 96px;
+  margin-top: 24px;
+
+  font-size: 15px;
+  color: rgb(150, 150, 150);
+}
+
+.typing-result-label {
+  margin-bottom: 14px;
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.typing-result-label.correct {
+  color: rgb(125, 200, 150);
+}
+
+.typing-result-label.wrong {
+  color: rgb(220, 130, 130);
+}
+
+.typing-answer-line {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.typing-answer-line span {
+  color: rgb(110, 110, 110);
+}
+
+.typing-answer-line strong {
+  font-weight: 500;
+  color: rgb(210, 210, 210);
+}
+
+.typing-answer-line.typed-answer strong {
+  color: rgb(170, 170, 170);
+}
+
+/* === HINT === */
+.review-hint {
+  font-size: 12px;
+  font-weight: 300;
+  color: rgb(120, 120, 120);
+}
