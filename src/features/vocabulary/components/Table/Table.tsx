@@ -14,13 +14,13 @@ import Table_Grid, {
 } from "./Table_Grid";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../entities/word/model/types";
-import { getAudioPath } from "../../../shared/lib/utils";
+import { WordWithId } from "../../../../entities/word/model/types";
+import { getAudioPath } from "../../../../shared/lib/utils";
 import {
   getSearchMatchColumn,
   getSearchPriority,
   type SearchMatchColumn,
-} from "./_tableSearch";
+} from "../../lib/tableSearch";
 
 // -- Style --
 import "./Table.css";

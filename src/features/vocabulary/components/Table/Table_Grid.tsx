@@ -8,8 +8,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../entities/word/model/types";
-import { formatDisplayDate, getAudioPath } from "../../../shared/lib/utils";
+import { WordWithId } from "../../../../entities/word/model/types";
+import { formatDisplayDate, getAudioPath } from "../../../../shared/lib/utils";
 
 export type TableSortColumn =
   | "word"
