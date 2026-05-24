@@ -8,7 +8,7 @@ import { appConfigDir, join } from "@tauri-apps/api/path";
 
 // -- Components --
 import Navbar from "./components/Navbar/Navbar";
-import Home from "./components/Home/Home";
+import AddWordPage from "./features/add-word/page/AddWordPage";
 import ReviewPage from "./features/review/page/ReviewPage";
 import VocabularyPage from "./features/vocabulary/page/VocabularyPage";
 import Practice from "./components/Practice/Practice";
@@ -200,7 +200,7 @@ function App() {
         ) : (
           <>
             {currentTab === "home" && (
-              <Home
+              <AddWordPage
                 onWordAdded={handleWordAdded}
                 onWordAudioReady={handleWordAudioReady}
               />
