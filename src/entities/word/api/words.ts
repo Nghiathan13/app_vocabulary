@@ -1,6 +1,6 @@
 import Database from "@tauri-apps/plugin-sql";
 
-import { WordWithId } from "../model/types";
+import { WordImportDraft, WordWithId } from "../model/types";
 import { getLocalDateString } from "../../../shared/lib/utils";
 
 interface InsertWordParams {
@@ -101,4 +101,48 @@ export async function updateWordFields(word: WordWithId): Promise<void> {
 export async function deleteWordById(id: number): Promise<void> {
   const db = await Database.load("sqlite:vocabulary.db");
   await db.execute("DELETE FROM words WHERE rowid = $1", [id]);
+}
+
+export async function importWords(draftWords: WordImportDraft[]): Promise<void> {
+  const db = await Database.load("sqlite:vocabulary.db");
+  let hasTransaction = false;
+
+  try {
+    await db.execute("BEGIN TRANSACTION");
+    hasTransaction = true;
+
+    for (const word of draftWords) {
+      await db.execute(
+        `INSERT OR IGNORE INTO words (
+          word,
+          ipa,
+          type,
+          meaning,
+          reps,
+          last_review,
+          next_review
+        ) VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          0,
+          NULL,
+          date('now', 'localtime', '+1 day')
+        )`,
+        [word.word, word.ipa, word.type, word.meaning],
+      );
+    }
+
+    await db.execute("COMMIT");
+  } catch (error) {
+    if (hasTransaction) {
+      try {
+        await db.execute("ROLLBACK");
+      } catch (rollbackError) {
+        console.error("Rollback failed:", rollbackError);
+      }
+    }
+    throw error;
+  }
 }

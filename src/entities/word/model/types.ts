@@ -13,3 +13,5 @@ export interface WordWithId extends Word {
   id: number;
   hasAudio?: boolean;
 }
+
+export type WordImportDraft = Pick<Word, "word" | "ipa" | "type" | "meaning">;
