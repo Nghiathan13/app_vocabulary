@@ -24,3 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+scripts/benchmark/output/
+scripts/benchmark/results.md
