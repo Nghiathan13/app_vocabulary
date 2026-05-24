@@ -15,20 +15,20 @@ import { appConfigDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../entities/word/model/types";
+import { WordWithId } from "../../../entities/word/model/types";
 import {
   getAudioFileName,
   getAudioPath,
   getLocalDateString,
-} from "../../shared/lib/utils";
-import { getSpacedRepetitionUpdate } from "../../features/review/lib/spacedRepetition";
+} from "../../../shared/lib/utils";
+import { getSpacedRepetitionUpdate } from "../lib/spacedRepetition";
 import {
   compareTypingAnswer,
   getTypingAnswer,
-} from "../../features/review/lib/typing";
+} from "../lib/typing";
 
 // -- Style --
-import "./Review.css";
+import "./ReviewPage.css";
 
 const AUDIO_PREROLL_DELAY_MS = 500;
 const SILENT_WARMUP_SECONDS = 0.2;
@@ -121,11 +121,11 @@ const createSilentWarmupUrl = () => {
   return URL.createObjectURL(new Blob([buffer], { type: "audio/wav" }));
 };
 
-interface ReviewProps {
+interface ReviewPageProps {
   onReviewUpdate?: (word: string, updates: Partial<WordWithId>) => void;
 }
 
-export default function Review({ onReviewUpdate }: ReviewProps) {
+export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
   // === STATE ===
   const [reviewWords, setReviewWords] = useState<WordWithId[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
