@@ -2,13 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 
 // -- Types & Utils --
-import { WordType, WordWithId } from "../../entities/word/model/types";
-import { downloadAudio } from "../../shared/api/audio";
-import { insertWord } from "../../entities/word/api/words";
+import { WordType, WordWithId } from "../../../entities/word/model/types";
+import { downloadAudio } from "../../../shared/api/audio";
+import { insertWord } from "../../../entities/word/api/words";
 
 // -- Style --
-import "./Home.css";
-import { useToast } from "../../shared/ui/Toast/ToastProvider";
+import "./AddWordPage.css";
+import { useToast } from "../../../shared/ui/Toast/ToastProvider";
 
 const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "noun", label: "noun" },
@@ -17,12 +17,15 @@ const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "adverb", label: "adv" },
 ];
 
-interface HomeProps {
+interface AddWordPageProps {
   onWordAdded?: (newWord: WordWithId) => void;
   onWordAudioReady?: (wordId: number) => void;
 }
 
-export default function Home({ onWordAdded, onWordAudioReady }: HomeProps) {
+export default function AddWordPage({
+  onWordAdded,
+  onWordAudioReady,
+}: AddWordPageProps) {
   // === STATE ===
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
