@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 // -- Tauri --
-import Database from "@tauri-apps/plugin-sql";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Components --
@@ -15,6 +14,10 @@ import Table_Grid, {
 
 // -- Types & Utils --
 import { WordWithId } from "../../../../entities/word/model/types";
+import {
+  deleteWordById,
+  updateWordFields,
+} from "../../../../entities/word/api/words";
 import { getAudioPath } from "../../../../shared/lib/utils";
 import {
   getSearchMatchColumn,
@@ -120,8 +123,6 @@ export default function Table({
 
   const handleSaveClick = useCallback(async () => {
     try {
-      const db = await Database.load("sqlite:vocabulary.db");
-
       const modifiedIds = new Set<number>();
       for (const field of modifiedFields) {
         modifiedIds.add(Number(field.split("-")[0]));
@@ -132,19 +133,7 @@ export default function Table({
       );
 
       for (const word of wordsToUpdate) {
-        await db.execute(
-          "UPDATE words SET word = $1, ipa = $2, type = $3, meaning = $4, reps = $5, last_review = $6, next_review = $7 WHERE rowid = $8",
-          [
-            word.word,
-            word.ipa,
-            word.type,
-            word.meaning,
-            word.reps,
-            word.last_review,
-            word.next_review,
-            word.id,
-          ],
-        );
+        await updateWordFields(word);
       }
 
       setIsEditing(false);
@@ -200,10 +189,8 @@ export default function Table({
   const handleDelete = useCallback(
     async (id: number, word: string) => {
       try {
-        const db = await Database.load("sqlite:vocabulary.db");
-
         // 1. Delete from Database
-        await db.execute("DELETE FROM words WHERE rowid = $1", [id]);
+        await deleteWordById(id);
 
         // 2. Delete Audio File
         try {
