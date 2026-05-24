@@ -2,28 +2,28 @@
 import { useState } from "react";
 
 // -- Components --
-import Table from "./Table/Table";
-import Chart from "./Chart/Chart";
+import Table from "../components/Table/Table";
+import Chart from "../components/Chart/Chart";
 
 // -- Types & Utils --
-import { WordWithId } from "../../entities/word/model/types";
+import { WordWithId } from "../../../entities/word/model/types";
 
 // -- Style --
-import "./Insights.css";
+import "./VocabularyPage.css";
 
 type SubTab = "table" | "chart";
 
-interface InsightsProps {
+interface VocabularyPageProps {
   words: WordWithId[];
   onRefresh: () => void;
   onWordDeleted: (wordId: number) => void;
 }
 
-export default function Insights({
+export default function VocabularyPage({
   words,
   onRefresh,
   onWordDeleted,
-}: InsightsProps) {
+}: VocabularyPageProps) {
   // === STATE ===
   const [currentSubTab, setCurrentSubTab] = useState<SubTab>("table");
 

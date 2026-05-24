@@ -1,5 +1,5 @@
 // -- Types & Utils --
-import { ImportPreviewFile } from "./_tableImport";
+import { ImportPreviewFile } from "../../lib/tableImport";
 
 interface ImportModalProps {
   isOpen: boolean;

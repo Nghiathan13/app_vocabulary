@@ -10,7 +10,7 @@ import { appConfigDir, join } from "@tauri-apps/api/path";
 import Navbar from "./components/Navbar/Navbar";
 import Home from "./components/Home/Home";
 import Review from "./components/Review/Review";
-import Insights from "./components/Insights/Insights";
+import VocabularyPage from "./features/vocabulary/page/VocabularyPage";
 import Practice from "./components/Practice/Practice";
 import { ToastProvider } from "./shared/ui/Toast/ToastProvider";
 
@@ -210,7 +210,7 @@ function App() {
             )}
             {currentTab === "practice" && <Practice />}
             {currentTab === "insights" && (
-              <Insights
+              <VocabularyPage
                 words={globalWords}
                 onRefresh={fetchGlobalWords}
                 onWordDeleted={handleWordDeleted}
