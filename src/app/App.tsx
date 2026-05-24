@@ -7,18 +7,18 @@ import { readDir } from "@tauri-apps/plugin-fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 
 // -- Components --
-import Navbar from "./shared/ui/Navbar/Navbar";
-import AddWordPage from "./features/add-word/page/AddWordPage";
-import ReviewPage from "./features/review/page/ReviewPage";
-import VocabularyPage from "./features/vocabulary/page/VocabularyPage";
-import PracticePage from "./features/practice/page/PracticePage";
-import { ToastProvider } from "./shared/ui/Toast/ToastProvider";
+import Navbar from "../shared/ui/Navbar/Navbar";
+import AddWordPage from "../features/add-word/page/AddWordPage";
+import ReviewPage from "../features/review/page/ReviewPage";
+import VocabularyPage from "../features/vocabulary/page/VocabularyPage";
+import PracticePage from "../features/practice/page/PracticePage";
+import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 
 // -- Types & Utils --
-import { Tab } from "./shared/model/tab";
-import { WordWithId } from "./entities/word/model/types";
-import { getAudioFileName } from "./shared/lib/utils";
-import { downloadAudioStatus, getElevenLabsQuota } from "./shared/api/audio";
+import { Tab } from "../shared/model/tab";
+import { WordWithId } from "../entities/word/model/types";
+import { getAudioFileName } from "../shared/lib/utils";
+import { downloadAudioStatus, getElevenLabsQuota } from "../shared/api/audio";
 
 // -- Style --
 import "./App.css";
