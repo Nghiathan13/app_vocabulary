@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 // -- Tauri --
-import Database from "@tauri-apps/plugin-sql";
 import { readDir } from "@tauri-apps/plugin-fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 
@@ -17,6 +16,7 @@ import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 // -- Types & Utils --
 import { Tab } from "../shared/model/tab";
 import { WordWithId } from "../entities/word/model/types";
+import { listWords } from "../entities/word/api/words";
 import { getAudioFileName } from "../shared/lib/utils";
 import { downloadAudioStatus, getElevenLabsQuota } from "../shared/api/audio";
 
@@ -61,10 +61,7 @@ function App() {
 
   const fetchGlobalWords = useCallback(async () => {
     try {
-      const db = await Database.load("sqlite:vocabulary.db");
-      const result = await db.select<WordWithId[]>(
-        "SELECT rowid as id, * FROM words ORDER BY word ASC",
-      );
+      const result = await listWords();
 
       let audioFiles = new Set<string>();
       try {
