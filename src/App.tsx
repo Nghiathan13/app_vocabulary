@@ -7,7 +7,7 @@ import { readDir } from "@tauri-apps/plugin-fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 
 // -- Components --
-import Navbar from "./components/Navbar/Navbar";
+import Navbar from "./shared/ui/Navbar/Navbar";
 import AddWordPage from "./features/add-word/page/AddWordPage";
 import ReviewPage from "./features/review/page/ReviewPage";
 import VocabularyPage from "./features/vocabulary/page/VocabularyPage";

@@ -1,8 +1,8 @@
 // -- Types & Utils --
-import { Tab } from "../../shared/model/tab";
+import { Tab } from "../../model/tab";
 
 // -- Style --
-import logo from "../../assets/logo.svg";
+import logo from "../../../assets/logo.svg";
 import "./Navbar.css";
 
 interface NavbarProps {
