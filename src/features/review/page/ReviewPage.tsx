@@ -9,13 +9,16 @@ import {
 } from "react";
 
 // -- Tauri --
-import Database from "@tauri-apps/plugin-sql";
 import { readDir } from "@tauri-apps/plugin-fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
 import { WordWithId } from "../../../entities/word/model/types";
+import {
+  listDueReviewWords,
+  updateWordReview,
+} from "../../../entities/word/api/words";
 import {
   getAudioFileName,
   getAudioPath,
@@ -163,13 +166,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
   const loadReviewWords = async () => {
     setIsLoading(true);
     try {
-      const db = await Database.load("sqlite:vocabulary.db");
-
-      const result = await db.select<WordWithId[]>(
-        `SELECT rowid as id, * FROM words 
-         WHERE next_review <= date('now', 'localtime')
-         ORDER BY next_review ASC`,
-      );
+      const result = await listDueReviewWords();
 
       // --- QUÉT THƯ MỤC AUDIO ---
       let audioFiles = new Set<string>();
@@ -298,19 +295,16 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
     );
 
     try {
-      const db = await Database.load("sqlite:vocabulary.db");
       const newNextReview =
         daysToAdd > 0 ? getLocalDateString(daysToAdd) : null;
       const newLastReview = getLocalDateString(0);
 
-      await db.execute(
-        `UPDATE words
-         SET reps = $1,
-             last_review = $2,
-             next_review = $3
-         WHERE word = $4`,
-        [newReps, newLastReview, newNextReview, currentWord.word],
-      );
+      await updateWordReview({
+        word: currentWord.word,
+        reps: newReps,
+        lastReview: newLastReview,
+        nextReview: newNextReview,
+      });
 
       if (currentIndex + 1 < reviewWords.length) {
         setCurrentIndex(currentIndex + 1);

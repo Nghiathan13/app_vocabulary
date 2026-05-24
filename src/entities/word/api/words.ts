@@ -40,3 +40,43 @@ export async function insertWord({
     hasAudio: false,
   };
 }
+
+export async function listWords(): Promise<WordWithId[]> {
+  const db = await Database.load("sqlite:vocabulary.db");
+  return db.select<WordWithId[]>(
+    "SELECT rowid as id, * FROM words ORDER BY word ASC",
+  );
+}
+
+export async function listDueReviewWords(): Promise<WordWithId[]> {
+  const db = await Database.load("sqlite:vocabulary.db");
+  return db.select<WordWithId[]>(
+    `SELECT rowid as id, * FROM words 
+     WHERE next_review <= date('now', 'localtime')
+     ORDER BY next_review ASC`,
+  );
+}
+
+export interface UpdateWordReviewParams {
+  word: string;
+  reps: number;
+  lastReview: string;
+  nextReview: string | null;
+}
+
+export async function updateWordReview({
+  word,
+  reps,
+  lastReview,
+  nextReview,
+}: UpdateWordReviewParams): Promise<void> {
+  const db = await Database.load("sqlite:vocabulary.db");
+  await db.execute(
+    `UPDATE words
+     SET reps = $1,
+         last_review = $2,
+         next_review = $3
+     WHERE word = $4`,
+    [reps, lastReview, nextReview, word],
+  );
+}
