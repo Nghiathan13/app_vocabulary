@@ -14,7 +14,7 @@ import ImportModal from "./Table_Import";
 import SaveModal, { WordChange } from "./Table_SaveModal";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../types";
+import { WordWithId } from "../../../entities/word/model/types";
 import { buildImportPreviewFiles, ImportPreviewFile } from "./_tableImport";
 import { TableEditableField } from "./Table_Grid";
 

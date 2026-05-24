@@ -37,7 +37,7 @@
 
   display: grid;
   grid-template-columns:
-    50px minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 15%)
+    50px minmax(150px, 20%) minmax(150px, 20%) minmax(120px, 15%)
     minmax(150px, 30%) 70px 130px 130px;
   padding-right: 6px;
 
@@ -60,7 +60,7 @@
 
   display: grid;
   grid-template-columns:
-    50px minmax(150px, 20%) minmax(150px, 20%) minmax(100px, 15%)
+    50px minmax(150px, 20%) minmax(150px, 20%) minmax(120px, 15%)
     minmax(150px, 30%) 70px 130px 130px;
   align-items: center;
   width: 100%;
@@ -75,7 +75,7 @@
 }
 
 .grid-header {
-  padding: 4px 0;
+  padding: 8px 0;
 
   font-weight: bold;
 }
@@ -98,9 +98,65 @@
 }
 
 .grid-cell {
-  padding: 6px 0;
+  padding: 10px 0;
 
   word-break: break-word;
+}
+
+.type-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.type-pill-table {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+
+  border-radius: 10px;
+
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.type-pill-phrasal {
+  background: rgba(120, 120, 120, 0.16);
+  color: rgb(165, 165, 165);
+}
+
+.type-pill-adverb {
+  background: rgba(40, 121, 214, 0.18);
+  color: rgb(53, 151, 255);
+}
+
+.type-pill-preposition {
+  background: rgba(91, 87, 184, 0.18);
+  color: rgb(132, 125, 235);
+}
+
+.type-pill-noun {
+  background: rgba(73, 153, 49, 0.18);
+  color: rgb(95, 202, 75);
+}
+
+.type-pill-adjective {
+  background: rgba(194, 109, 31, 0.18);
+  color: rgb(240, 151, 57);
+}
+
+.type-pill-verb {
+  background: rgba(34, 151, 151, 0.18);
+  color: rgb(47, 199, 196);
+}
+
+.type-pill-default {
+  background: rgba(120, 120, 120, 0.16);
+  color: rgb(165, 165, 165);
 }
 
 .word-grid-container.is-editing .grid-cell {

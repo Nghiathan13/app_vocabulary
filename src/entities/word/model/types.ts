@@ -1,4 +1,3 @@
-export type Tab = "home" | "review" | "practice" | "insights";
 export type WordType = string;
 export type Word = {
   word: string;

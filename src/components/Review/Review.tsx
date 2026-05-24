@@ -1,5 +1,12 @@
 // -- React --
-import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+  type CSSProperties,
+} from "react";
 
 // -- Tauri --
 import Database from "@tauri-apps/plugin-sql";
@@ -8,11 +15,114 @@ import { appConfigDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../types";
-import { getAudioFileName, getAudioPath, getLocalDateString } from "../../utils";
+import { WordWithId } from "../../entities/word/model/types";
+import {
+  getAudioFileName,
+  getAudioPath,
+  getLocalDateString,
+} from "../../shared/lib/utils";
 
 // -- Style --
 import "./Review.css";
+
+const AUDIO_PREROLL_DELAY_MS = 500;
+const SILENT_WARMUP_SECONDS = 0.2;
+const SILENT_WARMUP_SAMPLE_RATE = 8000;
+const REVIEW_MODE_STORAGE_KEY = "reviewMode";
+const TYPING_INPUT_MAX_WIDTH = 360;
+const TYPING_UNDERLINE_EXTRA_WIDTH = 28;
+const TYPING_FIELD_VIEWPORT_MARGIN = 96;
+
+type ReviewMode = "flashcard" | "typing";
+type TypingFieldStyle = CSSProperties & { "--typing-field-width": string };
+
+interface TypingResult {
+  isCorrect: boolean;
+  submittedAnswer: string;
+}
+
+const getInitialReviewMode = (): ReviewMode => {
+  return localStorage.getItem(REVIEW_MODE_STORAGE_KEY) === "typing"
+    ? "typing"
+    : "flashcard";
+};
+
+const normalizeTypingAnswer = (value: string) => {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+};
+
+const getTypingAnswer = (word: string) => {
+  return word.replace(/\s*\([^)]*\)/g, "").trim().replace(/\s+/g, " ");
+};
+
+const splitTypeLabels = (type: string | null) => {
+  return (type || "")
+    .split(/[,/;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const getTypePillClassName = (type: string | null) => {
+  const normalizedType = type?.trim().toLowerCase() || "";
+
+  if (normalizedType.includes("phrasal")) {
+    return "type-pill-review type-pill-phrasal";
+  }
+  if (normalizedType === "adverb" || normalizedType === "adv") {
+    return "type-pill-review type-pill-adverb";
+  }
+  if (normalizedType === "preposition" || normalizedType === "prep") {
+    return "type-pill-review type-pill-preposition";
+  }
+  if (normalizedType === "noun") {
+    return "type-pill-review type-pill-noun";
+  }
+  if (normalizedType === "adjective" || normalizedType === "adj") {
+    return "type-pill-review type-pill-adjective";
+  }
+  if (normalizedType === "verb") {
+    return "type-pill-review type-pill-verb";
+  }
+  return "type-pill-review type-pill-default";
+};
+
+const formatTypeLabel = (type: string | null) => {
+  if (!type) {
+    return "";
+  }
+  return type;
+};
+
+const createSilentWarmupUrl = () => {
+  const sampleCount = Math.ceil(
+    SILENT_WARMUP_SAMPLE_RATE * SILENT_WARMUP_SECONDS,
+  );
+  const dataSize = sampleCount * 2;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  const writeString = (offset: number, value: string) => {
+    for (let i = 0; i < value.length; i += 1) {
+      view.setUint8(offset + i, value.charCodeAt(i));
+    }
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, SILENT_WARMUP_SAMPLE_RATE, true);
+  view.setUint32(28, SILENT_WARMUP_SAMPLE_RATE * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, dataSize, true);
+
+  return URL.createObjectURL(new Blob([buffer], { type: "audio/wav" }));
+};
 
 interface ReviewProps {
   onReviewUpdate?: (word: string, updates: Partial<WordWithId>) => void;
@@ -25,13 +135,32 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
   const [showMeaning, setShowMeaning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasAudio, setHasAudio] = useState(false);
+  const [reviewMode, setReviewMode] =
+    useState<ReviewMode>(getInitialReviewMode);
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const [typingResult, setTypingResult] = useState<TypingResult | null>(null);
+  const [typingFieldWidth, setTypingFieldWidth] = useState(0);
 
   // === REFS ===
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const typingInputRef = useRef<HTMLInputElement>(null);
+  const typingMeasureRef = useRef<HTMLSpanElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const warmupAudioRef = useRef<HTMLAudioElement | null>(null);
+  const silentWarmupUrlRef = useRef<string | null>(null);
+  const pronounceTimerRef = useRef<number | null>(null);
+  const autoPlayedWordIdRef = useRef<number | null>(null);
 
   // === DERIVED STATE ===
   const currentWord = reviewWords[currentIndex];
+  const isTypingMode = reviewMode === "typing";
+  const canGradeCurrentWord = isTypingMode ? Boolean(typingResult) : showMeaning;
+  const typingFieldText = typedAnswer || "Type the word";
+  const typingFieldStyle: TypingFieldStyle = {
+    "--typing-field-width": `${typingFieldWidth || 156}px`,
+  };
 
   // === FUNCTIONS ===
   const loadReviewWords = async () => {
@@ -67,6 +196,8 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
       setReviewWords(wordsWithAudio);
       setCurrentIndex(0);
       setShowMeaning(false);
+      setTypedAnswer("");
+      setTypingResult(null);
     } catch (error) {
       console.error("Lỗi load review words:", error);
       setReviewWords([]);
@@ -75,15 +206,195 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
   };
 
   // === HANDLERS ===
-  const handlePronounce = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => { });
+  const stopCurrentAudio = useCallback(() => {
+    if (pronounceTimerRef.current !== null) {
+      window.clearTimeout(pronounceTimerRef.current);
+      pronounceTimerRef.current = null;
+    }
+
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current.currentTime = 0;
+      activeAudioRef.current = null;
+    }
+
+    if (warmupAudioRef.current) {
+      warmupAudioRef.current.pause();
+      warmupAudioRef.current.currentTime = 0;
+      warmupAudioRef.current = null;
     }
   }, []);
 
+  const playCurrentAudio = useCallback(() => {
+    if (!audioRef.current) {
+      return;
+    }
+
+    const audio = audioRef.current.cloneNode(true) as HTMLAudioElement;
+    activeAudioRef.current = audio;
+    audio.onended = () => {
+      if (activeAudioRef.current === audio) {
+        activeAudioRef.current = null;
+      }
+    };
+
+    audio.play().catch(() => {
+      if (activeAudioRef.current === audio) {
+        activeAudioRef.current = null;
+      }
+    });
+  }, []);
+
+  const handlePronounce = useCallback(
+    (onStart?: () => void) => {
+      if (!audioRef.current) {
+        return;
+      }
+
+      stopCurrentAudio();
+
+      if (!silentWarmupUrlRef.current) {
+        silentWarmupUrlRef.current = createSilentWarmupUrl();
+      }
+
+      const warmupAudio = new Audio(silentWarmupUrlRef.current);
+      warmupAudioRef.current = warmupAudio;
+      warmupAudio.play().catch(() => {});
+
+      pronounceTimerRef.current = window.setTimeout(() => {
+        pronounceTimerRef.current = null;
+        onStart?.();
+        playCurrentAudio();
+      }, AUDIO_PREROLL_DELAY_MS);
+    },
+    [playCurrentAudio, stopCurrentAudio],
+  );
+
+  const handleReviewModeChange = (mode: ReviewMode) => {
+    setReviewMode(mode);
+    localStorage.setItem(REVIEW_MODE_STORAGE_KEY, mode);
+    setShowMeaning(false);
+    setTypedAnswer("");
+    setTypingResult(null);
+  };
+
+  const handleTypingSubmit = () => {
+    if (!currentWord || typingResult) {
+      return;
+    }
+
+    const submittedAnswer = typedAnswer.trim();
+    setTypingResult({
+      isCorrect:
+        normalizeTypingAnswer(submittedAnswer) ===
+        normalizeTypingAnswer(getTypingAnswer(currentWord.word)),
+      submittedAnswer,
+    });
+  };
+
+  const handleReviewGrade = async (isForgot: boolean) => {
+    if (!currentWord) {
+      return;
+    }
+
+    const newReps = isForgot ? 0 : currentWord.reps + 1;
+
+    let daysToAdd = 1;
+    if (!isForgot) {
+      switch (currentWord.reps) {
+        case 0:
+          daysToAdd = 2;
+          break;
+        case 1:
+          daysToAdd = 4;
+          break;
+        case 2:
+          daysToAdd = 7;
+          break;
+        case 3:
+          daysToAdd = 15;
+          break;
+        case 4:
+          daysToAdd = 30;
+          break;
+        case 5:
+          daysToAdd = 60;
+          break;
+        case 6:
+          daysToAdd = 0;
+          break;
+        default:
+          daysToAdd = 60;
+      }
+    }
+
+    try {
+      const db = await Database.load("sqlite:vocabulary.db");
+      const newNextReview =
+        daysToAdd > 0 ? getLocalDateString(daysToAdd) : null;
+      const newLastReview = getLocalDateString(0);
+
+      await db.execute(
+        `UPDATE words
+         SET reps = $1,
+             last_review = $2,
+             next_review = $3
+         WHERE word = $4`,
+        [newReps, newLastReview, newNextReview, currentWord.word],
+      );
+
+      if (currentIndex + 1 < reviewWords.length) {
+        setCurrentIndex(currentIndex + 1);
+        setShowMeaning(false);
+        setTypedAnswer("");
+        setTypingResult(null);
+      } else {
+        setTimeout(() => loadReviewWords(), 300);
+      }
+
+      if (onReviewUpdate) {
+        onReviewUpdate(currentWord.word, {
+          reps: newReps,
+          last_review: newLastReview,
+          next_review: newNextReview,
+        });
+      }
+    } catch (error) {
+      console.error("Lỗi update review:", error);
+    }
+  };
+
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (!currentWord) return;
+
+    const isInputTarget =
+      e.target instanceof HTMLElement &&
+      (e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.isContentEditable);
+
+    if (isTypingMode) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleTypingSubmit();
+        return;
+      }
+
+      if (canGradeCurrentWord && (e.key === "1" || e.key === "4")) {
+        e.preventDefault();
+        await handleReviewGrade(e.key === "1");
+        return;
+      }
+
+      if (!isInputTarget && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        if (hasAudio) {
+          handlePronounce();
+        }
+      }
+
+      return;
+    }
 
     if (e.key === " ") {
       e.preventDefault();
@@ -101,101 +412,73 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
       return;
     }
 
-    if (showMeaning && (e.key === "1" || e.key === "4")) {
-      const isForgot = e.key === "1";
-      const newReps = isForgot ? 0 : currentWord.reps + 1;
-
-      let daysToAdd = 1;
-      if (!isForgot) {
-        switch (currentWord.reps) {
-          case 0:
-            daysToAdd = 2;
-            break;
-          case 1:
-            daysToAdd = 4;
-            break;
-          case 2:
-            daysToAdd = 7;
-            break;
-          case 3:
-            daysToAdd = 15;
-            break;
-          case 4:
-            daysToAdd = 30;
-            break;
-          case 5:
-            daysToAdd = 60;
-            break;
-          case 6:
-            daysToAdd = 0;
-            break;
-          default:
-            daysToAdd = 60;
-        }
-      }
-
-      try {
-        const db = await Database.load("sqlite:vocabulary.db");
-        const newNextReview =
-          daysToAdd > 0 ? getLocalDateString(daysToAdd) : null;
-        const newLastReview = getLocalDateString(0);
-
-        await db.execute(
-          `UPDATE words 
-           SET reps = $1, 
-               last_review = $2,
-               next_review = $3
-           WHERE word = $4`,
-          [newReps, newLastReview, newNextReview, currentWord.word],
-        );
-
-        if (currentIndex + 1 < reviewWords.length) {
-          setCurrentIndex(currentIndex + 1);
-          setShowMeaning(false);
-        } else {
-          setTimeout(() => loadReviewWords(), 300);
-        }
-
-        if (onReviewUpdate) {
-          onReviewUpdate(currentWord.word, {
-            reps: newReps,
-            last_review: newLastReview,
-            next_review: newNextReview,
-          });
-        }
-      } catch (error) {
-        console.error("Lỗi update review:", error);
-      }
+    if (canGradeCurrentWord && (e.key === "1" || e.key === "4")) {
+      await handleReviewGrade(e.key === "1");
     }
   };
 
   // === EFFECTS ===
   useEffect(() => {
+    const clearAudio = () => {
+      stopCurrentAudio();
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+        audioUrlRef.current = null;
+      }
+    };
+
     if (!currentWord) {
-      audioRef.current = null;
+      clearAudio();
+      setHasAudio(false);
       return;
     }
+
+    let isCancelled = false;
 
     const loadAudio = async () => {
       try {
         if (currentWord.hasAudio) {
           const audioPath = await getAudioPath(currentWord.word);
 
-          const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
-          const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
+          const binaryData = await invoke<number[]>("read_binary_file", {
+            path: audioPath,
+          });
+          if (isCancelled) {
+            return;
+          }
+
+          const blob = new Blob([new Uint8Array(binaryData)], {
+            type: "audio/mpeg",
+          });
           const assetUrl = URL.createObjectURL(blob);
 
           const audio = new Audio(assetUrl);
           audio.preload = "auto";
+          audio.load();
+          audioUrlRef.current = assetUrl;
           audioRef.current = audio;
+
           setHasAudio(true);
+
+          if (autoPlayedWordIdRef.current !== currentWord.id) {
+            const wordId = currentWord.id;
+            handlePronounce(() => {
+              autoPlayedWordIdRef.current = wordId;
+            });
+          }
         } else {
-          audioRef.current = null;
+          clearAudio();
           setHasAudio(false);
         }
       } catch (error) {
         console.error("Lỗi khi khi load audio cục bộ:", error);
-        audioRef.current = null;
+        clearAudio();
         setHasAudio(false);
       }
     };
@@ -203,21 +486,67 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
     loadAudio();
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      isCancelled = true;
+      clearAudio();
+    };
+  }, [currentWord, handlePronounce, stopCurrentAudio]);
+
+  useEffect(() => {
+    return () => {
+      if (silentWarmupUrlRef.current) {
+        URL.revokeObjectURL(silentWarmupUrlRef.current);
       }
     };
-  }, [currentWord]);
+  }, []);
+
+  useEffect(() => {
+    setShowMeaning(false);
+    setTypedAnswer("");
+    setTypingResult(null);
+  }, [currentWord?.id, reviewMode]);
+
+  useLayoutEffect(() => {
+    const measure = typingMeasureRef.current;
+    if (!measure) {
+      return;
+    }
+
+    const width =
+      Math.ceil(measure.getBoundingClientRect().width) +
+      TYPING_UNDERLINE_EXTRA_WIDTH +
+      16;
+    setTypingFieldWidth(width);
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      const maxFieldWidth = Math.min(
+        TYPING_INPUT_MAX_WIDTH + TYPING_UNDERLINE_EXTRA_WIDTH,
+        window.innerWidth - TYPING_FIELD_VIEWPORT_MARGIN,
+      );
+
+      if (width <= maxFieldWidth) {
+        typingInputRef.current?.scrollTo({ left: 0 });
+      }
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [typingFieldText]);
 
   useEffect(() => {
     loadReviewWords();
   }, []);
 
   useEffect(() => {
-    if (!isLoading && wrapperRef.current) {
-      wrapperRef.current.focus();
+    if (isLoading) {
+      return;
     }
-  }, [isLoading, currentIndex, showMeaning]);
+
+    if (isTypingMode && !typingResult) {
+      typingInputRef.current?.focus();
+      return;
+    }
+
+    wrapperRef.current?.focus();
+  }, [isLoading, currentIndex, showMeaning, isTypingMode, typingResult]);
 
   // === RENDER ===
   if (isLoading) {
@@ -239,6 +568,25 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
       tabIndex={0}
       ref={wrapperRef}
     >
+      <div className="review-mode-toggle" role="tablist">
+        <button
+          className={`review-mode-btn ${reviewMode === "flashcard" ? "active" : ""}`}
+          onClick={() => handleReviewModeChange("flashcard")}
+          type="button"
+        >
+          <span className="material-symbols-outlined">style</span>
+          Flashcard
+        </button>
+        <button
+          className={`review-mode-btn ${reviewMode === "typing" ? "active" : ""}`}
+          onClick={() => handleReviewModeChange("typing")}
+          type="button"
+        >
+          <span className="material-symbols-outlined">keyboard</span>
+          Keyboard
+        </button>
+      </div>
+
       {/* === PROGRESS === */}
       <div className="progress-container">
         <div className="progress-text">
@@ -255,35 +603,131 @@ export default function Review({ onReviewUpdate }: ReviewProps) {
       </div>
 
       {/* === CARD === */}
-      <div className="review-card">
-        <div className="review-word">
-          <div className="word-header">
-            <h2>{currentWord.word}</h2>
-            <span className="review-type">({currentWord.type || ""})</span>
-          </div>
-          {currentWord.ipa && (
-            <p className="review-ipa">
+      {isTypingMode ? (
+        <div className="review-card typing-card">
+          <div className="typing-panel">
+            <div className="typing-audio-row">
               <button
-                className={`pronounce-btn has-tooltip tooltip-center ${!hasAudio ? "disabled" : ""}`}
-                onClick={hasAudio ? handlePronounce : undefined}
+                className={`typing-audio-btn has-tooltip tooltip-center ${!hasAudio ? "disabled" : ""}`}
+                onClick={hasAudio ? () => handlePronounce() : undefined}
                 type="button"
-                data-tooltip={hasAudio ? "Pronunciation (A)" : "Không có file âm thanh"}
+                data-tooltip={
+                  hasAudio ? "Pronunciation (A)" : "Không có file âm thanh"
+                }
               >
                 <span className="material-symbols-outlined">volume_up</span>
               </button>
-              /{currentWord.ipa}/
-            </p>
-          )}
-        </div>
+              {currentWord.type && (
+                <div className="type-pill-list">
+                  {splitTypeLabels(currentWord.type).map((typePart) => (
+                    <span
+                      className={getTypePillClassName(typePart)}
+                      key={`${currentWord.id}-${typePart}`}
+                    >
+                      {formatTypeLabel(typePart)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div
+              className={`review-typing-field ${typedAnswer ? "has-value" : ""}`}
+              style={typingFieldStyle}
+            >
+              <span
+                ref={typingMeasureRef}
+                className="review-typing-measure"
+                aria-hidden="true"
+              >
+                {typingFieldText}
+              </span>
+              <input
+                ref={typingInputRef}
+                className="review-typing-input"
+                value={typedAnswer}
+                onChange={(e) => setTypedAnswer(e.target.value)}
+                placeholder="Type the word"
+                autoComplete="off"
+                spellCheck={false}
+                readOnly={Boolean(typingResult)}
+              />
+            </div>
 
-        <div className={`review-meaning ${showMeaning ? "show" : ""}`}>
-          {currentWord.meaning || "Không có nghĩa"}
+            <div className="typing-result">
+              {typingResult && (
+                <>
+                  <div
+                    className={`typing-result-label ${
+                      typingResult.isCorrect ? "correct" : "wrong"
+                    }`}
+                  >
+                    {typingResult.isCorrect ? "Correct" : "Incorrect"}
+                  </div>
+                  <div className="typing-answer-line">
+                    <span>Answer</span>
+                    <strong>{getTypingAnswer(currentWord.word)}</strong>
+                  </div>
+                  {!typingResult.isCorrect && (
+                    <div className="typing-answer-line typed-answer">
+                      <span>You typed</span>
+                      <strong>{typingResult.submittedAnswer || "-"}</strong>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="review-card">
+          <div className="review-word">
+            <div className="word-header">
+              <h2>{currentWord.word}</h2>
+              {currentWord.type && (
+                <div className="type-pill-list">
+                  {splitTypeLabels(currentWord.type).map((typePart) => (
+                    <span
+                      className={getTypePillClassName(typePart)}
+                      key={`${currentWord.id}-${typePart}`}
+                    >
+                      {formatTypeLabel(typePart)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            {currentWord.ipa && (
+              <p className="review-ipa">
+                <button
+                  className={`pronounce-btn has-tooltip tooltip-center ${!hasAudio ? "disabled" : ""}`}
+                  onClick={hasAudio ? () => handlePronounce() : undefined}
+                  type="button"
+                  data-tooltip={
+                    hasAudio ? "Pronunciation (A)" : "Không có file âm thanh"
+                  }
+                >
+                  <span className="material-symbols-outlined">volume_up</span>
+                </button>
+                <span>/{currentWord.ipa}/</span>
+              </p>
+            )}
+          </div>
+
+          <div className={`review-meaning ${showMeaning ? "show" : ""}`}>
+            {currentWord.meaning || "Không có nghĩa"}
+          </div>
+        </div>
+      )}
 
       {/* === HINT === */}
       <div className="review-hint">
-        {!showMeaning ? <p>space</p> : <p>1 • 4</p>}
+        {isTypingMode ? (
+          <p>{typingResult ? "1 • 4" : "enter"}</p>
+        ) : !showMeaning ? (
+          <p>space</p>
+        ) : (
+          <p>1 • 4</p>
+        )}
       </div>
     </div>
   );

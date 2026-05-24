@@ -1,5 +1,5 @@
 // -- Types & Utils --
-import { Tab } from "../../types";
+import { Tab } from "../../shared/model/tab";
 
 // -- Style --
 import logo from "../../assets/logo.svg";
