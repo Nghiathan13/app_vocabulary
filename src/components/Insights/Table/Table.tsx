@@ -14,8 +14,8 @@ import Table_Grid, {
 } from "./Table_Grid";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../types";
-import { getAudioPath } from "../../../utils";
+import { WordWithId } from "../../../entities/word/model/types";
+import { getAudioPath } from "../../../shared/lib/utils";
 import {
   getSearchMatchColumn,
   getSearchPriority,

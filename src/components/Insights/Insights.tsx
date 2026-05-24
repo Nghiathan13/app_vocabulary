@@ -6,7 +6,7 @@ import Table from "./Table/Table";
 import Chart from "./Chart/Chart";
 
 // -- Types & Utils --
-import { WordWithId } from "../../types";
+import { WordWithId } from "../../entities/word/model/types";
 
 // -- Style --
 import "./Insights.css";

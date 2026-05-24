@@ -1,4 +1,4 @@
-import { WordWithId } from "../../../types";
+import { WordWithId } from "../../../entities/word/model/types";
 
 const DIACRITICS_REGEX = /[\u0300-\u036f]/g;
 const NUMBER_SEARCH_REGEX = /^\d+$/;

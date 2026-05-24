@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import * as XLSX from "xlsx";
-import { WordWithId } from "../../../types";
+import { WordWithId } from "../../../entities/word/model/types";
 
 export interface ImportDraftWord {
   word: string;

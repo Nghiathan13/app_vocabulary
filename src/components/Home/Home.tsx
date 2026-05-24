@@ -2,13 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 
 // -- Types & Utils --
-import { WordType, WordWithId } from "../../types";
-import { downloadAudio } from "../../services/audio";
-import { insertWord } from "../../services/words";
+import { WordType, WordWithId } from "../../entities/word/model/types";
+import { downloadAudio } from "../../shared/api/audio";
+import { insertWord } from "../../entities/word/api/words";
 
 // -- Style --
 import "./Home.css";
-import { useToast } from "../Toast/ToastProvider";
+import { useToast } from "../../shared/ui/Toast/ToastProvider";
 
 const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "noun", label: "noun" },

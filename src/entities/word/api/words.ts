@@ -1,7 +1,7 @@
 import Database from "@tauri-apps/plugin-sql";
 
-import { WordWithId } from "../types";
-import { getLocalDateString } from "../utils";
+import { WordWithId } from "../model/types";
+import { getLocalDateString } from "../../../shared/lib/utils";
 
 interface InsertWordParams {
   word: string;

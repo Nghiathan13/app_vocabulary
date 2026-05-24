@@ -8,8 +8,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../types";
-import { formatDisplayDate, getAudioPath } from "../../../utils";
+import { WordWithId } from "../../../entities/word/model/types";
+import { formatDisplayDate, getAudioPath } from "../../../shared/lib/utils";
 
 export type TableSortColumn =
   | "word"
@@ -60,6 +60,54 @@ const moveTextareaCaretToEnd = (
   });
 };
 
+const getTypePillClassName = (type: string | null) => {
+  const normalizedType = type?.trim().toLowerCase() || "";
+
+  if (normalizedType.includes("phrasal")) {
+    return "type-pill-table type-pill-phrasal";
+  }
+
+  if (normalizedType === "adverb" || normalizedType === "adv") {
+    return "type-pill-table type-pill-adverb";
+  }
+
+  if (normalizedType === "preposition" || normalizedType === "prep") {
+    return "type-pill-table type-pill-preposition";
+  }
+
+  if (normalizedType === "noun") {
+    return "type-pill-table type-pill-noun";
+  }
+
+  if (normalizedType === "adjective" || normalizedType === "adj") {
+    return "type-pill-table type-pill-adjective";
+  }
+
+  if (normalizedType === "verb") {
+    return "type-pill-table type-pill-verb";
+  }
+
+  return "type-pill-table type-pill-default";
+};
+
+const splitTypeLabels = (type: string | null) => {
+  return (type || "")
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+};
+
+const formatTypeLabel = (type: string | null) => {
+  if (!type) {
+    return "";
+  }
+
+  return type
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
+
 export default function Table_Grid({
   words,
   isEditing,
@@ -80,7 +128,7 @@ export default function Table_Grid({
   const rowVirtualizer = useVirtualizer({
     count: words.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 35,
+    estimateSize: () => 44,
     overscan: 10,
     getItemKey: (index) => words[index].id,
   });
@@ -292,8 +340,19 @@ export default function Table_Grid({
                       onBlur={onCellDeactivate}
                       spellCheck={false}
                     />
+                  ) : w.type ? (
+                    <span className="type-pill-list">
+                      {splitTypeLabels(w.type).map((typePart) => (
+                        <span
+                          className={getTypePillClassName(typePart)}
+                          key={`${w.id}-${typePart}`}
+                        >
+                          {formatTypeLabel(typePart)}
+                        </span>
+                      ))}
+                    </span>
                   ) : (
-                    w.type
+                    ""
                   )}
                 </div>
 

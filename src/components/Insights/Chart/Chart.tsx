@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../types";
+import { WordWithId } from "../../../entities/word/model/types";
 
 // -- Style --
 import "./Chart.css";
