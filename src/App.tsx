@@ -9,7 +9,7 @@ import { appConfigDir, join } from "@tauri-apps/api/path";
 // -- Components --
 import Navbar from "./components/Navbar/Navbar";
 import Home from "./components/Home/Home";
-import Review from "./components/Review/Review";
+import ReviewPage from "./features/review/page/ReviewPage";
 import VocabularyPage from "./features/vocabulary/page/VocabularyPage";
 import Practice from "./components/Practice/Practice";
 import { ToastProvider } from "./shared/ui/Toast/ToastProvider";
@@ -206,7 +206,7 @@ function App() {
               />
             )}
             {currentTab === "review" && (
-              <Review onReviewUpdate={handleReviewUpdate} />
+              <ReviewPage onReviewUpdate={handleReviewUpdate} />
             )}
             {currentTab === "practice" && <Practice />}
             {currentTab === "insights" && (
