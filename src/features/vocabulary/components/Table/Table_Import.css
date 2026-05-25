@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-overlay);
 }
 
 .import-modal {
@@ -16,8 +16,8 @@
   max-height: min(80vh, 720px);
   padding: 16px;
 
-  background: rgb(5, 5, 5);
-  border: 1px solid rgb(90, 90, 90);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
   border-radius: 20px;
   overflow: hidden;
 }
@@ -52,16 +52,16 @@
   padding: 8px;
   margin-top: 16px;
 
-  border: 1px solid rgb(60, 60, 60);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
 }
 
 .import-file-card.valid {
-  border-color: rgb(60, 180, 60);
+  border-color: var(--color-valid-border);
 }
 
 .import-file-card.invalid {
-  border-color: rgb(240, 60, 60);
+  border-color: var(--color-error-strong);
 }
 
 .import-file-content {
@@ -75,11 +75,11 @@
 
   text-align: left;
   word-break: break-all;
-  color: rgb(180, 180, 180);
+  color: var(--color-text-secondary);
 }
 
 .import-file-detail {
-  color: rgb(180, 180, 180);
+  color: var(--color-text-secondary);
 }
 
 .import-file-detail,
@@ -92,7 +92,7 @@
 }
 
 .import-file-error {
-  color: rgb(240, 60, 60);
+  color: var(--color-error-strong);
 }
 
 /* -- Button Import -- */
@@ -103,10 +103,10 @@
   padding: 4px;
 
   background: transparent;
-  border: 1px solid rgb(60, 60, 60);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
 
-  color: rgb(60, 60, 60);
+  color: var(--color-text-disabled);
 
   cursor: pointer;
 }
@@ -116,9 +116,9 @@
 }
 
 .import-modal-action:hover:not(:disabled) {
-  border-color: rgb(180, 180, 180);
+  border-color: var(--color-text-secondary);
 
-  color: rgb(180, 180, 180);
+  color: var(--color-text-secondary);
 }
 
 .import-modal-action:disabled {
@@ -133,23 +133,23 @@
   padding: 12px 0;
 
   background-color: transparent;
-  border: 1px solid rgb(180, 180, 180);
+  border: 1px solid var(--color-text-secondary);
   border-radius: 12px;
 
   font-size: 16px;
-  color: rgb(180, 180, 180);
+  color: var(--color-text-secondary);
 
   cursor: pointer;
 }
 
 .import-add-btn:not(:disabled):hover {
-  background: rgb(60, 60, 60);
+  background: var(--color-surface-strong);
 }
 
 .import-add-btn:disabled {
-  border-color: rgb(60, 60, 60);
+  border-color: var(--color-border);
 
-  color: rgb(60, 60, 60);
+  color: var(--color-text-disabled);
 
   cursor: not-allowed;
 }
@@ -162,18 +162,18 @@
   padding: 4px;
 
   background: transparent;
-  border: 1px solid rgb(60, 60, 60);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
 
-  color: rgb(60, 60, 60);
+  color: var(--color-text-disabled);
 
   cursor: pointer;
 }
 
 .import-icon-btn:hover:not(:disabled) {
-  border-color: rgb(180, 180, 180);
+  border-color: var(--color-text-secondary);
 
-  color: rgb(180, 180, 180);
+  color: var(--color-text-secondary);
 }
 
 .import-icon-btn:disabled {

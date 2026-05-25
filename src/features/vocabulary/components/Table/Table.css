@@ -6,8 +6,6 @@
   grid-template-columns: minmax(min-content, 1fr) auto minmax(min-content, 1fr);
   align-items: center;
   padding: 8px 0;
-
-  border-top: 1px solid rgb(60, 60, 60);
 }
 
 .table-actions-side {
@@ -40,17 +38,17 @@
   box-sizing: border-box;
 
   background: transparent;
-  border: 1px solid rgb(60, 60, 60);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   outline: none;
 
   font-family: inherit;
   font-size: 16px;
-  color: rgb(120, 120, 120);
+  color: var(--color-text-muted);
 }
 
 .table-search-input::placeholder {
-  color: rgb(45, 45, 45);
+  color: var(--color-text-placeholder);
 }
 
 .table-search-clear {
@@ -67,7 +65,7 @@
   background: transparent;
   border: none;
 
-  color: rgb(120, 120, 120);
+  color: var(--color-text-muted);
 
   cursor: pointer;
   transition: color 0.2s;
@@ -98,7 +96,7 @@
   border: none;
   border-radius: 8px;
 
-  color: rgb(120, 120, 120);
+  color: var(--color-text-muted);
 
   cursor: pointer;
   transition: all 0.2s;
@@ -107,7 +105,7 @@
 .edit-btn:hover,
 .save-btn:hover,
 .cancel-btn:hover {
-  background: rgb(60, 60, 60, 0.5);
+  background: var(--color-surface-hover);
 }
 
 .has-tooltip {
@@ -122,15 +120,15 @@
   padding: 4px 4px;
   margin-top: 6px;
 
-  background-color: rgb(15, 15, 15);
-  border: 1px solid rgb(60, 60, 60);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   opacity: 0;
   visibility: hidden;
 
   font-size: 12px;
   white-space: nowrap;
-  color: rgb(210, 210, 210);
+  color: var(--color-text-primary);
 
   pointer-events: none;
   transition:
@@ -170,4 +168,13 @@
 .save-btn .material-symbols-outlined,
 .cancel-btn .material-symbols-outlined {
   font-size: 20px;
+}
+
+.edit-btn .add-btn-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  -webkit-mask: url("../../../../assets/add.svg") center / contain no-repeat;
+  mask: url("../../../../assets/add.svg") center / contain no-repeat;
 }

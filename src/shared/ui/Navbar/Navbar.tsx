@@ -44,10 +44,10 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
         <button
           className={`nav-icon-btn ${currentTab === "insights" ? "active" : ""}`}
           onClick={() => onTabChange("insights")}
-          aria-label="Insights"
-          title="Insights"
+          aria-label="Vocabulary"
+          title="Vocabulary"
         >
-          <span className="material-symbols-outlined">database</span>
+          <span className="vocabulary-nav-icon" aria-hidden="true" />
         </button>
       </div>
 
