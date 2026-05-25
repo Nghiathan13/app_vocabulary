@@ -10,6 +10,7 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 // -- Components --
 import ImportModal from "./Table_Import";
 import SaveModal, { WordChange } from "./Table_SaveModal";
+import TableAddWordModal from "./Table_AddWordModal";
 
 // -- Types & Utils --
 import { importWords } from "../../../../entities/word/api/words";
@@ -27,6 +28,8 @@ interface TableActionsProps {
   onSave: () => void;
   onCancel: () => void;
   onRefresh: () => void;
+  onWordAdded: (newWord: WordWithId) => void;
+  onWordAudioReady: (wordId: number) => void;
   existingWords: WordWithId[];
   wordsToExport: WordWithId[];
   editedWords: WordWithId[];
@@ -43,6 +46,8 @@ export default function Table_Actions({
   onSave,
   onCancel,
   onRefresh,
+  onWordAdded,
+  onWordAudioReady,
   existingWords,
   wordsToExport,
   editedWords,
@@ -58,6 +63,7 @@ export default function Table_Actions({
   const [isAddingImportedWords, setIsAddingImportedWords] = useState(false);
 
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // === DERIVED STATE ===
   const changes = useMemo<WordChange[]>(() => {
@@ -287,6 +293,16 @@ export default function Table_Actions({
           {!isEditing ? (
             <div className="edit-group">
               <button
+                type="button"
+                className="edit-btn has-tooltip tooltip-center"
+                onClick={() => setIsAddModalOpen(true)}
+                data-tooltip="Add"
+                aria-label="Add"
+              >
+                <span className="add-btn-icon" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
                 className="edit-btn has-tooltip tooltip-right"
                 onClick={onEdit}
                 data-tooltip="Edit (Ctrl+E)"
@@ -319,6 +335,13 @@ export default function Table_Actions({
           )}
         </div>
       </div>
+
+      <TableAddWordModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onWordAdded={onWordAdded}
+        onWordAudioReady={onWordAudioReady}
+      />
 
       <ImportModal
         isOpen={isImportModalOpen}

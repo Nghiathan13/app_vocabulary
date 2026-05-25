@@ -6,7 +6,7 @@
   width: 100%;
   padding-bottom: 4px;
 
-  border-bottom: 1px solid rgb(60, 60, 60);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .navbar-left,
@@ -61,17 +61,17 @@
   border: none;
   border-radius: 8px;
 
-  color: rgb(120, 120, 120);
+  color: var(--color-text-muted);
 
   cursor: pointer;
 }
 
 .nav-icon-btn:hover {
-  background: rgb(60, 60, 60, 0.5);
+  background: var(--color-surface-hover);
 }
 
 .nav-icon-btn.active {
-  color: rgb(210, 210, 210);
+  color: var(--color-text-primary);
 }
 
 .nav-icon-btn.active:hover {
@@ -86,13 +86,22 @@
 
   height: 2px;
 
-  background: rgb(210, 210, 210);
+  background: var(--color-text-primary);
 
   content: "";
 }
 
 .nav-icon-btn .material-symbols-outlined {
   font-size: 32px;
+}
+
+.nav-icon-btn .vocabulary-nav-icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  background-color: currentColor;
+  -webkit-mask: url("../../../assets/vocabulary.svg") center / contain no-repeat;
+  mask: url("../../../assets/vocabulary.svg") center / contain no-repeat;
 }
 
 /* === RIGHT === */
@@ -105,13 +114,13 @@
   background: transparent;
   border: none;
 
-  color: rgb(120, 120, 120);
+  color: var(--color-text-muted);
 
   cursor: pointer;
 }
 
 .nav-settings-btn:hover {
-  color: rgb(210, 210, 210);
+  color: var(--color-text-primary);
 }
 
 .nav-settings-btn .material-symbols-outlined {

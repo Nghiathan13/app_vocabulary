@@ -1,0 +1,71 @@
+:root {
+  /* Background / surface */
+  --color-bg: #050505;
+  --color-surface: rgb(15, 15, 15);
+  --color-surface-elevated: rgb(20, 20, 20);
+  --color-surface-raised: rgb(25, 25, 25);
+  --color-surface-subtle: rgb(30, 30, 30);
+  --color-surface-muted: rgb(55, 55, 55);
+  --color-surface-strong: rgb(60, 60, 60);
+  --color-surface-hover: rgba(60, 60, 60, 0.5);
+  --color-surface-row-hover: rgba(30, 30, 30, 0.5);
+  --color-surface-pill-hover: rgba(30, 30, 30, 0.6);
+
+  /* Border */
+  --color-border: rgb(60, 60, 60);
+  --color-border-subtle: rgb(30, 30, 30);
+  --color-border-faint: rgb(40, 40, 40);
+  --color-border-strong: rgb(90, 90, 90);
+
+  /* Text */
+  --color-text-primary: rgb(210, 210, 210);
+  --color-text-secondary: rgb(180, 180, 180);
+  --color-text-muted: rgb(120, 120, 120);
+  --color-text-dim: rgb(90, 90, 90);
+  --color-text-disabled: rgb(60, 60, 60);
+  --color-text-placeholder: rgb(45, 45, 45);
+  --color-text-inverse: #ffffff;
+  --color-text-label: rgb(130, 130, 130);
+  --color-text-tertiary: rgb(150, 150, 150);
+  --color-text-quaternary: rgb(200, 200, 200);
+  --color-text-bright: rgb(230, 230, 230);
+  --color-text-highlight: rgb(220, 220, 220);
+  --color-text-subtle: rgb(170, 170, 170);
+  --color-text-faint: rgb(110, 110, 110);
+  --color-text-track: rgb(75, 75, 75);
+
+  /* Overlay / shadow */
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-shadow: rgba(0, 0, 0, 0.2);
+
+  /* Semantic status */
+  --color-success: rgb(56, 142, 60);
+  --color-success-soft: rgba(100, 240, 100, 0.8);
+  --color-error: rgb(198, 40, 40);
+  --color-error-strong: rgb(240, 60, 60);
+  --color-danger: rgb(255, 69, 58);
+  --color-danger-soft: rgba(240, 100, 100, 0.8);
+  --color-valid-border: rgb(60, 180, 60);
+  --color-typing-correct: rgb(125, 200, 150);
+  --color-typing-incorrect: rgb(220, 130, 130);
+
+  /* Progress / typing underline */
+  --color-progress-track: rgb(75, 75, 75);
+  --color-progress-fill: rgb(210, 210, 210);
+  --color-progress-glow: rgba(210, 210, 210, 0.36);
+  --color-progress-glow-subtle: rgba(210, 210, 210, 0.12);
+
+  /* Type/category pills */
+  --color-type-phrasal-bg: rgba(120, 120, 120, 0.16);
+  --color-type-phrasal-text: rgb(165, 165, 165);
+  --color-type-adverb-bg: rgba(40, 121, 214, 0.18);
+  --color-type-adverb-text: rgb(53, 151, 255);
+  --color-type-preposition-bg: rgba(91, 87, 184, 0.18);
+  --color-type-preposition-text: rgb(132, 125, 235);
+  --color-type-noun-bg: rgba(73, 153, 49, 0.18);
+  --color-type-noun-text: rgb(95, 202, 75);
+  --color-type-adjective-bg: rgba(194, 109, 31, 0.18);
+  --color-type-adjective-text: rgb(240, 151, 57);
+  --color-type-verb-bg: rgba(34, 151, 151, 0.18);
+  --color-type-verb-text: rgb(47, 199, 196);
+}

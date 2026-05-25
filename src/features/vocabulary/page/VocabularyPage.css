@@ -1,52 +1,20 @@
-/* === LAYOUT === */
-.insights-container {
+.vocabulary-container {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: center;
   width: 100%;
+  min-height: 0;
 }
 
-/* === SUB NAVIGATION === */
-.sub-nav {
+.vocabulary-container .table-wrapper {
   display: flex;
-  justify-content: center;
-  margin: 8px;
-
-  border: 1px solid rgb(60, 60, 60);
-  border-radius: 8px;
-  overflow: hidden;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.sub-nav-btn {
-  position: relative;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 24px;
-
-  background: transparent;
-  border: none;
-
-  color: rgb(120, 120, 120);
-  font-family: inherit;
-  font-size: 20px;
-
-  cursor: pointer;
-}
-
-.sub-nav-btn:hover {
-  background: rgb(60, 60, 60, 0.5);
-}
-
-.sub-nav-btn.active {
-  background: rgb(60, 60, 60, 0.5);
-}
-
-/* === CONTENT === */
-.insights-content {
-  width: 100%;
-
-  text-align: center;
-  color: rgb(90, 90, 90);
+.vocabulary-container .word-grid-main-wrapper {
+  flex: 1;
+  max-height: none;
+  min-height: 0;
 }

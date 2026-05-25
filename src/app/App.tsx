@@ -3,7 +3,7 @@ import { useState } from "react";
 
 // -- Components --
 import Navbar from "../shared/ui/Navbar/Navbar";
-import AddWordPage from "../features/add-word/page/AddWordPage";
+import HomePage from "../features/home/page/HomePage";
 import ReviewPage from "../features/review/page/ReviewPage";
 import VocabularyPage from "../features/vocabulary/page/VocabularyPage";
 import PracticePage from "../features/practice/page/PracticePage";
@@ -40,12 +40,7 @@ function App() {
           </div>
         ) : (
           <>
-            {currentTab === "home" && (
-              <AddWordPage
-                onWordAdded={handleWordAdded}
-                onWordAudioReady={handleWordAudioReady}
-              />
-            )}
+            {currentTab === "home" && <HomePage words={globalWords} />}
             {currentTab === "review" && (
               <ReviewPage onReviewUpdate={handleReviewUpdate} />
             )}
@@ -55,6 +50,8 @@ function App() {
                 words={globalWords}
                 onRefresh={fetchGlobalWords}
                 onWordDeleted={handleWordDeleted}
+                onWordAdded={handleWordAdded}
+                onWordAudioReady={handleWordAudioReady}
               />
             )}
           </>
