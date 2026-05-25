@@ -12,21 +12,21 @@
   min-width: 220px;
   max-width: 320px;
   padding: 10px 20px;
-  border: 1px solid rgb(60, 60, 60);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: rgb(20, 20, 20);
+  background: var(--color-surface-elevated);
   font-size: 14px;
-  color: rgb(210, 210, 210);
+  color: var(--color-text-primary);
   animation: toast-in 0.25s ease-out;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px var(--color-shadow);
 }
 
 .toast-success {
-  border-color: rgb(56, 142, 60);
+  border-color: var(--color-success);
 }
 
 .toast-error {
-  border-color: rgb(198, 40, 40);
+  border-color: var(--color-error);
 }
 
 @keyframes toast-in {

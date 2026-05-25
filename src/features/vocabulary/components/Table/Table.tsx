@@ -34,6 +34,8 @@ interface TableProps {
   words: WordWithId[];
   onRefresh: () => void;
   onWordDeleted: (wordId: number) => void;
+  onWordAdded: (newWord: WordWithId) => void;
+  onWordAudioReady: (wordId: number) => void;
 }
 
 const normalizeComparableValue = (
@@ -51,6 +53,8 @@ export default function Table({
   words,
   onRefresh,
   onWordDeleted,
+  onWordAdded,
+  onWordAudioReady,
 }: TableProps) {
   // === STATE ===
   const [isEditing, setIsEditing] = useState(false);
@@ -269,6 +273,8 @@ export default function Table({
         onSave={handleSaveClick}
         onCancel={handleCancelClick}
         onRefresh={onRefresh}
+        onWordAdded={onWordAdded}
+        onWordAudioReady={onWordAudioReady}
         existingWords={words}
         wordsToExport={displayedWords}
         editedWords={editedWords}
