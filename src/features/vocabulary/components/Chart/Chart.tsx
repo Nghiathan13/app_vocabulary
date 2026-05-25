@@ -20,9 +20,10 @@ import "./Chart.css";
 
 interface ChartProps {
   words: WordWithId[];
+  variant?: "dashboard" | "compact";
 }
 
-export default function Chart({ words }: ChartProps) {
+export default function Chart({ words, variant = "dashboard" }: ChartProps) {
   // === DERIVED STATE ===
   const chartData = useMemo(() => {
     const counts: Record<number, number> = {};
@@ -41,7 +42,7 @@ export default function Chart({ words }: ChartProps) {
 
   // === RENDER ===
   return (
-    <div className="chart-wrapper">
+    <div className={`chart-wrapper chart-wrapper--${variant}`}>
       <div className="chart-container">
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">

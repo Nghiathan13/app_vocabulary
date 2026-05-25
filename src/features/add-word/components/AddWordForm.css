@@ -1,0 +1,107 @@
+.form-body {
+  text-align: center;
+}
+
+.field-row {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.field {
+  margin-bottom: 28px;
+}
+
+.field-label {
+  display: block;
+
+  font-size: 12px;
+  font-weight: bold;
+  text-align: left;
+  color: var(--color-text-dim);
+}
+
+.field:has(input:focus) .field-label,
+.field.has-value .field-label {
+  color: var(--color-text-primary);
+}
+
+.field input {
+  width: 100%;
+  padding: 8px 0px;
+  margin-top: 8px;
+
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  outline: none;
+
+  font-size: 16px;
+}
+
+.field input::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.field input:focus,
+.field.has-value input {
+  border-bottom-color: var(--color-text-primary);
+
+  color: var(--color-text-primary);
+}
+
+.type-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.type-pill {
+  padding: 6px 16px;
+
+  background: transparent;
+  border: 1px solid var(--color-surface-subtle);
+  border-radius: 100px;
+
+  font-size: 16px;
+  color: var(--color-text-disabled);
+
+  cursor: pointer;
+}
+
+.type-pill:hover {
+  background-color: var(--color-surface-pill-hover);
+}
+
+.type-pill.selected {
+  border-color: var(--color-text-primary);
+
+  color: var(--color-text-primary);
+}
+
+.btn-add {
+  width: 100%;
+  padding: 12px 0;
+
+  background-color: transparent;
+  border: 1px solid var(--color-text-primary);
+  border-radius: 12px;
+
+  font-size: 16px;
+  color: var(--color-text-primary);
+
+  cursor: pointer;
+}
+
+.btn-add:not(:disabled):hover {
+  background: var(--color-surface-subtle);
+}
+
+.btn-add:disabled {
+  border-color: var(--color-surface-subtle);
+
+  color: var(--color-text-disabled);
+
+  cursor: not-allowed;
+}
