@@ -1,11 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
-import { readDir } from "@tauri-apps/plugin-fs";
-import { appConfigDir, join } from "@tauri-apps/api/path";
-
+import { useWordStore } from "../../entities/word/model/store";
 import { WordWithId } from "../../entities/word/model/types";
-import { listWords } from "../../entities/word/api/words";
-import { getAudioFileName } from "../../shared/lib/utils";
 import { downloadAudioStatus, getElevenLabsQuota } from "../../shared/api/audio";
 
 const AUDIO_SYNC_RETRY_AFTER_KEY = "elevenlabsAudioSyncRetryAfter";
@@ -51,66 +47,17 @@ export interface UseGlobalWordsResult {
 }
 
 export function useGlobalWords(): UseGlobalWordsResult {
-  const [globalWords, setGlobalWords] = useState<WordWithId[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    globalWords,
+    isLoading,
+    fetchGlobalWords,
+    handleReviewUpdate,
+    handleWordAdded,
+    handleWordAudioReady,
+    handleWordDeleted,
+  } = useWordStore();
+
   const audioSyncStartedRef = useRef(false);
-
-  const fetchGlobalWords = useCallback(async () => {
-    try {
-      const result = await listWords();
-
-      let audioFiles = new Set<string>();
-      try {
-        const configDir = await appConfigDir();
-        const audioDir = await join(configDir, "audio");
-        const entries = await readDir(audioDir);
-        audioFiles = new Set(entries.map((e) => e.name.toLowerCase()));
-      } catch (error) {
-        console.warn("Không thể quét thư mục audio:", error);
-      }
-
-      const wordsWithAudio = result.map((w) => {
-        const fileName = getAudioFileName(w.word);
-        return {
-          ...w,
-          hasAudio: audioFiles.has(fileName.toLowerCase()),
-        };
-      });
-
-      setGlobalWords(wordsWithAudio);
-    } catch (error) {
-      console.error("Error fetching words:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const handleReviewUpdate = useCallback(
-    (wordStr: string, updates: Partial<WordWithId>) => {
-      setGlobalWords((prev) =>
-        prev.map((w) => (w.word === wordStr ? { ...w, ...updates } : w)),
-      );
-    },
-    [],
-  );
-
-  const handleWordAdded = useCallback((newWord: WordWithId) => {
-    setGlobalWords((prev) =>
-      [...prev, newWord].sort((a, b) => a.word.localeCompare(b.word)),
-    );
-  }, []);
-
-  const handleWordAudioReady = useCallback((wordId: number) => {
-    setGlobalWords((prev) =>
-      prev.map((w) =>
-        w.id === wordId && !w.hasAudio ? { ...w, hasAudio: true } : w,
-      ),
-    );
-  }, []);
-
-  const handleWordDeleted = useCallback((wordId: number) => {
-    setGlobalWords((prev) => prev.filter((w) => w.id !== wordId));
-  }, []);
 
   const syncMissingAudio = useCallback(
     async (words: WordWithId[]) => {
