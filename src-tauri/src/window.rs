@@ -1,8 +1,23 @@
-use tauri::WebviewWindow;
+use tauri::{Manager, WebviewWindow};
 
 /// Tự động điều chỉnh kích thước cửa sổ chính theo tỷ lệ 16:10 và chiếm 80% màn hình chính
 pub fn setup_main_window_size(window: &WebviewWindow) -> Result<(), Box<dyn std::error::Error>> {
-    if let Some(monitor) = window.primary_monitor()? {
+    // 1. Kiểm tra trạng thái lưu lần trước
+    let mut is_previously_maximized = false;
+    if let Ok(config_dir) = window.path().app_config_dir() {
+        let state_path = config_dir.join("window_state.txt");
+        if state_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(state_path) {
+                if content.trim() == "maximized" {
+                    is_previously_maximized = true;
+                }
+            }
+        }
+    }
+
+    if is_previously_maximized {
+        window.maximize()?;
+    } else if let Some(monitor) = window.primary_monitor()? {
         let size = monitor.size();
         let monitor_width = size.width as f64;
         let monitor_height = size.height as f64;
