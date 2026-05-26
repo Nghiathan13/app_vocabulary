@@ -4,6 +4,8 @@ use std::path::PathBuf;
 use tauri::Manager;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod window;
+
 const ELEVENLABS_TTS_MODEL: &str = "eleven_multilingual_v2";
 const ELEVENLABS_OUTPUT_FORMAT: &str = "mp3_44100_128";
 
@@ -263,6 +265,14 @@ pub fn run() {
                 .add_migrations("sqlite:vocabulary.db", migrations)
                 .build(),
         )
+        .setup(|app| {
+            if let Some(window) = app.get_webview_window("main") {
+                if let Err(e) = window::setup_main_window_size(&window) {
+                    eprintln!("Lỗi cấu hình kích thước cửa sổ: {}", e);
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             write_binary_file,
             read_binary_file,

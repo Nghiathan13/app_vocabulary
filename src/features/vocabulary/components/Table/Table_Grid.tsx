@@ -13,7 +13,6 @@ import { formatDisplayDate, getAudioPath } from "../../../../shared/lib/utils";
 
 export type TableSortColumn =
   | "word"
-  | "type"
   | "reps"
   | "last_review"
   | "next_review";
@@ -194,17 +193,7 @@ export default function Table_Grid({
 
         <div className="grid-header">IPA</div>
 
-        <div
-          className="grid-header sortable-th"
-          onClick={() => onSortToggle("type")}
-        >
-          Type{" "}
-          {sortColumn === "type" && (
-            <span className="material-symbols-outlined sort-icon">
-              {sortOrder === "asc" ? "arrow_drop_up" : "arrow_drop_down"}
-            </span>
-          )}
-        </div>
+        <div className="grid-header">Type</div>
 
         <div className="grid-header">Meaning</div>
 

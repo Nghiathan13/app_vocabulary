@@ -32,35 +32,33 @@ describe("normalizeSearchText", () => {
 });
 
 describe("getSearchMatchColumn", () => {
-  it("searches reps by substring for numeric queries", () => {
-    expect(getSearchMatchColumn(makeWord({ reps: 12 }), "12")).toBe("reps");
-    expect(getSearchMatchColumn(makeWord({ reps: 12 }), "1")).toBe("reps");
-    expect(getSearchMatchColumn(makeWord({ reps: 3 }), "12")).toBeNull();
-  });
-
-  it("searches word, then type, then meaning for non-diacritic queries", () => {
-    expect(getSearchMatchColumn(makeWord({ word: "Hello" }), "hel")).toBe(
-      "word",
-    );
+  it("does not search reps or type", () => {
+    expect(getSearchMatchColumn(makeWord({ reps: 12 }), "12")).toBeNull();
     expect(
       getSearchMatchColumn(
         makeWord({ word: "xyz", type: "verb", meaning: "to move" }),
         "verb",
       ),
-    ).toBe("type");
+    ).toBeNull();
+  });
+
+  it("searches word, then meaning for non-diacritic queries", () => {
+    expect(getSearchMatchColumn(makeWord({ word: "Hello" }), "hel")).toBe(
+      "word",
+    );
     expect(
       getSearchMatchColumn(
-        makeWord({ word: "xyz", type: null, meaning: "to greet" }),
+        makeWord({ word: "xyz", meaning: "to greet" }),
         "greet",
       ),
     ).toBe("meaning");
   });
 
-  it("prefers word match over type match", () => {
+  it("prefers word match over meaning match", () => {
     expect(
       getSearchMatchColumn(
-        makeWord({ word: "verb", type: "verb", meaning: "action" }),
-        "verb",
+        makeWord({ word: "greet", meaning: "greet" }),
+        "greet",
       ),
     ).toBe("word");
   });
@@ -84,10 +82,8 @@ describe("getSearchMatchColumn", () => {
 });
 
 describe("getSearchPriority", () => {
-  it("returns word=0, type=1, meaning=2, reps=3", () => {
+  it("returns word=0, meaning=1", () => {
     expect(getSearchPriority("word")).toBe(0);
-    expect(getSearchPriority("type")).toBe(1);
-    expect(getSearchPriority("meaning")).toBe(2);
-    expect(getSearchPriority("reps")).toBe(3);
+    expect(getSearchPriority("meaning")).toBe(1);
   });
 });
