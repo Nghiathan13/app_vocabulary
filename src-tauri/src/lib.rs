@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use tauri::Manager;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod db;
 mod window;
 
 const ELEVENLABS_TTS_MODEL: &str = "eleven_multilingual_v2";
@@ -65,7 +66,7 @@ fn load_elevenlabs_config() -> Result<ElevenLabsConfig, String> {
     Ok(ElevenLabsConfig { api_key, voice_id })
 }
 
-fn get_audio_file_name(word: &str) -> String {
+pub(crate) fn get_audio_file_name(word: &str) -> String {
     let mut file_name = String::new();
     let mut replacing = false;
 
@@ -247,6 +248,59 @@ async fn download_elevenlabs_audio(
     })
 }
 
+#[tauri::command]
+async fn get_all_words(app: tauri::AppHandle) -> Result<Vec<db::words::WordWithId>, String> {
+    db::words::list_words_db(&app)
+}
+
+#[tauri::command]
+async fn insert_new_word(
+    app: tauri::AppHandle,
+    word: String,
+    ipa: String,
+    r#type: String,
+    meaning: String,
+) -> Result<db::words::WordWithId, String> {
+    db::words::insert_word_db(&app, word, ipa, r#type, meaning)
+}
+
+#[tauri::command]
+async fn update_word_fields_rust(
+    app: tauri::AppHandle,
+    word: db::words::WordWithId,
+) -> Result<(), String> {
+    db::words::update_word_db(&app, word)
+}
+
+#[tauri::command]
+async fn delete_word_by_id_rust(app: tauri::AppHandle, id: i64) -> Result<(), String> {
+    db::words::delete_word_db(&app, id)
+}
+
+#[tauri::command]
+async fn import_words_rust(
+    app: tauri::AppHandle,
+    draft_words: Vec<db::words::WordImportDraft>,
+) -> Result<(), String> {
+    db::words::import_words_db(&app, draft_words)
+}
+
+#[tauri::command]
+async fn get_due_review_words(app: tauri::AppHandle) -> Result<Vec<db::words::WordWithId>, String> {
+    db::words::list_due_words_db(&app)
+}
+
+#[tauri::command]
+async fn update_word_review_rust(
+    app: tauri::AppHandle,
+    word: String,
+    reps: i32,
+    last_review: String,
+    next_review: Option<String>,
+) -> Result<(), String> {
+    db::words::update_word_review_db(&app, word, reps, last_review, next_review)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let migrations = vec![Migration {
@@ -273,12 +327,32 @@ pub fn run() {
             }
             Ok(())
         })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                if window.label() == "main" {
+                    if let Ok(is_maximized) = window.is_maximized() {
+                        let state = if is_maximized { "maximized" } else { "normal" };
+                        if let Ok(config_dir) = window.path().app_config_dir() {
+                            let _ = std::fs::create_dir_all(&config_dir);
+                            let _ = std::fs::write(config_dir.join("window_state.txt"), state);
+                        }
+                    }
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             write_binary_file,
             read_binary_file,
             remove_file,
             get_elevenlabs_quota,
-            download_elevenlabs_audio
+            download_elevenlabs_audio,
+            get_all_words,
+            insert_new_word,
+            update_word_fields_rust,
+            delete_word_by_id_rust,
+            import_words_rust,
+            get_due_review_words,
+            update_word_review_rust
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
