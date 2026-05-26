@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "engvocab",
         "width": 1000,
-        "height": 750
+        "height": 750,
+        "backgroundColor": "#000000"
       }
     ],
     "security": {
