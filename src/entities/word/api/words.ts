@@ -6,20 +6,47 @@ interface InsertWordParams {
   word: string;
   ipa: string;
   type: string;
-  meaning: string;
+  meaning_vi: string;
+}
+
+function toTauriWord(word: WordWithId) {
+  return {
+    id: word.id,
+    word: word.word,
+    ipa: word.ipa,
+    type: word.type,
+    meaningVi: word.meaning_vi,
+    definition: word.definition,
+    example: word.example,
+    band: word.band,
+    level: word.level,
+    wrongCount: word.wrong_count,
+    lastReview: word.last_review,
+    nextReview: word.next_review,
+    hasAudio: word.hasAudio,
+  };
+}
+
+function toTauriImportDraft(draft: WordImportDraft) {
+  return {
+    word: draft.word,
+    ipa: draft.ipa,
+    type: draft.type,
+    meaningVi: draft.meaning_vi,
+  };
 }
 
 export async function insertWord({
   word,
   ipa,
   type,
-  meaning,
+  meaning_vi,
 }: InsertWordParams): Promise<WordWithId> {
   return await invoke<WordWithId>("insert_new_word", {
     word,
     ipa,
     type,
-    meaning,
+    meaningVi: meaning_vi,
   });
 }
 
@@ -33,27 +60,30 @@ export async function listDueReviewWords(): Promise<WordWithId[]> {
 
 export interface UpdateWordReviewParams {
   word: string;
-  reps: number;
+  level: number;
+  wrongCount: number;
   lastReview: string;
   nextReview: string | null;
 }
 
 export async function updateWordReview({
   word,
-  reps,
+  level,
+  wrongCount,
   lastReview,
   nextReview,
 }: UpdateWordReviewParams): Promise<void> {
   await invoke<void>("update_word_review_rust", {
     word,
-    reps,
+    level,
+    wrongCount,
     lastReview,
     nextReview,
   });
 }
 
 export async function updateWordFields(word: WordWithId): Promise<void> {
-  await invoke<void>("update_word_fields_rust", { word });
+  await invoke<void>("update_word_fields_rust", { word: toTauriWord(word) });
 }
 
 export async function deleteWordById(id: number): Promise<void> {
@@ -61,5 +91,7 @@ export async function deleteWordById(id: number): Promise<void> {
 }
 
 export async function importWords(draftWords: WordImportDraft[]): Promise<void> {
-  await invoke<void>("import_words_rust", { draftWords });
+  await invoke<void>("import_words_rust", {
+    draftWords: draftWords.map(toTauriImportDraft),
+  });
 }

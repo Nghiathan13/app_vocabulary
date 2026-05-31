@@ -19,7 +19,7 @@ interface ColumnIndexMap {
   word?: number;
   ipa?: number;
   type?: number;
-  meaning?: number;
+  meaning_vi?: number;
 }
 
 const getFileName = (path: string) => path.split(/[/\\]/).pop() ?? path;
@@ -56,8 +56,11 @@ const buildColumnIndexMap = (headerRow: unknown[]): ColumnIndexMap => {
       columnIndexMap.type = index;
     }
 
-    if (header === "meaning" && columnIndexMap.meaning === undefined) {
-      columnIndexMap.meaning = index;
+    if (
+      (header === "meaning_vi" || header === "meaning") &&
+      columnIndexMap.meaning_vi === undefined
+    ) {
+      columnIndexMap.meaning_vi = index;
     }
   });
 
@@ -159,10 +162,10 @@ const buildSinglePreview = async (
             ? null
             : (toOptionalValue(row[columnIndexMap.type])?.toLowerCase() ??
               null),
-        meaning:
-          columnIndexMap.meaning === undefined
-            ? null
-            : toOptionalValue(row[columnIndexMap.meaning]),
+        meaning_vi:
+          columnIndexMap.meaning_vi === undefined
+            ? ""
+            : (toOptionalValue(row[columnIndexMap.meaning_vi]) ?? ""),
       });
     }
 

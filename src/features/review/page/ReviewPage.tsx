@@ -192,6 +192,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
       setShowMeaning(false);
       setTypedAnswer("");
       setTypingResult(null);
+      setTypingFieldWidth(0);
     } catch (error) {
       console.error("Lỗi load review words:", error);
       setReviewWords([]);
@@ -270,6 +271,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
     setShowMeaning(false);
     setTypedAnswer("");
     setTypingResult(null);
+    setTypingFieldWidth(0);
   };
 
   const handleTypingSubmit = () => {
@@ -289,10 +291,12 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
       return;
     }
 
-    const { nextReps: newReps, daysToAdd } = getSpacedRepetitionUpdate(
-      currentWord.reps,
-      isForgot,
-    );
+    const { nextLevel: newLevel, nextWrongCount, daysToAdd } =
+      getSpacedRepetitionUpdate(
+        currentWord.level,
+        currentWord.wrong_count,
+        isForgot,
+      );
 
     try {
       const newNextReview =
@@ -301,7 +305,8 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
 
       await updateWordReview({
         word: currentWord.word,
-        reps: newReps,
+        level: newLevel,
+        wrongCount: nextWrongCount,
         lastReview: newLastReview,
         nextReview: newNextReview,
       });
@@ -311,13 +316,15 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
         setShowMeaning(false);
         setTypedAnswer("");
         setTypingResult(null);
+        setTypingFieldWidth(0);
       } else {
         setTimeout(() => loadReviewWords(), 300);
       }
 
       if (onReviewUpdate) {
         onReviewUpdate(currentWord.word, {
-          reps: newReps,
+          level: newLevel,
+          wrong_count: nextWrongCount,
           last_review: newLastReview,
           next_review: newNextReview,
         });
@@ -466,9 +473,14 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
     setShowMeaning(false);
     setTypedAnswer("");
     setTypingResult(null);
+    setTypingFieldWidth(0);
   }, [currentWord?.id, reviewMode]);
 
   useLayoutEffect(() => {
+    if (!isTypingMode) {
+      return;
+    }
+
     const measure = typingMeasureRef.current;
     if (!measure) {
       return;
@@ -492,7 +504,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
     });
 
     return () => window.cancelAnimationFrame(animationFrame);
-  }, [typingFieldText]);
+  }, [typingFieldText, isTypingMode]);
 
   useEffect(() => {
     loadReviewWords();
@@ -677,7 +689,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
           </div>
 
           <div className={`review-meaning ${showMeaning ? "show" : ""}`}>
-            {currentWord.meaning || "Không có nghĩa"}
+            {currentWord.meaning_vi || "Không có nghĩa"}
           </div>
         </div>
       )}

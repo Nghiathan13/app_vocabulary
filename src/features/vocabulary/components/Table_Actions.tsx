@@ -13,9 +13,9 @@ import SaveModal, { WordChange } from "./Table_SaveModal";
 import TableAddWordModal from "./Table_AddWordModal";
 
 // -- Types & Utils --
-import { importWords } from "../../../../entities/word/api/words";
-import { WordWithId } from "../../../../entities/word/model/types";
-import { buildImportPreviewFiles, ImportPreviewFile } from "../../lib/tableImport";
+import { importWords } from "../../../entities/word/api/words";
+import { WordWithId } from "../../../entities/word/model/types";
+import { buildImportPreviewFiles, ImportPreviewFile } from "../lib/tableImport";
 import { TableEditableField } from "./Table_Grid";
 
 interface TableActionsProps {
@@ -118,8 +118,12 @@ export default function Table_Actions({
           Word: word.word,
           IPA: word.ipa ?? "",
           Type: word.type ?? "",
-          Meaning: word.meaning ?? "",
-          Reps: word.reps,
+          "Meaning VI": word.meaning_vi,
+          Level: word.level,
+          "Wrong Count": word.wrong_count,
+          Definition: word.definition ?? "",
+          Example: word.example ?? "",
+          Band: word.band ?? "",
           "Last Review": word.last_review ?? "",
           "Next Review": word.next_review ?? "",
         })),
@@ -248,12 +252,21 @@ export default function Table_Actions({
           {!isEditing ? (
             <div className="edit-group">
               <button
+                type="button"
                 className="edit-btn has-tooltip tooltip-left"
+                onClick={() => setIsAddModalOpen(true)}
+                data-tooltip="Add"
+                aria-label="Add"
+              >
+                <span className="action-icon action-icon-add" />
+              </button>
+              <button
+                className="edit-btn has-tooltip tooltip-center"
                 onClick={handleOpenImportModal}
                 data-tooltip="Import"
                 aria-label="Import"
               >
-                <span className="material-symbols-outlined">upload</span>
+                <span className="action-icon action-icon-import" />
               </button>
               <button
                 className="edit-btn has-tooltip tooltip-center"
@@ -261,7 +274,7 @@ export default function Table_Actions({
                 data-tooltip="Export"
                 aria-label="Export"
               >
-                <span className="material-symbols-outlined">download</span>
+                <span className="action-icon action-icon-export" />
               </button>
             </div>
           ) : null}
@@ -269,6 +282,9 @@ export default function Table_Actions({
 
         <div className="table-actions-center">
           <div className="table-search">
+            <span className="table-search-icon" aria-hidden="true">
+              <span className="material-symbols-outlined">search</span>
+            </span>
             <input
               className="table-search-input"
               type="text"
@@ -283,7 +299,7 @@ export default function Table_Actions({
                 onClick={onClearSearch}
                 type="button"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="action-icon" />
               </button>
             )}
           </div>
@@ -294,21 +310,12 @@ export default function Table_Actions({
             <div className="edit-group">
               <button
                 type="button"
-                className="edit-btn has-tooltip tooltip-center"
-                onClick={() => setIsAddModalOpen(true)}
-                data-tooltip="Add"
-                aria-label="Add"
-              >
-                <span className="add-btn-icon" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
                 className="edit-btn has-tooltip tooltip-right"
                 onClick={onEdit}
                 data-tooltip="Edit (Ctrl+E)"
                 aria-label="Edit"
               >
-                <span className="material-symbols-outlined">edit</span>
+                <span className="action-icon action-icon-edit" />
               </button>
             </div>
           ) : (
@@ -329,7 +336,7 @@ export default function Table_Actions({
                 data-tooltip="Cancel"
                 aria-label="Cancel"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="action-icon action-icon-close" />
               </button>
             </div>
           )}

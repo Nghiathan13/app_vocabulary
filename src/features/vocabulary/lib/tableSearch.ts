@@ -2,7 +2,7 @@ import { WordWithId } from "../../../entities/word/model/types";
 
 const DIACRITICS_REGEX = /[\u0300-\u036f]/g;
 
-export type SearchMatchColumn = "word" | "meaning" | null;
+export type SearchMatchColumn = "word" | "meaning_vi" | null;
 
 export const normalizeSearchText = (value: string | null | undefined) =>
   (value ?? "")
@@ -25,8 +25,8 @@ export const getSearchMatchColumn = (
   }
 
   if (hasDiacritics(query)) {
-    return (word.meaning ?? "").toLowerCase().includes(query.toLowerCase())
-      ? "meaning"
+    return word.meaning_vi.toLowerCase().includes(query.toLowerCase())
+      ? "meaning_vi"
       : null;
   }
 
@@ -36,8 +36,8 @@ export const getSearchMatchColumn = (
     return "word";
   }
 
-  if (normalizeSearchText(word.meaning).includes(normalizedQuery)) {
-    return "meaning";
+  if (normalizeSearchText(word.meaning_vi).includes(normalizedQuery)) {
+    return "meaning_vi";
   }
 
   return null;
@@ -47,7 +47,7 @@ export const getSearchPriority = (column: Exclude<SearchMatchColumn, null>) => {
   switch (column) {
     case "word":
       return 0;
-    case "meaning":
+    case "meaning_vi":
       return 1;
   }
 };

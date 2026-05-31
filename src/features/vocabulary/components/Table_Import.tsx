@@ -1,5 +1,5 @@
 // -- Types & Utils --
-import { ImportPreviewFile } from "../../lib/tableImport";
+import { ImportPreviewFile } from "../lib/tableImport";
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -38,7 +38,7 @@ export default function ImportModal({
             onClick={onPickFiles}
             disabled={isAdding}
           >
-            <span className="material-symbols-outlined">upload</span>
+            <span className="action-icon action-icon-import" />
           </button>
 
           <button
@@ -46,7 +46,7 @@ export default function ImportModal({
             onClick={onClose}
             disabled={isAdding}
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="action-icon action-icon-close" />
           </button>
         </div>
 
@@ -66,7 +66,7 @@ export default function ImportModal({
                   onClick={() => onRemoveFile(file.path)}
                   disabled={isAdding}
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <span className="action-icon action-icon-close" />
                 </button>
 
                 <div className="import-file-content">

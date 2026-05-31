@@ -1,7 +1,11 @@
 use std::collections::HashSet;
-use rusqlite::params;
+
+use rusqlite::{params, Row};
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
+
+const WORD_SELECT: &str =
+    "rowid, word, ipa, type, meaning_vi, definition, example, band, level, wrong_count, last_review, next_review";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WordWithId {
@@ -9,8 +13,12 @@ pub struct WordWithId {
     pub word: String,
     pub ipa: Option<String>,
     pub r#type: Option<String>,
-    pub meaning: Option<String>,
-    pub reps: i32,
+    pub meaning_vi: String,
+    pub definition: Option<String>,
+    pub example: Option<String>,
+    pub band: Option<String>,
+    pub level: i32,
+    pub wrong_count: i32,
     pub last_review: Option<String>,
     pub next_review: Option<String>,
     #[serde(rename = "hasAudio")]
@@ -22,7 +30,7 @@ pub struct WordImportDraft {
     pub word: String,
     pub ipa: Option<String>,
     pub r#type: Option<String>,
-    pub meaning: Option<String>,
+    pub meaning_vi: Option<String>,
 }
 
 fn get_audio_files(app: &tauri::AppHandle) -> HashSet<String> {
@@ -43,40 +51,44 @@ fn get_audio_files(app: &tauri::AppHandle) -> HashSet<String> {
     audio_files
 }
 
+fn map_word_row(row: &Row<'_>, has_audio: bool) -> rusqlite::Result<WordWithId> {
+    let word: String = row.get(1)?;
+    Ok(WordWithId {
+        id: row.get(0)?,
+        word,
+        ipa: row.get(2)?,
+        r#type: row.get(3)?,
+        meaning_vi: row.get(4)?,
+        definition: row.get(5)?,
+        example: row.get(6)?,
+        band: row.get(7)?,
+        level: row.get(8)?,
+        wrong_count: row.get(9)?,
+        last_review: row.get(10)?,
+        next_review: row.get(11)?,
+        has_audio: Some(has_audio),
+    })
+}
+
+fn has_audio_for_word(audio_files: &HashSet<String>, word: &str) -> bool {
+    let expected_file_name = crate::services::elevenlabs::get_audio_file_name(word).to_lowercase();
+    audio_files.contains(&expected_file_name)
+}
+
 pub fn list_words_db(app: &tauri::AppHandle) -> Result<Vec<WordWithId>, String> {
     let conn = super::get_db_conn(app)?;
 
     let mut stmt = conn
-        .prepare("SELECT rowid, word, ipa, type, meaning, reps, last_review, next_review FROM words ORDER BY word ASC")
+        .prepare(&format!("SELECT {WORD_SELECT} FROM words ORDER BY word ASC"))
         .map_err(|e| e.to_string())?;
 
     let audio_files = get_audio_files(app);
 
     let word_iter = stmt
         .query_map([], |row| {
-            let id: i64 = row.get(0)?;
             let word: String = row.get(1)?;
-            let ipa: Option<String> = row.get(2)?;
-            let r#type: Option<String> = row.get(3)?;
-            let meaning: Option<String> = row.get(4)?;
-            let reps: i32 = row.get(5)?;
-            let last_review: Option<String> = row.get(6)?;
-            let next_review: Option<String> = row.get(7)?;
-
-            let expected_file_name = crate::get_audio_file_name(&word).to_lowercase();
-            let has_audio = audio_files.contains(&expected_file_name);
-
-            Ok(WordWithId {
-                id,
-                word,
-                ipa,
-                r#type,
-                meaning,
-                reps,
-                last_review,
-                next_review,
-                has_audio: Some(has_audio),
-            })
+            let has_audio = has_audio_for_word(&audio_files, &word);
+            map_word_row(row, has_audio)
         })
         .map_err(|e| e.to_string())?;
 
@@ -93,28 +105,25 @@ pub fn insert_word_db(
     word: String,
     ipa: String,
     r#type: String,
-    meaning: String,
+    meaning_vi: String,
 ) -> Result<WordWithId, String> {
     let conn = super::get_db_conn(app)?;
 
     conn.execute(
-        "INSERT INTO words (word, ipa, type, meaning, reps, last_review, next_review) \
-         VALUES (?1, ?2, ?3, ?4, 0, NULL, date('now', 'localtime', '+1 day'))",
-        params![word, ipa, r#type, meaning],
+        "INSERT INTO words (word, ipa, type, meaning_vi, last_review, next_review) \
+         VALUES (?1, ?2, ?3, ?4, NULL, date('now', 'localtime', '+1 day'))",
+        params![word, ipa, r#type, meaning_vi],
     )
     .map_err(|e| e.to_string())?;
 
     let id = conn.last_insert_rowid();
 
-    // Lấy lại các trường thời gian mặc định vừa được tạo từ SQLite
     let mut stmt = conn
         .prepare("SELECT last_review, next_review FROM words WHERE rowid = ?1")
         .map_err(|e| e.to_string())?;
 
     let (last_review, next_review): (Option<String>, Option<String>) = stmt
-        .query_row(params![id], |row| {
-            Ok((row.get(0)?, row.get(1)?))
-        })
+        .query_row(params![id], |row| Ok((row.get(0)?, row.get(1)?)))
         .map_err(|e| e.to_string())?;
 
     Ok(WordWithId {
@@ -122,8 +131,12 @@ pub fn insert_word_db(
         word,
         ipa: Some(ipa),
         r#type: Some(r#type),
-        meaning: Some(meaning),
-        reps: 0,
+        meaning_vi,
+        definition: None,
+        example: None,
+        band: None,
+        level: 0,
+        wrong_count: 0,
         last_review,
         next_review,
         has_audio: Some(false),
@@ -134,13 +147,19 @@ pub fn update_word_db(app: &tauri::AppHandle, word: WordWithId) -> Result<(), St
     let conn = super::get_db_conn(app)?;
 
     conn.execute(
-        "UPDATE words SET word = ?1, ipa = ?2, type = ?3, meaning = ?4, reps = ?5, last_review = ?6, next_review = ?7 WHERE rowid = ?8",
+        "UPDATE words SET word = ?1, ipa = ?2, type = ?3, meaning_vi = ?4, definition = ?5, \
+         example = ?6, band = ?7, level = ?8, wrong_count = ?9, last_review = ?10, \
+         next_review = ?11 WHERE rowid = ?12",
         params![
             word.word,
             word.ipa,
             word.r#type,
-            word.meaning,
-            word.reps,
+            word.meaning_vi,
+            word.definition,
+            word.example,
+            word.band,
+            word.level,
+            word.wrong_count,
             word.last_review,
             word.next_review,
             word.id
@@ -172,15 +191,16 @@ pub fn import_words_db(
         let mut stmt = tx
             .prepare(
                 "INSERT OR IGNORE INTO words (\
-                 word, ipa, type, meaning, reps, last_review, next_review\
+                 word, ipa, type, meaning_vi, last_review, next_review\
                  ) VALUES (\
-                 ?1, ?2, ?3, ?4, 0, NULL, date('now', 'localtime', '+1 day')\
+                 ?1, ?2, ?3, ?4, NULL, date('now', 'localtime', '+1 day')\
                  )",
             )
             .map_err(|e| e.to_string())?;
 
         for word in draft_words {
-            stmt.execute(params![word.word, word.ipa, word.r#type, word.meaning])
+            let meaning_vi = word.meaning_vi.unwrap_or_default();
+            stmt.execute(params![word.word, word.ipa, word.r#type, meaning_vi])
                 .map_err(|e| e.to_string())?;
         }
     }
@@ -194,41 +214,20 @@ pub fn list_due_words_db(app: &tauri::AppHandle) -> Result<Vec<WordWithId>, Stri
     let conn = super::get_db_conn(app)?;
 
     let mut stmt = conn
-        .prepare(
-            "SELECT rowid, word, ipa, type, meaning, reps, last_review, next_review \
-             FROM words \
+        .prepare(&format!(
+            "SELECT {WORD_SELECT} FROM words \
              WHERE next_review <= date('now', 'localtime') \
-             ORDER BY next_review ASC",
-        )
+             ORDER BY next_review ASC"
+        ))
         .map_err(|e| e.to_string())?;
 
     let audio_files = get_audio_files(app);
 
     let word_iter = stmt
         .query_map([], |row| {
-            let id: i64 = row.get(0)?;
             let word: String = row.get(1)?;
-            let ipa: Option<String> = row.get(2)?;
-            let r#type: Option<String> = row.get(3)?;
-            let meaning: Option<String> = row.get(4)?;
-            let reps: i32 = row.get(5)?;
-            let last_review: Option<String> = row.get(6)?;
-            let next_review: Option<String> = row.get(7)?;
-
-            let expected_file_name = crate::get_audio_file_name(&word).to_lowercase();
-            let has_audio = audio_files.contains(&expected_file_name);
-
-            Ok(WordWithId {
-                id,
-                word,
-                ipa,
-                r#type,
-                meaning,
-                reps,
-                last_review,
-                next_review,
-                has_audio: Some(has_audio),
-            })
+            let has_audio = has_audio_for_word(&audio_files, &word);
+            map_word_row(row, has_audio)
         })
         .map_err(|e| e.to_string())?;
 
@@ -243,15 +242,16 @@ pub fn list_due_words_db(app: &tauri::AppHandle) -> Result<Vec<WordWithId>, Stri
 pub fn update_word_review_db(
     app: &tauri::AppHandle,
     word: String,
-    reps: i32,
+    level: i32,
+    wrong_count: i32,
     last_review: String,
     next_review: Option<String>,
 ) -> Result<(), String> {
     let conn = super::get_db_conn(app)?;
 
     conn.execute(
-        "UPDATE words SET reps = ?1, last_review = ?2, next_review = ?3 WHERE word = ?4",
-        params![reps, last_review, next_review, word],
+        "UPDATE words SET level = ?1, wrong_count = ?2, last_review = ?3, next_review = ?4 WHERE word = ?5",
+        params![level, wrong_count, last_review, next_review, word],
     )
     .map_err(|e| e.to_string())?;
 
