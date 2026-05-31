@@ -1,6 +1,6 @@
 :root {
   /* Background / surface */
-  --color-bg: #050505;
+  --color-bg: rgb(0, 0, 0);
   --color-surface: rgb(15, 15, 15);
   --color-surface-elevated: rgb(20, 20, 20);
   --color-surface-raised: rgb(25, 25, 25);
@@ -20,7 +20,7 @@
   /* Text */
   --color-text-primary: rgb(210, 210, 210);
   --color-text-secondary: rgb(180, 180, 180);
-  --color-text-muted: rgb(120, 120, 120);
+  --color-text-muted: rgb(150, 150, 150);
   --color-text-dim: rgb(90, 90, 90);
   --color-text-disabled: rgb(60, 60, 60);
   --color-text-placeholder: rgb(45, 45, 45);

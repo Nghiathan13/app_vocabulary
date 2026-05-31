@@ -111,8 +111,16 @@
   cursor: pointer;
 }
 
-.import-modal-action .material-symbols-outlined {
-  font-size: 20px;
+.import-modal-action .action-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+}
+
+.import-modal-action .action-icon-import {
+  -webkit-mask: url("../../../assets/import-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/import-icon.svg") center / contain no-repeat;
 }
 
 .import-modal-action:hover:not(:disabled) {
@@ -182,8 +190,16 @@
   cursor: default;
 }
 
-.import-icon-btn .material-symbols-outlined {
-  font-size: 20px;
+.import-icon-btn .action-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+}
+
+.import-icon-btn .action-icon-close {
+  -webkit-mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
 }
 
 .import-file-remove-btn {

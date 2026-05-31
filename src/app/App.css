@@ -67,3 +67,43 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* === Load error === */
+.global-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 20px;
+
+  color: var(--color-text-muted);
+}
+
+.global-load-error-retry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+}
+
+.global-load-error-retry:hover {
+  background-color: var(--color-surface-row-hover);
+}
+
+.global-load-error-retry:focus-visible {
+  outline: 2px solid var(--color-text-muted);
+  outline-offset: 4px;
+}
+
+.global-load-error-message {
+  font-size: 1rem;
+  text-align: center;
+}

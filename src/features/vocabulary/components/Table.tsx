@@ -13,17 +13,17 @@ import Table_Grid, {
 } from "./Table_Grid";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../../entities/word/model/types";
+import { WordWithId } from "../../../entities/word/model/types";
 import {
   deleteWordById,
   updateWordFields,
-} from "../../../../entities/word/api/words";
-import { getAudioPath } from "../../../../shared/lib/utils";
+} from "../../../entities/word/api/words";
+import { getAudioPath } from "../../../shared/lib/utils";
 import {
   getSearchMatchColumn,
   getSearchPriority,
   type SearchMatchColumn,
-} from "../../lib/tableSearch";
+} from "../lib/tableSearch";
 
 // -- Style --
 import "./Table.css";
@@ -42,7 +42,7 @@ const normalizeComparableValue = (
   field: TableEditableField,
   value: WordWithId[TableEditableField],
 ) => {
-  if (field === "word" || field === "reps") {
+  if (field === "word" || field === "level" || field === "meaning_vi") {
     return value;
   }
 
@@ -71,10 +71,6 @@ export default function Table({
   const sortedWords = useMemo(() => {
     const source = isEditing ? editedWords : words;
     return [...source].sort((a, b) => {
-      if (sortColumn === "reps") {
-        return sortOrder === "asc" ? a.reps - b.reps : b.reps - a.reps;
-      }
-
       const valA = (a[sortColumn] || "").toLowerCase();
       const valB = (b[sortColumn] || "").toLowerCase();
 

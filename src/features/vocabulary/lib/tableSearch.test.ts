@@ -13,8 +13,12 @@ const makeWord = (overrides: Partial<WordWithId> = {}): WordWithId => ({
   word: "hello",
   ipa: null,
   type: "noun",
-  meaning: "a greeting",
-  reps: 3,
+  meaning_vi: "a greeting",
+  definition: null,
+  example: null,
+  band: null,
+  level: 3,
+  wrong_count: 0,
   last_review: null,
   next_review: null,
   ...overrides,
@@ -32,32 +36,32 @@ describe("normalizeSearchText", () => {
 });
 
 describe("getSearchMatchColumn", () => {
-  it("does not search reps or type", () => {
-    expect(getSearchMatchColumn(makeWord({ reps: 12 }), "12")).toBeNull();
+  it("does not search level or type", () => {
+    expect(getSearchMatchColumn(makeWord({ level: 12 }), "12")).toBeNull();
     expect(
       getSearchMatchColumn(
-        makeWord({ word: "xyz", type: "verb", meaning: "to move" }),
+        makeWord({ word: "xyz", type: "verb", meaning_vi: "to move" }),
         "verb",
       ),
     ).toBeNull();
   });
 
-  it("searches word, then meaning for non-diacritic queries", () => {
+  it("searches word, then meaning_vi for non-diacritic queries", () => {
     expect(getSearchMatchColumn(makeWord({ word: "Hello" }), "hel")).toBe(
       "word",
     );
     expect(
       getSearchMatchColumn(
-        makeWord({ word: "xyz", meaning: "to greet" }),
+        makeWord({ word: "xyz", meaning_vi: "to greet" }),
         "greet",
       ),
-    ).toBe("meaning");
+    ).toBe("meaning_vi");
   });
 
-  it("prefers word match over meaning match", () => {
+  it("prefers word match over meaning_vi match", () => {
     expect(
       getSearchMatchColumn(
-        makeWord({ word: "greet", meaning: "greet" }),
+        makeWord({ word: "greet", meaning_vi: "greet" }),
         "greet",
       ),
     ).toBe("word");
@@ -68,22 +72,22 @@ describe("getSearchMatchColumn", () => {
     expect(getSearchMatchColumn(makeWord(), "   ")).toBeNull();
   });
 
-  it("uses meaning-only matching for diacritic queries", () => {
+  it("uses meaning_vi-only matching for diacritic queries", () => {
     expect(
-      getSearchMatchColumn(makeWord({ meaning: "trà" }), "trà"),
-    ).toBe("meaning");
+      getSearchMatchColumn(makeWord({ meaning_vi: "trà" }), "trà"),
+    ).toBe("meaning_vi");
     expect(
-      getSearchMatchColumn(makeWord({ word: "tea", meaning: "tra" }), "trà"),
+      getSearchMatchColumn(makeWord({ word: "tea", meaning_vi: "tra" }), "trà"),
     ).toBeNull();
     expect(
-      getSearchMatchColumn(makeWord({ meaning: "café" }), "café"),
-    ).toBe("meaning");
+      getSearchMatchColumn(makeWord({ meaning_vi: "café" }), "café"),
+    ).toBe("meaning_vi");
   });
 });
 
 describe("getSearchPriority", () => {
-  it("returns word=0, meaning=1", () => {
+  it("returns word=0, meaning_vi=1", () => {
     expect(getSearchPriority("word")).toBe(0);
-    expect(getSearchPriority("meaning")).toBe(1);
+    expect(getSearchPriority("meaning_vi")).toBe(1);
   });
 });
