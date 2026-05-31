@@ -32,7 +32,7 @@ export default function SaveModal({
         <div className="import-modal-header">
           <div /> {/* Spacer */}
           <button className="import-icon-btn" onClick={onClose}>
-            <span className="material-symbols-outlined">close</span>
+            <span className="action-icon action-icon-close" />
           </button>
         </div>
 

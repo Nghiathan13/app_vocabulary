@@ -29,7 +29,10 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
           aria-label="Review"
           title="Review"
         >
-          <span className="material-symbols-outlined">cards_star</span>
+          <span
+            className={currentTab === "review" ? "review-on-icon" : "review-off-icon"}
+            aria-hidden="true"
+          />
         </button>
 
         <button
@@ -47,7 +50,10 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
           aria-label="Vocabulary"
           title="Vocabulary"
         >
-          <span className="vocabulary-nav-icon" aria-hidden="true" />
+          <span
+            className={currentTab === "insights" ? "vocabulary-on-icon" : "vocabulary-off-icon"}
+            aria-hidden="true"
+          />
         </button>
       </div>
 

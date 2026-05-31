@@ -5,6 +5,7 @@ import { listWords } from "../api/words";
 interface WordState {
   globalWords: WordWithId[];
   isLoading: boolean;
+  loadError: boolean;
   setWords: (words: WordWithId[]) => void;
   setLoading: (isLoading: boolean) => void;
   fetchGlobalWords: () => Promise<void>;
@@ -17,17 +18,18 @@ interface WordState {
 export const useWordStore = create<WordState>((set) => ({
   globalWords: [],
   isLoading: true,
+  loadError: false,
 
   setWords: (words) => set({ globalWords: words }),
   setLoading: (isLoading) => set({ isLoading }),
 
   fetchGlobalWords: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, loadError: false });
     try {
       const words = await listWords();
-      set({ globalWords: words });
-    } catch (error) {
-      console.error("Lỗi khi tải từ vựng trong Store:", error);
+      set({ globalWords: words, loadError: false });
+    } catch {
+      set({ loadError: true });
     } finally {
       set({ isLoading: false });
     }
@@ -36,7 +38,7 @@ export const useWordStore = create<WordState>((set) => ({
   handleWordAdded: (newWord) =>
     set((state) => ({
       globalWords: [...state.globalWords, newWord].sort((a, b) =>
-        a.word.localeCompare(b.word)
+        a.word.localeCompare(b.word),
       ),
     })),
 
@@ -48,14 +50,14 @@ export const useWordStore = create<WordState>((set) => ({
   handleWordAudioReady: (wordId) =>
     set((state) => ({
       globalWords: state.globalWords.map((w) =>
-        w.id === wordId && !w.hasAudio ? { ...w, hasAudio: true } : w
+        w.id === wordId && !w.hasAudio ? { ...w, hasAudio: true } : w,
       ),
     })),
 
   handleReviewUpdate: (wordStr, updates) =>
     set((state) => ({
       globalWords: state.globalWords.map((w) =>
-        w.word === wordStr ? { ...w, ...updates } : w
+        w.word === wordStr ? { ...w, ...updates } : w,
       ),
     })),
 }));

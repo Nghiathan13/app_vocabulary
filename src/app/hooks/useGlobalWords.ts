@@ -36,6 +36,7 @@ const getFallbackResetTime = () => {
 export interface UseGlobalWordsResult {
   globalWords: WordWithId[];
   isLoading: boolean;
+  loadError: boolean;
   fetchGlobalWords: () => Promise<void>;
   handleReviewUpdate: (
     wordStr: string,
@@ -50,6 +51,7 @@ export function useGlobalWords(): UseGlobalWordsResult {
   const {
     globalWords,
     isLoading,
+    loadError,
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
@@ -117,17 +119,24 @@ export function useGlobalWords(): UseGlobalWordsResult {
   }, [fetchGlobalWords]);
 
   useEffect(() => {
-    if (isLoading || audioSyncStartedRef.current) {
+    if (loadError) {
+      audioSyncStartedRef.current = false;
+    }
+  }, [loadError]);
+
+  useEffect(() => {
+    if (isLoading || loadError || audioSyncStartedRef.current) {
       return;
     }
 
     audioSyncStartedRef.current = true;
     void syncMissingAudio(globalWords);
-  }, [globalWords, isLoading, syncMissingAudio]);
+  }, [globalWords, isLoading, loadError, syncMissingAudio]);
 
   return {
     globalWords,
     isLoading,
+    loadError,
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,

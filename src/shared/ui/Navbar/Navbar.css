@@ -91,17 +91,41 @@
   content: "";
 }
 
-.nav-icon-btn .material-symbols-outlined {
-  font-size: 32px;
-}
-
-.nav-icon-btn .vocabulary-nav-icon {
+/* === SVG ICONS (Review & Vocabulary) === */
+.review-off-icon,
+.review-on-icon,
+.vocabulary-off-icon,
+.vocabulary-on-icon {
   display: block;
   width: 32px;
   height: 32px;
   background-color: currentColor;
-  -webkit-mask: url("../../../assets/vocabulary.svg") center / contain no-repeat;
-  mask: url("../../../assets/vocabulary.svg") center / contain no-repeat;
+}
+
+.review-off-icon {
+  -webkit-mask: url("../../../assets/review-off.svg") center / contain no-repeat;
+  mask: url("../../../assets/review-off.svg") center / contain no-repeat;
+}
+
+.review-on-icon {
+  -webkit-mask: url("../../../assets/review-on.svg") center / contain no-repeat;
+  mask: url("../../../assets/review-on.svg") center / contain no-repeat;
+}
+
+.vocabulary-off-icon {
+  -webkit-mask: url("../../../assets/vocabulary-off.svg") center / contain no-repeat;
+  mask: url("../../../assets/vocabulary-off.svg") center / contain no-repeat;
+}
+
+.vocabulary-on-icon {
+  -webkit-mask: url("../../../assets/vocabulary-on.svg") center / contain no-repeat;
+  mask: url("../../../assets/vocabulary-on.svg") center / contain no-repeat;
+}
+
+/* === MATERIAL ICONS (Practice & Settings) === */
+.nav-icon-btn .material-symbols-outlined {
+  font-size: 32px;
+  font-weight: 300;
 }
 
 /* === RIGHT === */
@@ -125,4 +149,5 @@
 
 .nav-settings-btn .material-symbols-outlined {
   font-size: 36px;
+  font-weight: 300;
 }

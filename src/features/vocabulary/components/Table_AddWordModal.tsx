@@ -1,5 +1,5 @@
-import AddWordForm from "../../../add-word/components/AddWordForm";
-import { WordWithId } from "../../../../entities/word/model/types";
+import AddWordForm from "../../add-word/components/AddWordForm";
+import { WordWithId } from "../../../entities/word/model/types";
 
 import "./Table_Import.css";
 
@@ -31,7 +31,7 @@ export default function TableAddWordModal({
             onClick={onClose}
             aria-label="Close"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="action-icon action-icon-close" />
           </button>
         </div>
 

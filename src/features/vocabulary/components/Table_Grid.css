@@ -13,6 +13,9 @@
 
   overflow-y: auto;
   scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  will-change: scroll-position;
+  contain: layout;
 
   font-size: 16px;
   text-align: left;
@@ -37,12 +40,11 @@
 
   display: grid;
   grid-template-columns:
-    50px minmax(150px, 20%) minmax(150px, 20%) minmax(120px, 15%)
-    minmax(150px, 30%) 70px 130px 130px;
+    minmax(150px, 20%) minmax(150px, 20%) minmax(120px, 15%)
+    minmax(150px, 30%) 70px 130px 50px;
   padding-right: 6px;
 
   background-color: var(--color-surface);
-  border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
 
   text-align: left;
@@ -52,6 +54,8 @@
 .word-grid-inner {
   position: relative;
   width: 100%;
+
+  will-change: transform;
 }
 
 .word-grid-row {
@@ -61,8 +65,8 @@
 
   display: grid;
   grid-template-columns:
-    50px minmax(150px, 20%) minmax(150px, 20%) minmax(120px, 15%)
-    minmax(150px, 30%) 70px 130px 130px;
+    minmax(150px, 20%) minmax(150px, 20%) minmax(120px, 15%)
+    minmax(150px, 30%) 70px 130px 50px;
   align-items: center;
   width: 100%;
 
@@ -76,7 +80,7 @@
 }
 
 .grid-header {
-  padding: 8px 0;
+  padding: 8px 12px;
 
   font-weight: bold;
 }
@@ -99,9 +103,13 @@
 }
 
 .grid-cell {
-  padding: 10px 0;
+  padding: 10px 12px;
 
   word-break: break-word;
+}
+
+.word-grid-row > .grid-cell:nth-child(1) {
+  font-weight: 600;
 }
 
 .type-pill-list {
@@ -264,6 +272,35 @@ input.table-input {
   cursor: not-allowed;
 }
 
+.ipa-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ipa-edit-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.ipa-edit-display .table-input {
+  min-width: 0;
+}
+
+.ipa-text {
+  font-style: italic;
+}
+
+.ipa-text::before {
+  content: "/";
+}
+
+.ipa-text::after {
+  content: "/";
+}
+
 /* === Delete Styles === */
 .table-delete-btn {
   display: flex;
@@ -287,6 +324,14 @@ input.table-input {
   transform: scale(1.1);
 }
 
-.table-delete-btn span {
-  font-size: 20px;
+.table-delete-btn .action-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+}
+
+.table-delete-btn .action-icon-delete {
+  -webkit-mask: url("../../../assets/delete-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/delete-icon.svg") center / contain no-repeat;
 }
