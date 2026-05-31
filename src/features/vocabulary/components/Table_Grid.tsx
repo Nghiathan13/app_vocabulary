@@ -1,5 +1,5 @@
 // -- React --
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // -- Library --
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -8,21 +8,17 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../../entities/word/model/types";
-import { formatDisplayDate, getAudioPath } from "../../../../shared/lib/utils";
+import { WordWithId } from "../../../entities/word/model/types";
+import { formatDisplayDate, getAudioPath } from "../../../shared/lib/utils";
 
-export type TableSortColumn =
-  | "word"
-  | "reps"
-  | "last_review"
-  | "next_review";
+export type TableSortColumn = "word";
 
 export type TableEditableField =
   | "word"
   | "ipa"
   | "type"
-  | "meaning"
-  | "reps"
+  | "meaning_vi"
+  | "level"
   | "last_review"
   | "next_review";
 
@@ -48,16 +44,6 @@ interface TableGridProps {
   onCellDeactivate: () => void;
   onDelete: (id: number, word: string) => void;
 }
-
-const moveTextareaCaretToEnd = (
-  event: React.FocusEvent<HTMLTextAreaElement>,
-) => {
-  const { value } = event.target;
-
-  window.requestAnimationFrame(() => {
-    event.target.setSelectionRange(value.length, value.length);
-  });
-};
 
 const getTypePillClassName = (type: string | null) => {
   const normalizedType = type?.trim().toLowerCase() || "";
@@ -124,6 +110,8 @@ export default function Table_Grid({
   const parentRef = useRef<HTMLDivElement>(null);
 
   // === STATE ===
+  const [hoveredCell, setHoveredCell] = useState<TableActiveCell | null>(null);
+
   const rowVirtualizer = useVirtualizer({
     count: words.length,
     getScrollElement: () => parentRef.current,
@@ -135,6 +123,12 @@ export default function Table_Grid({
   // === FUNCTIONS ===
   const isActiveCell = (id: number, field: TableEditableField) =>
     activeCell?.id === id && activeCell.field === field;
+
+  const isHoveredCell = (id: number, field: TableEditableField) =>
+    hoveredCell?.id === id && hoveredCell.field === field;
+
+  const isEditableInputCell = (id: number, field: TableEditableField) =>
+    isActiveCell(id, field) || isHoveredCell(id, field);
 
   const getCellClassName = (id: number, field: TableEditableField) => {
     const classes = ["grid-cell"];
@@ -171,14 +165,37 @@ export default function Table_Grid({
       return;
     }
 
+    setHoveredCell(null);
     onCellActivate({ id, field });
   };
+
+  const handleCellHover = (id: number, field: TableEditableField) => {
+    if (!isEditing || isActiveCell(id, field) || isHoveredCell(id, field)) {
+      return;
+    }
+
+    setHoveredCell({ id, field });
+  };
+
+  const handleInputFocus = (cell: TableActiveCell) => {
+    setHoveredCell(null);
+    onCellActivate(cell);
+  };
+
+  const handleInputBlur = () => {
+    onCellDeactivate();
+  };
+
+  useEffect(() => {
+    if (!isEditing) {
+      setHoveredCell(null);
+    }
+  }, [isEditing]);
 
   // === RENDER ===
   return (
     <div className={`word-grid-main-wrapper ${isEditing ? "is-editing" : ""}`}>
       <div className="grid-header-row">
-        <div className="grid-header audio-th"></div>
         <div
           className="grid-header sortable-th"
           onClick={() => onSortToggle("word")}
@@ -197,41 +214,11 @@ export default function Table_Grid({
 
         <div className="grid-header">Meaning</div>
 
-        <div
-          className="grid-header sortable-th"
-          onClick={() => onSortToggle("reps")}
-        >
-          Reps{" "}
-          {sortColumn === "reps" && (
-            <span className="material-symbols-outlined sort-icon">
-              {sortOrder === "asc" ? "arrow_drop_up" : "arrow_drop_down"}
-            </span>
-          )}
-        </div>
+        <div className="grid-header">Level</div>
 
-        <div
-          className="grid-header sortable-th"
-          onClick={() => onSortToggle("last_review")}
-        >
-          Last Review{" "}
-          {sortColumn === "last_review" && (
-            <span className="material-symbols-outlined sort-icon">
-              {sortOrder === "asc" ? "arrow_drop_up" : "arrow_drop_down"}
-            </span>
-          )}
-        </div>
+        <div className="grid-header">Next Review</div>
 
-        <div
-          className="grid-header sortable-th"
-          onClick={() => onSortToggle("next_review")}
-        >
-          Next Review{" "}
-          {sortColumn === "next_review" && (
-            <span className="material-symbols-outlined sort-icon">
-              {sortOrder === "asc" ? "arrow_drop_up" : "arrow_drop_down"}
-            </span>
-          )}
-        </div>
+        <div className="grid-header audio-th"></div>
       </div>
 
       <div
@@ -256,35 +243,18 @@ export default function Table_Grid({
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <div className="grid-cell audio-cell">
-                  {isEditing ? (
-                    <button
-                      className="table-delete-btn"
-                      onClick={() => onDelete(w.id, w.word)}
-                    >
-                      <span className="material-symbols-outlined">delete</span>
-                    </button>
-                  ) : (
-                    <button
-                      className={`table-audio-btn ${w.hasAudio ? "active" : "disabled"}`}
-                      onClick={() => w.hasAudio && playAudio(w.word)}
-                    >
-                      <span className="material-symbols-outlined">volume_up</span>
-                    </button>
-                  )}
-                </div>
                 <div
                   className={getCellClassName(w.id, "word")}
                   onClick={() => handleCellClick(w.id, "word")}
+                  onMouseEnter={() => handleCellHover(w.id, "word")}
                 >
-                  {isEditing && isActiveCell(w.id, "word") ? (
+                  {isEditing && isEditableInputCell(w.id, "word") ? (
                     <textarea
-                      autoFocus
                       className={`table-input${modifiedFields.has(`${w.id}-word`) ? " modified" : ""}`}
                       value={w.word}
                       onChange={(e) => onInputChange(w.id, "word", e.target.value)}
-                      onFocus={moveTextareaCaretToEnd}
-                      onBlur={onCellDeactivate}
+                      onFocus={() => handleInputFocus({ id: w.id, field: "word" })}
+                      onBlur={handleInputBlur}
                       spellCheck={false}
                     />
                   ) : (
@@ -295,38 +265,59 @@ export default function Table_Grid({
                 <div
                   className={getCellClassName(w.id, "ipa")}
                   onClick={() => handleCellClick(w.id, "ipa")}
+                  onMouseEnter={() => handleCellHover(w.id, "ipa")}
                 >
-                  {isEditing && isActiveCell(w.id, "ipa") ? (
-                    <textarea
-                      autoFocus
-                      className={`table-input${modifiedFields.has(`${w.id}-ipa`) ? " modified" : ""}`}
-                      value={w.ipa || ""}
-                      onChange={(e) =>
-                        onInputChange(w.id, "ipa", e.target.value || null)
-                      }
-                      onFocus={moveTextareaCaretToEnd}
-                      onBlur={onCellDeactivate}
-                      spellCheck={false}
-                    />
+                  {isEditing && isEditableInputCell(w.id, "ipa") ? (
+                    <span className="ipa-edit-display">
+                      {w.hasAudio && (
+                        <button
+                          className="table-audio-btn active"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => { e.stopPropagation(); playAudio(w.word); }}
+                        >
+                          <span className="material-symbols-outlined">volume_up</span>
+                        </button>
+                      )}
+                      <textarea
+                        className={`table-input${modifiedFields.has(`${w.id}-ipa`) ? " modified" : ""}`}
+                        value={w.ipa || ""}
+                        onChange={(e) =>
+                          onInputChange(w.id, "ipa", e.target.value || null)
+                        }
+                        onFocus={() => handleInputFocus({ id: w.id, field: "ipa" })}
+                        onBlur={handleInputBlur}
+                        spellCheck={false}
+                      />
+                    </span>
                   ) : (
-                    w.ipa
+                    <span className="ipa-display">
+                      {w.hasAudio && (
+                        <button
+                          className="table-audio-btn active"
+                          onClick={(e) => { e.stopPropagation(); playAudio(w.word); }}
+                        >
+                          <span className="material-symbols-outlined">volume_up</span>
+                        </button>
+                      )}
+                      {w.ipa && <span className="ipa-text">{w.ipa}</span>}
+                    </span>
                   )}
                 </div>
 
                 <div
                   className={getCellClassName(w.id, "type")}
                   onClick={() => handleCellClick(w.id, "type")}
+                  onMouseEnter={() => handleCellHover(w.id, "type")}
                 >
-                  {isEditing && isActiveCell(w.id, "type") ? (
+                  {isEditing && isEditableInputCell(w.id, "type") ? (
                     <textarea
-                      autoFocus
                       className={`table-input${modifiedFields.has(`${w.id}-type`) ? " modified" : ""}`}
                       value={w.type || ""}
                       onChange={(e) =>
                         onInputChange(w.id, "type", e.target.value || null)
                       }
-                      onFocus={moveTextareaCaretToEnd}
-                      onBlur={onCellDeactivate}
+                      onFocus={() => handleInputFocus({ id: w.id, field: "type" })}
+                      onBlur={handleInputBlur}
                       spellCheck={false}
                     />
                   ) : w.type ? (
@@ -346,84 +337,77 @@ export default function Table_Grid({
                 </div>
 
                 <div
-                  className={getCellClassName(w.id, "meaning")}
-                  onClick={() => handleCellClick(w.id, "meaning")}
+                  className={getCellClassName(w.id, "meaning_vi")}
+                  onClick={() => handleCellClick(w.id, "meaning_vi")}
+                  onMouseEnter={() => handleCellHover(w.id, "meaning_vi")}
                 >
-                  {isEditing && isActiveCell(w.id, "meaning") ? (
+                  {isEditing && isEditableInputCell(w.id, "meaning_vi") ? (
                     <textarea
-                      autoFocus
-                      className={`table-input${modifiedFields.has(`${w.id}-meaning`) ? " modified" : ""}`}
-                      value={w.meaning || ""}
+                      className={`table-input${modifiedFields.has(`${w.id}-meaning_vi`) ? " modified" : ""}`}
+                      value={w.meaning_vi}
                       onChange={(e) =>
-                        onInputChange(w.id, "meaning", e.target.value || null)
+                        onInputChange(w.id, "meaning_vi", e.target.value)
                       }
-                      onFocus={moveTextareaCaretToEnd}
-                      onBlur={onCellDeactivate}
+                      onFocus={() => handleInputFocus({ id: w.id, field: "meaning_vi" })}
+                      onBlur={handleInputBlur}
                       spellCheck={false}
                     />
                   ) : (
-                    w.meaning
+                    w.meaning_vi
                   )}
                 </div>
 
                 <div
-                  className={getCellClassName(w.id, "reps")}
-                  onClick={() => handleCellClick(w.id, "reps")}
+                  className={getCellClassName(w.id, "level")}
+                  onClick={() => handleCellClick(w.id, "level")}
+                  onMouseEnter={() => handleCellHover(w.id, "level")}
                 >
-                  {isEditing && isActiveCell(w.id, "reps") ? (
+                  {isEditing && isEditableInputCell(w.id, "level") ? (
                     <input
-                      autoFocus
                       type="number"
-                      className={`table-input${modifiedFields.has(`${w.id}-reps`) ? " modified" : ""}`}
-                      value={w.reps}
+                      className={`table-input${modifiedFields.has(`${w.id}-level`) ? " modified" : ""}`}
+                      value={w.level}
                       min={0}
                       onChange={(e) =>
-                        onInputChange(w.id, "reps", parseInt(e.target.value) || 0)
+                        onInputChange(w.id, "level", parseInt(e.target.value) || 0)
                       }
-                      onBlur={onCellDeactivate}
+                      onFocus={() => handleInputFocus({ id: w.id, field: "level" })}
+                      onBlur={handleInputBlur}
                     />
                   ) : (
-                    w.reps
-                  )}
-                </div>
-
-                <div
-                  className={getCellClassName(w.id, "last_review")}
-                  onClick={() => handleCellClick(w.id, "last_review")}
-                >
-                  {isEditing && isActiveCell(w.id, "last_review") ? (
-                    <input
-                      autoFocus
-                      type="date"
-                      className={`table-input${modifiedFields.has(`${w.id}-last_review`) ? " modified" : ""}`}
-                      value={w.last_review || ""}
-                      onChange={(e) =>
-                        onInputChange(w.id, "last_review", e.target.value || null)
-                      }
-                      onBlur={onCellDeactivate}
-                    />
-                  ) : (
-                    formatDisplayDate(w.last_review)
+                    w.level
                   )}
                 </div>
 
                 <div
                   className={getCellClassName(w.id, "next_review")}
                   onClick={() => handleCellClick(w.id, "next_review")}
+                  onMouseEnter={() => handleCellHover(w.id, "next_review")}
                 >
-                  {isEditing && isActiveCell(w.id, "next_review") ? (
+                  {isEditing && isEditableInputCell(w.id, "next_review") ? (
                     <input
-                      autoFocus
                       type="date"
                       className={`table-input${modifiedFields.has(`${w.id}-next_review`) ? " modified" : ""}`}
                       value={w.next_review || ""}
                       onChange={(e) =>
                         onInputChange(w.id, "next_review", e.target.value || null)
                       }
-                      onBlur={onCellDeactivate}
+                      onFocus={() => handleInputFocus({ id: w.id, field: "next_review" })}
+                      onBlur={handleInputBlur}
                     />
                   ) : (
                     formatDisplayDate(w.next_review)
+                  )}
+                </div>
+
+                <div className="grid-cell audio-cell">
+                  {isEditing && (
+                    <button
+                      className="table-delete-btn"
+                      onClick={() => onDelete(w.id, w.word)}
+                    >
+                      <span className="action-icon action-icon-delete" />
+                    </button>
                   )}
                 </div>
               </div>

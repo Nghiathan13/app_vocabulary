@@ -12,6 +12,7 @@ import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 // -- Types & Utils --
 import { Tab } from "../shared/model/tab";
 import { useGlobalWords } from "./hooks/useGlobalWords";
+import refreshIcon from "../assets/refresh_icon.svg";
 
 // -- Style --
 import "./App.css";
@@ -21,6 +22,7 @@ function App() {
   const {
     globalWords,
     isLoading,
+    loadError,
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
@@ -38,9 +40,23 @@ function App() {
             <div className="spinner"></div>
             <p>Loading your vocabulary...</p>
           </div>
+        ) : loadError ? (
+          <div className="global-load-error">
+            <button
+              type="button"
+              className="global-load-error-retry"
+              onClick={() => void fetchGlobalWords()}
+              aria-label="Retry loading vocabulary"
+            >
+              <img src={refreshIcon} alt="" width={48} height={48} />
+            </button>
+            <p className="global-load-error-message">
+              Failed to load vocabulary. Please try again.
+            </p>
+          </div>
         ) : (
           <>
-            {currentTab === "home" && <HomePage words={globalWords} />}
+            {currentTab === "home" && <HomePage />}
             {currentTab === "review" && (
               <ReviewPage onReviewUpdate={handleReviewUpdate} />
             )}

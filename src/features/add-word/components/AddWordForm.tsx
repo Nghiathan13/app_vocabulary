@@ -58,14 +58,15 @@ export default function AddWordForm({
       const normalizedWord = word.trim().toLowerCase();
       const normalizedType = type.trim().toLowerCase();
       const normalizedIpa = ipa.trim();
-      const finalMeaning = activeMeanings
+      const meaning_vi = activeMeanings
         .map((v) => v.trim().toLowerCase())
         .join(" / ");
+
       const newWord = await insertWord({
         word: normalizedWord,
         ipa: normalizedIpa,
         type: normalizedType,
-        meaning: finalMeaning,
+        meaning_vi,
       });
 
       onWordAdded?.(newWord);
@@ -98,7 +99,7 @@ export default function AddWordForm({
       setMeanings({});
       setIsCustomType(false);
       wordInputRef.current?.focus();
-    } catch (error) {
+    } catch {
       showToast({
         message: "Failed to add word",
         type: "error",
@@ -224,13 +225,14 @@ export default function AddWordForm({
         <div
           className={`field${activeMeanings.some((v) => v) ? " has-value" : ""}`}
         >
-          <label className="field-label" htmlFor="meaning">
-            MEANING
+          <label className="field-label" htmlFor="meaning-vi">
+            MEANING VI
           </label>
           {!type || isCustomType ? (
             <input
               type="text"
-              name="meaning-default"
+              id="meaning-vi"
+              name="meaning-vi-default"
               value={meanings["default"] || ""}
               onChange={(e) =>
                 setMeanings({ ...meanings, default: e.target.value })
@@ -244,9 +246,9 @@ export default function AddWordForm({
               .split(" / ")
               .map((t) => (
                 <input
-                  key={`meaning-${t}`}
+                  key={`meaning-vi-${t}`}
                   type="text"
-                  name={`meaning-${t}`}
+                  name={`meaning-vi-${t}`}
                   value={meanings[t] || ""}
                   onChange={(e) =>
                     setMeanings({ ...meanings, [t]: e.target.value })
