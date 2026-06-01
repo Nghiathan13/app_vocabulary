@@ -5,12 +5,21 @@ import { Tab } from "../../model/tab";
 import logo from "../../../assets/logo.svg";
 import "./Navbar.css";
 
+type AppTheme = "dark" | "light";
+
 interface NavbarProps {
   currentTab: Tab;
+  theme: AppTheme;
   onTabChange: (tab: Tab) => void;
+  onThemeToggle: () => void;
 }
 
-export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
+export default function Navbar({
+  currentTab,
+  theme,
+  onTabChange,
+  onThemeToggle,
+}: NavbarProps) {
   // === RENDER ===
   return (
     <nav className="navbar">
@@ -59,6 +68,23 @@ export default function Navbar({ currentTab, onTabChange }: NavbarProps) {
 
       {/* === RIGHT === */}
       <div className="navbar-right">
+        <button
+          className="nav-theme-btn"
+          type="button"
+          onClick={onThemeToggle}
+          aria-label={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+          title={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+        >
+          <span
+            className={theme === "dark" ? "light-mode-icon" : "dark-mode-icon"}
+            aria-hidden="true"
+          />
+        </button>
+
         <button
           className="nav-settings-btn"
           type="button"

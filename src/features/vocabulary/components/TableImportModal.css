@@ -1,0 +1,115 @@
+/* === Import Modal === */
+.import-file-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+/* -- Import File -- */
+.import-file-card {
+  padding: 8px;
+  margin-top: 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.import-file-card.valid {
+  border-color: var(--color-valid-border);
+}
+
+.import-file-card.invalid {
+  border-color: var(--color-error-strong);
+}
+
+.import-file-content {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.import-file-name {
+  display: block;
+
+  text-align: left;
+  word-break: break-all;
+  color: var(--color-text-secondary);
+}
+
+.import-file-detail {
+  color: var(--color-text-secondary);
+}
+
+.import-file-detail,
+.import-file-error,
+.import-empty,
+.import-scanning {
+  margin: 12px 0 0;
+
+  text-align: left;
+}
+
+.import-file-error {
+  color: var(--color-error-strong);
+}
+
+/* -- Button Import -- */
+.modal-header .import-modal-action {
+  color: var(--color-text-disabled);
+}
+
+.modal-header .import-modal-action:hover:not(:disabled) {
+  background: transparent;
+  border-color: var(--color-text-secondary);
+
+  color: var(--color-text-secondary);
+}
+
+.modal-header .import-modal-action:disabled {
+  opacity: 0.5;
+}
+
+/* -- Button Add -- */
+.modal-footer .import-add-btn {
+  width: 100%;
+  padding: 12px 0;
+
+  background-color: transparent;
+  border: 1px solid var(--color-text-secondary);
+  border-radius: 12px;
+
+  font-size: 16px;
+  color: var(--color-text-secondary);
+
+  cursor: pointer;
+}
+
+.modal-footer .import-add-btn:not(:disabled):hover {
+  background: var(--color-surface-strong);
+}
+
+.modal-footer .import-add-btn:disabled {
+  border-color: var(--color-border);
+
+  color: var(--color-text-disabled);
+
+  cursor: not-allowed;
+}
+
+.import-file-top .import-file-remove-btn {
+  margin-top: 0;
+
+  color: var(--color-text-disabled);
+}
+
+.import-file-top .import-file-remove-btn:hover:not(:disabled) {
+  background: transparent;
+  border-color: var(--color-text-secondary);
+
+  color: var(--color-text-secondary);
+}
+
+.import-file-top .import-file-remove-btn:disabled {
+  opacity: 0.5;
+}

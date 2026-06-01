@@ -5,12 +5,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Components --
-import Table_Actions from "./Table_Actions";
-import Table_Grid, {
+import TableActions from "./TableActions";
+import TableGrid, {
   TableActiveCell,
   TableEditableField,
   TableSortColumn,
-} from "./Table_Grid";
+} from "./TableGrid";
 
 // -- Types & Utils --
 import { WordWithId } from "../../../entities/word/model/types";
@@ -143,6 +143,7 @@ export default function Table({
       onRefresh();
     } catch (error) {
       console.error("Error saving words:", error);
+      throw error;
     }
   }, [editedWords, modifiedFields, onRefresh]);
 
@@ -259,7 +260,7 @@ export default function Table({
   // === RENDER ===
   return (
     <div className="table-wrapper">
-      <Table_Actions
+      <TableActions
         isEditing={isEditing}
         hasChanges={modifiedFields.size > 0}
         searchInput={searchInput}
@@ -277,7 +278,7 @@ export default function Table({
         modifiedFields={modifiedFields}
       />
 
-      <Table_Grid
+      <TableGrid
         words={displayedWords}
         isEditing={isEditing}
         sortColumn={sortColumn}

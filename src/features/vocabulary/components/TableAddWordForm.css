@@ -80,7 +80,7 @@
   color: var(--color-text-primary);
 }
 
-.btn-add {
+.form-actions .btn-add {
   width: 100%;
   padding: 12px 0;
 
@@ -94,11 +94,11 @@
   cursor: pointer;
 }
 
-.btn-add:not(:disabled):hover {
+.form-actions .btn-add:not(:disabled):hover {
   background: var(--color-surface-subtle);
 }
 
-.btn-add:disabled {
+.form-actions .btn-add:disabled {
   border-color: var(--color-surface-subtle);
 
   color: var(--color-text-disabled);

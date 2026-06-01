@@ -15,14 +15,14 @@ function toTauriWord(word: WordWithId) {
     word: word.word,
     ipa: word.ipa,
     type: word.type,
-    meaningVi: word.meaning_vi,
+    meaning_vi: word.meaning_vi,
     definition: word.definition,
     example: word.example,
     band: word.band,
     level: word.level,
-    wrongCount: word.wrong_count,
-    lastReview: word.last_review,
-    nextReview: word.next_review,
+    wrong_count: word.wrong_count,
+    last_review: word.last_review,
+    next_review: word.next_review,
     hasAudio: word.hasAudio,
   };
 }
