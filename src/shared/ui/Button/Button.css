@@ -1,0 +1,80 @@
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  background: transparent;
+  border: 1px solid var(--color-border);
+  font-family: inherit;
+
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.2s ease;
+}
+
+.ui-button-md {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+
+  font-size: 16px;
+}
+
+.ui-button-sm {
+  min-height: 30px;
+  padding: 4px 8px;
+  border-radius: 4px;
+
+  font-size: 14px;
+}
+
+.ui-button-full {
+  width: 100%;
+}
+
+.ui-button-outline {
+  color: var(--color-text-muted);
+}
+
+.ui-button-outline:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.ui-button-primary {
+  border-color: var(--color-text-primary);
+
+  color: var(--color-text-primary);
+}
+
+.ui-button-primary:hover:not(:disabled) {
+  background: var(--color-surface-subtle);
+}
+
+.ui-button:disabled {
+  border-color: var(--color-border);
+
+  color: var(--color-text-disabled);
+
+  cursor: not-allowed;
+}
+
+.ui-icon-button {
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.ui-icon-button-md {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.ui-icon-button-sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+}

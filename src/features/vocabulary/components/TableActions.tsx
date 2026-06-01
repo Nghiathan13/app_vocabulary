@@ -8,15 +8,17 @@ import * as XLSX from "xlsx";
 import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 // -- Components --
-import ImportModal from "./Table_Import";
-import SaveModal, { WordChange } from "./Table_SaveModal";
-import TableAddWordModal from "./Table_AddWordModal";
+import { Button, IconButton } from "../../../shared/ui/Button/Button";
+import Icon from "../../../shared/ui/Icon/Icon";
+import ImportModal from "./TableImportModal";
+import SaveModal, { WordChange } from "./TableSaveModal";
+import TableAddWordForm from "./TableAddWordForm";
 
 // -- Types & Utils --
 import { importWords } from "../../../entities/word/api/words";
 import { WordWithId } from "../../../entities/word/model/types";
 import { buildImportPreviewFiles, ImportPreviewFile } from "../lib/tableImport";
-import { TableEditableField } from "./Table_Grid";
+import { TableEditableField } from "./TableGrid";
 
 interface TableActionsProps {
   isEditing: boolean;
@@ -25,7 +27,7 @@ interface TableActionsProps {
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
   onEdit: () => void;
-  onSave: () => void;
+  onSave: () => Promise<void>;
   onCancel: () => void;
   onRefresh: () => void;
   onWordAdded: (newWord: WordWithId) => void;
@@ -36,7 +38,7 @@ interface TableActionsProps {
   modifiedFields: Set<string>;
 }
 
-export default function Table_Actions({
+export default function TableActions({
   isEditing,
   hasChanges,
   searchInput,
@@ -180,8 +182,12 @@ export default function Table_Actions({
   };
 
   const handleConfirmSave = async () => {
-    await onSave();
-    setIsSaveModalOpen(false);
+    try {
+      await onSave();
+      setIsSaveModalOpen(false);
+    } catch (error) {
+      console.error("Error confirming save:", error);
+    }
   };
 
   const handleCloseImportModal = () => {
@@ -251,31 +257,30 @@ export default function Table_Actions({
         <div className="table-actions-side table-actions-left">
           {!isEditing ? (
             <div className="edit-group">
-              <button
+              <IconButton
                 type="button"
-                className="edit-btn has-tooltip tooltip-left"
+                className="has-tooltip tooltip-left"
+                icon="add"
+                label="Add"
                 onClick={() => setIsAddModalOpen(true)}
                 data-tooltip="Add"
-                aria-label="Add"
-              >
-                <span className="action-icon action-icon-add" />
-              </button>
-              <button
-                className="edit-btn has-tooltip tooltip-center"
+              />
+              <IconButton
+                type="button"
+                className="has-tooltip tooltip-center"
+                icon="import"
+                label="Import"
                 onClick={handleOpenImportModal}
                 data-tooltip="Import"
-                aria-label="Import"
-              >
-                <span className="action-icon action-icon-import" />
-              </button>
-              <button
-                className="edit-btn has-tooltip tooltip-center"
+              />
+              <IconButton
+                type="button"
+                className="has-tooltip tooltip-center"
+                icon="export"
+                label="Export"
                 onClick={handleExportClick}
                 data-tooltip="Export"
-                aria-label="Export"
-              >
-                <span className="action-icon action-icon-export" />
-              </button>
+              />
             </div>
           ) : null}
         </div>
@@ -283,7 +288,7 @@ export default function Table_Actions({
         <div className="table-actions-center">
           <div className="table-search">
             <span className="table-search-icon" aria-hidden="true">
-              <span className="material-symbols-outlined">search</span>
+              <Icon name="search" />
             </span>
             <input
               className="table-search-input"
@@ -294,13 +299,14 @@ export default function Table_Actions({
               spellCheck={false}
             />
             {searchInput && (
-              <button
+              <IconButton
                 className="table-search-clear"
+                icon="close"
+                label="Clear search"
                 onClick={onClearSearch}
                 type="button"
-              >
-                <span className="action-icon" />
-              </button>
+                size="sm"
+              />
             )}
           </div>
         </div>
@@ -308,42 +314,42 @@ export default function Table_Actions({
         <div className="table-actions-side table-actions-right">
           {!isEditing ? (
             <div className="edit-group">
-              <button
+              <IconButton
                 type="button"
-                className="edit-btn has-tooltip tooltip-right"
+                className="has-tooltip tooltip-right"
+                icon="edit"
+                label="Edit"
                 onClick={onEdit}
                 data-tooltip="Edit (Ctrl+E)"
-                aria-label="Edit"
-              >
-                <span className="action-icon action-icon-edit" />
-              </button>
+              />
             </div>
           ) : (
             <div className="edit-group">
               {hasChanges && (
-                <button
+                <Button
+                  type="button"
                   className="save-btn has-tooltip tooltip-center"
                   onClick={() => setIsSaveModalOpen(true)}
                   data-tooltip="Save"
                   aria-label="Save"
                 >
                   <span className="material-symbols-outlined">check</span>
-                </button>
+                </Button>
               )}
-              <button
-                className="cancel-btn has-tooltip tooltip-right"
+              <IconButton
+                type="button"
+                className="has-tooltip tooltip-right"
+                icon="close"
+                label="Cancel"
                 onClick={onCancel}
                 data-tooltip="Cancel"
-                aria-label="Cancel"
-              >
-                <span className="action-icon action-icon-close" />
-              </button>
+              />
             </div>
           )}
         </div>
       </div>
 
-      <TableAddWordModal
+      <TableAddWordForm
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onWordAdded={onWordAdded}
