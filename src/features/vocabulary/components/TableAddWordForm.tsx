@@ -3,9 +3,11 @@ import { useState, useEffect, useRef } from "react";
 import { WordType, WordWithId } from "../../../entities/word/model/types";
 import { downloadAudio } from "../../../shared/api/audio";
 import { insertWord } from "../../../entities/word/api/words";
+import { Button } from "../../../shared/ui/Button/Button";
+import Modal from "../../../shared/ui/Modal/Modal";
 import { useToast } from "../../../shared/ui/Toast/ToastProvider";
 
-import "./AddWordForm.css";
+import "./TableAddWordForm.css";
 
 const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "noun", label: "noun" },
@@ -14,17 +16,19 @@ const WORD_TYPES: { value: WordType; label: string }[] = [
   { value: "adverb", label: "adv" },
 ];
 
-interface AddWordFormProps {
+interface TableAddWordFormProps {
+  isOpen: boolean;
+  onClose: () => void;
   onWordAdded?: (newWord: WordWithId) => void;
   onWordAudioReady?: (wordId: number) => void;
-  onAdded?: () => void;
 }
 
-export default function AddWordForm({
+export default function TableAddWordForm({
+  isOpen,
+  onClose,
   onWordAdded,
   onWordAudioReady,
-  onAdded,
-}: AddWordFormProps) {
+}: TableAddWordFormProps) {
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
   const [type, setType] = useState<string>("");
@@ -74,7 +78,7 @@ export default function AddWordForm({
         message: `Added "${normalizedWord}"`,
         type: "success",
       });
-      onAdded?.();
+      onClose();
 
       void (async () => {
         const hasAudio = await downloadAudio(normalizedWord);
@@ -138,7 +142,12 @@ export default function AddWordForm({
   }, []);
 
   return (
-    <>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="add-word-modal"
+      showCloseButton
+    >
       <div className="form-body">
         <div className="field-row">
           <div className={`field${word ? " has-value" : ""}`}>
@@ -263,15 +272,17 @@ export default function AddWordForm({
       </div>
 
       <div className="form-actions">
-        <button
+        <Button
           type="button"
           className="btn-add"
+          variant="primary"
+          fullWidth
           onClick={handleAdd}
           disabled={!isFormValid || isSubmitting}
         >
           Add
-        </button>
+        </Button>
       </div>
-    </>
+    </Modal>
   );
 }

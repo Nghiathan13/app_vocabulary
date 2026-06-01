@@ -21,7 +21,9 @@
 }
 
 .navbar-right {
+  align-items: center;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 /* === LEFT === */
@@ -129,25 +131,50 @@
 }
 
 /* === RIGHT === */
+.nav-theme-btn,
 .nav-settings-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-right: 8px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
 
   background: transparent;
   border: none;
+  border-radius: 8px;
 
   color: var(--color-text-muted);
 
   cursor: pointer;
 }
 
+.nav-theme-btn:hover,
 .nav-settings-btn:hover {
+  background: var(--color-surface-hover);
+
   color: var(--color-text-primary);
 }
 
 .nav-settings-btn .material-symbols-outlined {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 300;
+}
+
+.dark-mode-icon,
+.light-mode-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  background-color: currentColor;
+}
+
+.dark-mode-icon {
+  -webkit-mask: url("../../../assets/dark-mode.svg") center / contain no-repeat;
+  mask: url("../../../assets/dark-mode.svg") center / contain no-repeat;
+}
+
+.light-mode-icon {
+  -webkit-mask: url("../../../assets/light-mode.svg") center / contain no-repeat;
+  mask: url("../../../assets/light-mode.svg") center / contain no-repeat;
 }

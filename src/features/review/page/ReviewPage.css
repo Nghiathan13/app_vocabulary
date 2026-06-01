@@ -15,6 +15,8 @@
 
 /* === MODE === */
 .review-mode-toggle {
+  position: relative;
+
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
@@ -26,9 +28,33 @@
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
   border-radius: 10px;
+  isolation: isolate;
+}
+
+.review-mode-toggle::before {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  z-index: -1;
+
+  width: calc((100% - 12px) / 2);
+
+  background: var(--color-surface-muted);
+  border-radius: 7px;
+
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  content: "";
+}
+
+.review-mode-typing .review-mode-toggle::before {
+  transform: translateX(calc(100% + 4px));
 }
 
 .review-mode-btn {
+  position: relative;
+  z-index: 1;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -44,6 +70,7 @@
   color: var(--color-text-label);
 
   cursor: pointer;
+  transition: color 0.18s ease;
 }
 
 .review-mode-btn .material-symbols-outlined {
@@ -55,7 +82,6 @@
 }
 
 .review-mode-btn.active {
-  background: var(--color-surface-muted);
   color: var(--color-text-bright);
 }
 
@@ -94,6 +120,20 @@
 }
 
 /* === CARD === */
+.review-card-stage {
+  width: 100%;
+  max-width: 480px;
+}
+
+.review-card-stage .review-card {
+  animation: review-card-slide-from-left 0.24s cubic-bezier(0.2, 0.8, 0.2, 1)
+    both;
+}
+
+.review-card-stage.is-typing .review-card {
+  animation-name: review-card-slide-from-right;
+}
+
 .review-card {
   width: 100%;
   max-width: 480px;
@@ -105,6 +145,30 @@
   border-radius: 16px;
 
   text-align: center;
+}
+
+@keyframes review-card-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes review-card-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .review-card:not(.typing-card) {
@@ -410,6 +474,15 @@
 
 .typing-answer-line.typed-answer strong {
   color: var(--color-text-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-mode-toggle::before,
+  .review-mode-btn,
+  .review-card-stage .review-card {
+    transition: none;
+    animation: none;
+  }
 }
 
 /* === HINT === */

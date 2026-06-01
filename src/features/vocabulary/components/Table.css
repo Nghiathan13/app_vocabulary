@@ -1,5 +1,5 @@
-@import "./Table_Import.css";
-@import "./Table_Grid.css";
+@import "./TableImportModal.css";
+@import "./TableGrid.css";
 
 .table-actions {
   display: grid;
@@ -46,11 +46,9 @@
   pointer-events: none;
 }
 
-.table-search-icon .material-symbols-outlined {
-  display: block;
-
-  font-size: 18px;
-  line-height: 1;
+.table-search-icon .ui-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .table-search-input {
@@ -74,7 +72,7 @@
   color: var(--color-text-placeholder);
 }
 
-.table-search-clear {
+.table-search .table-search-clear {
   position: absolute;
   top: 0;
   right: 8px;
@@ -84,9 +82,12 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+  width: 24px;
+  height: 100%;
 
   background: transparent;
   border: none;
+  border-radius: 0;
 
   color: var(--color-text-muted);
 
@@ -94,13 +95,13 @@
   transition: color 0.2s;
 }
 
-.table-search-clear .action-icon {
-  display: block;
+.table-search .table-search-clear:hover:not(:disabled) {
+  background: transparent;
+}
+
+.table-search .table-search-clear .ui-icon {
   width: 16px;
   height: 16px;
-  background-color: currentColor;
-  -webkit-mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
-  mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
 }
 
 .edit-group {
@@ -108,12 +109,11 @@
   gap: 8px;
 }
 
-.edit-btn,
-.save-btn,
-.cancel-btn {
+.table-actions .save-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   width: 36px;
   height: 36px;
   box-sizing: border-box;
@@ -128,9 +128,7 @@
   transition: all 0.2s;
 }
 
-.edit-btn:hover,
-.save-btn:hover,
-.cancel-btn:hover {
+.table-actions .save-btn:hover {
   background: var(--color-surface-hover);
 }
 
@@ -188,38 +186,4 @@
   right: 0;
 
   transform: translateY(0);
-}
-
-.edit-btn .action-icon,
-.save-btn .action-icon,
-.cancel-btn .action-icon {
-  display: block;
-  width: 20px;
-  height: 20px;
-  background-color: currentColor;
-}
-
-.edit-btn .action-icon-import {
-  -webkit-mask: url("../../../assets/import-icon.svg") center / contain no-repeat;
-  mask: url("../../../assets/import-icon.svg") center / contain no-repeat;
-}
-
-.edit-btn .action-icon-export {
-  -webkit-mask: url("../../../assets/export-icon.svg") center / contain no-repeat;
-  mask: url("../../../assets/export-icon.svg") center / contain no-repeat;
-}
-
-.edit-btn .action-icon-add {
-  -webkit-mask: url("../../../assets/add-icon.svg") center / contain no-repeat;
-  mask: url("../../../assets/add-icon.svg") center / contain no-repeat;
-}
-
-.edit-btn .action-icon-edit {
-  -webkit-mask: url("../../../assets/edit-icon.svg") center / contain no-repeat;
-  mask: url("../../../assets/edit-icon.svg") center / contain no-repeat;
-}
-
-.cancel-btn .action-icon-close {
-  -webkit-mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
-  mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
 }

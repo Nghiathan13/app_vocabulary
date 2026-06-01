@@ -9,6 +9,8 @@ import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
 import { WordWithId } from "../../../entities/word/model/types";
+import { IconButton } from "../../../shared/ui/Button/Button";
+import Icon from "../../../shared/ui/Icon/Icon";
 import { formatDisplayDate, getAudioPath } from "../../../shared/lib/utils";
 
 export type TableSortColumn = "word";
@@ -93,7 +95,7 @@ const formatTypeLabel = (type: string | null) => {
     .join(" ");
 };
 
-export default function Table_Grid({
+export default function TableGrid({
   words,
   isEditing,
   sortColumn,
@@ -200,11 +202,9 @@ export default function Table_Grid({
           className="grid-header sortable-th"
           onClick={() => onSortToggle("word")}
         >
-          Word{" "}
+          <span>Word</span>
           {sortColumn === "word" && (
-            <span className="material-symbols-outlined sort-icon">
-              {sortOrder === "asc" ? "arrow_drop_up" : "arrow_drop_down"}
-            </span>
+            <Icon name="sort" className={`sort-icon sort-icon-${sortOrder}`} />
           )}
         </div>
 
@@ -402,12 +402,13 @@ export default function Table_Grid({
 
                 <div className="grid-cell audio-cell">
                   {isEditing && (
-                    <button
+                    <IconButton
+                      type="button"
                       className="table-delete-btn"
+                      icon="delete"
+                      label="Delete"
                       onClick={() => onDelete(w.id, w.word)}
-                    >
-                      <span className="action-icon action-icon-delete" />
-                    </button>
+                    />
                   )}
                 </div>
               </div>

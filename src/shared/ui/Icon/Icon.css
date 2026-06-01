@@ -1,0 +1,47 @@
+.ui-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+
+  background-color: currentColor;
+}
+
+.ui-icon-add {
+  -webkit-mask: url("../../../assets/add-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/add-icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-close {
+  -webkit-mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-delete {
+  -webkit-mask: url("../../../assets/delete-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/delete-icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-edit {
+  -webkit-mask: url("../../../assets/edit-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/edit-icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-export {
+  -webkit-mask: url("../../../assets/export-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/export-icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-import {
+  -webkit-mask: url("../../../assets/import-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/import-icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-search {
+  -webkit-mask: url("../../../assets/search_icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/search_icon.svg") center / contain no-repeat;
+}
+
+.ui-icon-sort {
+  -webkit-mask: url("../../../assets/sort-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/sort-icon.svg") center / contain no-repeat;
+}

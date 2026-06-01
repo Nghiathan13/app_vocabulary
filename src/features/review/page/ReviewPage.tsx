@@ -368,9 +368,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
 
     if (e.key === " ") {
       e.preventDefault();
-      if (!showMeaning) {
-        setShowMeaning(true);
-      }
+      setShowMeaning((prev) => !prev);
       return;
     }
 
@@ -538,7 +536,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
 
   return (
     <div
-      className="review-wrapper"
+      className={`review-wrapper review-mode-${reviewMode}`}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       ref={wrapperRef}
@@ -578,7 +576,12 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
       </div>
 
       {/* === CARD === */}
-      {isTypingMode ? (
+      <div
+        className={`review-card-stage ${
+          isTypingMode ? "is-typing" : "is-flashcard"
+        }`}
+      >
+        {isTypingMode ? (
         <div className="review-card typing-card">
           <div className="typing-panel">
             <div className="typing-audio-row">
@@ -653,7 +656,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
             </div>
           </div>
         </div>
-      ) : (
+        ) : (
         <div className="review-card">
           <div className="review-word">
             <div className="word-header">
@@ -692,7 +695,8 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
             {currentWord.meaning_vi || "Không có nghĩa"}
           </div>
         </div>
-      )}
+        )}
+      </div>
 
       {/* === HINT === */}
       <div className="review-hint">

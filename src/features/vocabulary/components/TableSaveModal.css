@@ -70,7 +70,7 @@
 }
 
 /* -- Button Save -- */
-.save-confirm-btn {
+.modal-footer .save-confirm-btn {
   width: 100%;
   padding: 12px 0;
 
@@ -84,13 +84,13 @@
   cursor: pointer;
 }
 
-.save-confirm-btn:not(:disabled):hover {
+.modal-footer .save-confirm-btn:not(:disabled):hover {
   border: 1px solid var(--color-text-secondary);
 
   color: var(--color-text-secondary);
 }
 
-.save-confirm-btn:disabled {
+.modal-footer .save-confirm-btn:disabled {
   border-color: var(--color-border);
 
   color: var(--color-text-disabled);
