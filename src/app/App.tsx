@@ -1,5 +1,5 @@
 // -- React --
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // -- Components --
 import Navbar from "../shared/ui/Navbar/Navbar";
@@ -17,8 +17,18 @@ import refreshIcon from "../assets/refresh_icon.svg";
 // -- Style --
 import "./App.css";
 
+type AppTheme = "dark" | "light";
+const THEME_STORAGE_KEY = "engvocab-theme";
+
+const getInitialTheme = (): AppTheme => {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+  return storedTheme === "light" ? "light" : "dark";
+};
+
 function App() {
   const [currentTab, setCurrentTab] = useState<Tab>("home");
+  const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
   const {
     globalWords,
     isLoading,
@@ -30,10 +40,24 @@ function App() {
     handleWordDeleted,
   } = useGlobalWords();
 
+  const handleThemeToggle = () => {
+    setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+  };
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
   return (
     <ToastProvider>
       <main className="container">
-        <Navbar currentTab={currentTab} onTabChange={setCurrentTab} />
+        <Navbar
+          currentTab={currentTab}
+          theme={theme}
+          onTabChange={setCurrentTab}
+          onThemeToggle={handleThemeToggle}
+        />
 
         {isLoading ? (
           <div className="global-loading">
@@ -56,7 +80,9 @@ function App() {
           </div>
         ) : (
           <>
-            {currentTab === "home" && <HomePage />}
+            {currentTab === "home" && (
+              <HomePage words={globalWords} onNavigate={setCurrentTab} />
+            )}
             {currentTab === "review" && (
               <ReviewPage onReviewUpdate={handleReviewUpdate} />
             )}
