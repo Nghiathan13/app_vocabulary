@@ -5,7 +5,7 @@ import {
   getCurrentUser,
   loginAccount,
   registerAccount,
-} from "../../entities/auth/api/auth";
+} from "../../../entities/auth/api/auth";
 
 const AUTH_TOKEN_KEY = "engvocab-access-token";
 

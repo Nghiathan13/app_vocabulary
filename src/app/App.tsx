@@ -7,12 +7,11 @@ import HomePage from "../features/home/page/HomePage";
 import ReviewPage from "../features/review/page/ReviewPage";
 import VocabularyPage from "../features/vocabulary/page/VocabularyPage";
 import PracticePage from "../features/practice/page/PracticePage";
-import { AccountModal, WebLoginPage } from "../features/account";
+import { AccountModal, useAuthSession, WebLoginPage } from "../features/account";
 import AppLayout from "./AppLayout";
 import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 
 // -- Types & Utils --
-import { useAuthSession } from "./hooks/useAuthSession";
 import { useGlobalWords } from "./hooks/useGlobalWords";
 import { useVocabularySync } from "./hooks/useVocabularySync";
 import { isDesktopMode, isWebMode } from "../shared/config/appMode";
