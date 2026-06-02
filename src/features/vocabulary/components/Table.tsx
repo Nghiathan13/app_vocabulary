@@ -21,6 +21,11 @@ import {
 import { getAudioPath } from "../../../shared/lib/utils";
 import { isDesktopMode } from "../../../shared/config/appMode";
 import {
+  getModifiedWordIds,
+  makeModifiedFieldKey,
+  normalizeComparableFieldValue,
+} from "../lib/modifiedFields";
+import {
   getSearchMatchColumn,
   getSearchPriority,
   type SearchMatchColumn,
@@ -30,7 +35,6 @@ import {
 import "./Table.css";
 
 const SEARCH_DELAY_MS = 100;
-const MODIFIED_FIELD_SEPARATOR = "::";
 
 interface TableProps {
   words: WordWithId[];
@@ -39,17 +43,6 @@ interface TableProps {
   onWordAdded: (newWord: WordWithId) => void;
   onLocalChange: () => void;
 }
-
-const normalizeComparableValue = (
-  field: TableEditableField,
-  value: WordWithId[TableEditableField],
-) => {
-  if (field === "word" || field === "level" || field === "meaning_vi") {
-    return value;
-  }
-
-  return value || null;
-};
 
 export default function Table({
   words,
@@ -125,10 +118,7 @@ export default function Table({
 
   const handleSaveClick = useCallback(async () => {
     try {
-      const modifiedIds = new Set<string>();
-      for (const field of modifiedFields) {
-        modifiedIds.add(field.split(MODIFIED_FIELD_SEPARATOR)[0]);
-      }
+      const modifiedIds = getModifiedWordIds(modifiedFields);
 
       const wordsToUpdate = editedWords.filter((word) =>
         modifiedIds.has(String(word.id)),
@@ -162,12 +152,12 @@ export default function Table({
         return;
       }
 
-      const nextValue = normalizeComparableValue(field, value);
-      const originalValue = normalizeComparableValue(
+      const nextValue = normalizeComparableFieldValue(field, value);
+      const originalValue = normalizeComparableFieldValue(
         field,
         originalWord[field],
       );
-      const fieldKey = `${id}${MODIFIED_FIELD_SEPARATOR}${field}`;
+      const fieldKey = makeModifiedFieldKey(id, field);
 
       setModifiedFields((prev) => {
         const next = new Set(prev);

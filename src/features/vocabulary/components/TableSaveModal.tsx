@@ -1,15 +1,9 @@
 import { Button } from "../../../shared/ui/Button/Button";
 import Modal from "../../../shared/ui/Modal/Modal";
+import type { WordChange } from "../lib/tableEditChanges";
 
 // -- Style --
 import "./TableSaveModal.css";
-
-export interface WordChange {
-  word: string;
-  field: string;
-  oldValue: string;
-  newValue: string;
-}
 
 interface SaveModalProps {
   isOpen: boolean;

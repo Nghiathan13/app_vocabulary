@@ -10,6 +10,7 @@ import { IconButton } from "../../../shared/ui/Button/Button";
 import Icon from "../../../shared/ui/Icon/Icon";
 import { formatDisplayDate } from "../../../shared/lib/utils";
 import { createWordAudioSource } from "../../../shared/api/wordAudio";
+import { isModifiedField } from "../lib/modifiedFields";
 
 export type TableSortColumn = "word";
 
@@ -133,7 +134,7 @@ export default function TableGrid({
   const getCellClassName = (id: WordId, field: TableEditableField) => {
     const classes = ["grid-cell"];
 
-    if (modifiedFields.has(`${id}::${field}`)) {
+    if (isModifiedField(modifiedFields, id, field)) {
       classes.push("modified-cell");
     }
 
@@ -253,7 +254,7 @@ export default function TableGrid({
                 >
                   {isEditing && isEditableInputCell(w.id, "word") ? (
                     <textarea
-                      className={`table-input${modifiedFields.has(`${w.id}::word`) ? " modified" : ""}`}
+                      className={`table-input${isModifiedField(modifiedFields, w.id, "word") ? " modified" : ""}`}
                       value={w.word}
                       onChange={(e) => onInputChange(w.id, "word", e.target.value)}
                       onFocus={() => handleInputFocus({ id: w.id, field: "word" })}
@@ -282,7 +283,7 @@ export default function TableGrid({
                         </button>
                       )}
                       <textarea
-                        className={`table-input${modifiedFields.has(`${w.id}::ipa`) ? " modified" : ""}`}
+                        className={`table-input${isModifiedField(modifiedFields, w.id, "ipa") ? " modified" : ""}`}
                         value={w.ipa || ""}
                         onChange={(e) =>
                           onInputChange(w.id, "ipa", e.target.value || null)
@@ -314,7 +315,7 @@ export default function TableGrid({
                 >
                   {isEditing && isEditableInputCell(w.id, "type") ? (
                     <textarea
-                      className={`table-input${modifiedFields.has(`${w.id}::type`) ? " modified" : ""}`}
+                      className={`table-input${isModifiedField(modifiedFields, w.id, "type") ? " modified" : ""}`}
                       value={w.type || ""}
                       onChange={(e) =>
                         onInputChange(w.id, "type", e.target.value || null)
@@ -346,7 +347,7 @@ export default function TableGrid({
                 >
                   {isEditing && isEditableInputCell(w.id, "meaning_vi") ? (
                     <textarea
-                      className={`table-input${modifiedFields.has(`${w.id}::meaning_vi`) ? " modified" : ""}`}
+                      className={`table-input${isModifiedField(modifiedFields, w.id, "meaning_vi") ? " modified" : ""}`}
                       value={w.meaning_vi}
                       onChange={(e) =>
                         onInputChange(w.id, "meaning_vi", e.target.value)
@@ -368,7 +369,7 @@ export default function TableGrid({
                   {isEditing && isEditableInputCell(w.id, "level") ? (
                     <input
                       type="number"
-                      className={`table-input${modifiedFields.has(`${w.id}::level`) ? " modified" : ""}`}
+                      className={`table-input${isModifiedField(modifiedFields, w.id, "level") ? " modified" : ""}`}
                       value={w.level}
                       min={0}
                       onChange={(e) =>
@@ -390,7 +391,7 @@ export default function TableGrid({
                   {isEditing && isEditableInputCell(w.id, "next_review") ? (
                     <input
                       type="date"
-                      className={`table-input${modifiedFields.has(`${w.id}::next_review`) ? " modified" : ""}`}
+                      className={`table-input${isModifiedField(modifiedFields, w.id, "next_review") ? " modified" : ""}`}
                       value={w.next_review || ""}
                       onChange={(e) =>
                         onInputChange(w.id, "next_review", e.target.value || null)

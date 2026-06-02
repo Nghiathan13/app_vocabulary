@@ -11,7 +11,7 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 import { Button, IconButton } from "../../../shared/ui/Button/Button";
 import Icon from "../../../shared/ui/Icon/Icon";
 import ImportModal from "./TableImportModal";
-import SaveModal, { WordChange } from "./TableSaveModal";
+import SaveModal from "./TableSaveModal";
 import TableAddWordForm from "./TableAddWordForm";
 
 // -- Types & Utils --
@@ -19,7 +19,7 @@ import { importWords } from "../../../entities/word/api/words";
 import { WordWithId } from "../../../entities/word/model/types";
 import { isDesktopMode } from "../../../shared/config/appMode";
 import { buildImportPreviewFiles, ImportPreviewFile } from "../lib/tableImport";
-import { TableEditableField } from "./TableGrid";
+import { buildWordChanges } from "../lib/tableEditChanges";
 
 interface TableActionsProps {
   isEditing: boolean;
@@ -69,26 +69,15 @@ export default function TableActions({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // === DERIVED STATE ===
-  const changes = useMemo<WordChange[]>(() => {
-    const list: WordChange[] = [];
-
-    modifiedFields.forEach((fieldKey) => {
-      const [id, field] = fieldKey.split("::");
-      const originalWord = existingWords.find((w) => String(w.id) === id);
-      const editedWord = editedWords.find((w) => String(w.id) === id);
-
-      if (originalWord && editedWord) {
-        list.push({
-          word: originalWord.word,
-          field,
-          oldValue: String(originalWord[field as TableEditableField] ?? ""),
-          newValue: String(editedWord[field as TableEditableField] ?? ""),
-        });
-      }
-    });
-
-    return list.sort((a, b) => a.word.localeCompare(b.word));
-  }, [modifiedFields, existingWords, editedWords]);
+  const changes = useMemo(
+    () =>
+      buildWordChanges({
+        modifiedFields,
+        existingWords,
+        editedWords,
+      }),
+    [modifiedFields, existingWords, editedWords],
+  );
 
   const canAddImportedWords =
     !isScanningImportFiles &&
