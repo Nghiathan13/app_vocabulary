@@ -32,6 +32,7 @@ Set these on the backend service:
 | `ELEVENLABS_API_KEY` | Server TTS |
 | `ELEVENLABS_VOICE_ID` | Server TTS voice |
 | `AUDIO_STORAGE_DIR` | Use `storage/audio` |
+| `TTS_ENABLED` | Set `false` to skip TTS; set `true` only when ElevenLabs keys are valid |
 
 Comma-separated CORS example:
 
@@ -40,6 +41,12 @@ CORS_ORIGIN=https://your-web-domain.com,http://localhost:5173
 ```
 
 If `CORS_ORIGIN` is unset, the API allows `http://localhost:1420` and `http://localhost:5173` for local dev.
+
+### TTS toggle
+
+Set `TTS_ENABLED=false` if ElevenLabs is unavailable or you want to disable audio generation temporarily. Vocabulary add/sync still works; no new `audio_assets` rows are created and ElevenLabs is not called.
+
+Set `TTS_ENABLED=true` only when `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` are valid.
 
 ## 4. Run Prisma migrations (manual, once per schema change)
 

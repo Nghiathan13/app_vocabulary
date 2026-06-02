@@ -47,7 +47,15 @@ const cleanTtsText = (text: string) => {
 export class AudioService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private isTtsEnabled() {
+    return process.env.TTS_ENABLED !== "false";
+  }
+
   async ensureAudioForWord(word: string) {
+    if (!this.isTtsEnabled()) {
+      return;
+    }
+
     const text = word.trim();
     const normalizedText = normalizeAudioText(text);
 

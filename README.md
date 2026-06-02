@@ -89,13 +89,29 @@ AppImage is not included in the first release because AppImage bundling failed d
 ## Development
 
 ```bash
-npm install
-npm run tauri dev    # desktop app (Vite + Tauri)
-npm run dev          # frontend only (http://localhost:1420)
-npm run build        # production frontend build
-npm run test         # Vitest unit tests
-npm run tauri build  # production desktop bundle
+pnpm install
+pnpm run tauri dev       # desktop app (Vite + Tauri)
+pnpm run dev:desktop     # frontend only (http://localhost:1420)
+pnpm run build           # production frontend build
+pnpm run test            # Vitest unit tests
 ```
+
+### Cloud backend (Railway)
+
+Point the frontend at the deployed API without running `server/` locally:
+
+```bash
+# Terminal 1 — Vite for Tauri
+pnpm run dev:desktop:cloud
+
+# Terminal 2 — Tauri shell
+pnpm run tauri:cloud
+
+# Web only
+pnpm run dev:web:cloud
+```
+
+These set `VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app`. You can also set that variable in a local `.env` for custom targets.
 
 ## Environment variables
 

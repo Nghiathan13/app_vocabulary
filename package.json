@@ -13,7 +13,10 @@
     "build:web": "VITE_APP_MODE=web tsc && VITE_APP_MODE=web vite build",
     "test": "vitest run",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "dev:desktop:cloud": "VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app vite --port 1420",
+    "dev:web:cloud": "VITE_APP_MODE=web VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app vite --port 5173",
+    "tauri:cloud": "VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app tauri dev --no-dev-server"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.24",
