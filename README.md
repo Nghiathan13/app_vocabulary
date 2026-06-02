@@ -111,7 +111,31 @@ pnpm run tauri:cloud
 pnpm run dev:web:cloud
 ```
 
-These set `VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app`. You can also set that variable in a local `.env` for custom targets.
+These set `VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app`. You can also set that variable in a local `.env` for custom targets (see [`.env.example`](.env.example)).
+
+## Web Deploy
+
+Vercel build settings:
+
+- Framework: Vite
+- Install command: `pnpm install --frozen-lockfile`
+- Build command: `pnpm run build:web`
+- Output directory: `dist`
+
+Environment variables:
+
+```txt
+VITE_APP_MODE=web
+VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app
+```
+
+After Vercel deploys, add the Vercel domain to Railway backend `CORS_ORIGIN`:
+
+```txt
+http://localhost:5173,http://localhost:1420,https://your-vercel-domain.vercel.app
+```
+
+Then redeploy the Railway backend.
 
 ## Environment variables
 
