@@ -1,13 +1,8 @@
 import { AuthUser } from "../../../entities/auth/api/auth";
-import { VocabularySyncStatus } from "../../../app/hooks/useVocabularySync";
+import type { VocabularySyncStatus } from "../../../shared/lib/syncStatus";
 import { Button } from "../../../shared/ui/Button/Button";
-import {
-  formatLastSyncedTime,
-  formatPendingChangesDetail,
-  getSyncStatusLabel,
-  isOfflineSyncStatus,
-} from "../../../shared/lib/syncStatus";
 import Modal from "../../../shared/ui/Modal/Modal";
+import SyncStatusDisplay from "../../../shared/ui/SyncStatusDisplay/SyncStatusDisplay";
 import AccountAuthForm from "./AccountAuthForm";
 import "./AccountModal.css";
 
@@ -42,15 +37,6 @@ export default function AccountModal({
   onLogout,
   onSyncNow,
 }: AccountModalProps) {
-  const syncStatusLabel = getSyncStatusLabel({
-    isSyncing,
-    syncStatus,
-    pendingChangeCount,
-    lastSyncedAt,
-  });
-  const pendingDetail = formatPendingChangesDetail(pendingChangeCount);
-  const lastSyncedDetail = formatLastSyncedTime(lastSyncedAt);
-  const isOfflineStatus = isOfflineSyncStatus(syncStatus);
   const handleSyncNow = () => {
     void onSyncNow().catch((error) => {
       console.warn("Manual sync failed:", error);
@@ -74,22 +60,19 @@ export default function AccountModal({
           </div>
 
           {showSyncAction ? (
-            <div className="account-sync-block">
-              <p className="account-label">Sync status</p>
-              <p
-                className={`account-sync-status-label${isOfflineStatus ? " account-sync-status-label--offline" : ""}`}
-              >
-                {syncStatusLabel}
-              </p>
-              {pendingDetail ? (
-                <p className="account-sync-detail">{pendingDetail}</p>
-              ) : null}
-              {lastSyncedDetail ? (
-                <p className="account-sync-detail">
-                  Last synced: {lastSyncedDetail}
-                </p>
-              ) : null}
-            </div>
+            <SyncStatusDisplay
+              isSyncing={isSyncing}
+              syncStatus={syncStatus}
+              pendingChangeCount={pendingChangeCount}
+              lastSyncedAt={lastSyncedAt}
+              className="account-sync-block"
+              labelClassName="account-sync-status-label"
+              detailClassName="account-sync-detail"
+              offlineClassName="account-sync-status-label--offline"
+              headingClassName="account-label"
+              showHeading
+              headingText="Sync status"
+            />
           ) : null}
 
           <div className="account-actions">

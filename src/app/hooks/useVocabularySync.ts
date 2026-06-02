@@ -6,10 +6,9 @@ import {
 } from "../../entities/word/api/words";
 import { syncVocabulary } from "../../entities/sync/api/vocabularySync";
 import { isDesktopMode } from "../../shared/config/appMode";
+import type { VocabularySyncStatus } from "../../shared/lib/syncStatus";
 
 const AUTO_SYNC_DELAY_MS = 2500;
-
-export type VocabularySyncStatus = "idle" | "pending" | "syncing" | "error";
 
 export function useVocabularySync({
   accessToken,

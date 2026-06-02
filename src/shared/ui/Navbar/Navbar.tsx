@@ -2,14 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 // -- Types & Utils --
-import { VocabularySyncStatus } from "../../../app/hooks/useVocabularySync";
+import type { VocabularySyncStatus } from "../../lib/syncStatus";
 import { ROUTES } from "../../lib/routes";
-import {
-  formatLastSyncedTime,
-  formatPendingChangesDetail,
-  getSyncStatusLabel,
-  isOfflineSyncStatus,
-} from "../../lib/syncStatus";
+import SyncStatusDisplay from "../SyncStatusDisplay/SyncStatusDisplay";
 
 // -- Style --
 import "./Navbar.css";
@@ -80,16 +75,6 @@ export default function Navbar({
       console.warn("Manual sync failed:", error);
     });
   };
-
-  const syncStatusLabel = getSyncStatusLabel({
-    isSyncing,
-    syncStatus,
-    pendingChangeCount,
-    lastSyncedAt,
-  });
-  const pendingDetail = formatPendingChangesDetail(pendingChangeCount);
-  const lastSyncedDetail = formatLastSyncedTime(lastSyncedAt);
-  const isOfflineStatus = isOfflineSyncStatus(syncStatus);
 
   return (
     <nav className="navbar">
@@ -207,21 +192,16 @@ export default function Navbar({
 
                 {showSyncAction ? (
                   <>
-                    <div
-                      className={`nav-sync-status${isOfflineStatus ? " nav-sync-status--offline" : ""}`}
-                    >
-                      {syncStatusLabel}
-                    </div>
-
-                    {pendingDetail ? (
-                      <p className="nav-sync-detail">{pendingDetail}</p>
-                    ) : null}
-
-                    {lastSyncedDetail ? (
-                      <p className="nav-sync-detail">
-                        Last synced: {lastSyncedDetail}
-                      </p>
-                    ) : null}
+                    <SyncStatusDisplay
+                      isSyncing={isSyncing}
+                      syncStatus={syncStatus}
+                      pendingChangeCount={pendingChangeCount}
+                      lastSyncedAt={lastSyncedAt}
+                      labelClassName="nav-sync-status"
+                      detailClassName="nav-sync-detail"
+                      offlineClassName="nav-sync-status--offline"
+                      labelAs="div"
+                    />
 
                     <button
                       type="button"

@@ -1,4 +1,4 @@
-import type { VocabularySyncStatus } from "../../app/hooks/useVocabularySync";
+export type VocabularySyncStatus = "idle" | "pending" | "syncing" | "error";
 
 export interface SyncStatusInput {
   isSyncing: boolean;
