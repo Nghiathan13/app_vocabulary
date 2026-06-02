@@ -50,7 +50,7 @@ export default function HomePage({ words }: HomePageProps) {
   const highWrongCountWords = getHighWrongCountWords(words);
 
   return (
-    <main className="home-page" aria-labelledby="home-title">
+    <section className="home-page" aria-labelledby="home-title">
       {totalWords === 0 ? (
         <section className="home-empty-state">
           <div>
@@ -152,6 +152,6 @@ export default function HomePage({ words }: HomePageProps) {
           </section>
         </>
       )}
-    </main>
+    </section>
   );
 }

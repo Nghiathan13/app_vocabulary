@@ -135,15 +135,15 @@
 
   /* Type/category pills — solid tints for contrast on white */
   --color-type-phrasal-bg: rgb(242, 242, 242);
-  --color-type-phrasal-text: rgb(128, 128, 123);
+  --color-type-phrasal-text: rgb(88, 88, 84);
   --color-type-adverb-bg: rgb(215, 232, 255);
-  --color-type-adverb-text: rgb(35, 145, 255);
+  --color-type-adverb-text: rgb(23, 91, 165);
   --color-type-preposition-bg: rgb(232, 229, 255);
-  --color-type-preposition-text: rgb(129, 117, 255);
+  --color-type-preposition-text: rgb(82, 70, 180);
   --color-type-noun-bg: rgb(223, 249, 228);
-  --color-type-noun-text: rgb(38, 212, 78);
+  --color-type-noun-text: rgb(20, 112, 45);
   --color-type-adjective-bg: rgb(255, 238, 218);
-  --color-type-adjective-text: rgb(252, 155, 75);
+  --color-type-adjective-text: rgb(158, 83, 19);
   --color-type-verb-bg: rgb(224, 255, 250);
-  --color-type-verb-text: rgb(42, 207, 193);
+  --color-type-verb-text: rgb(16, 117, 107);
 }
