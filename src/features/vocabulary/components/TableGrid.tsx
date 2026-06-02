@@ -4,15 +4,12 @@ import { useEffect, useRef, useState } from "react";
 // -- Library --
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-// -- Tauri --
-import { invoke } from "@tauri-apps/api/core";
-
 // -- Types & Utils --
 import { WordId, WordWithId } from "../../../entities/word/model/types";
 import { IconButton } from "../../../shared/ui/Button/Button";
 import Icon from "../../../shared/ui/Icon/Icon";
-import { formatDisplayDate, getAudioPath } from "../../../shared/lib/utils";
-import { isDesktopMode } from "../../../shared/config/appMode";
+import { formatDisplayDate } from "../../../shared/lib/utils";
+import { createWordAudioSource } from "../../../shared/api/wordAudio";
 
 export type TableSortColumn = "word";
 
@@ -147,19 +144,20 @@ export default function TableGrid({
     return classes.join(" ");
   };
 
-  const playAudio = async (word: string) => {
-    if (!isDesktopMode) {
-      return;
-    }
-
+  const playAudio = async (word: WordWithId) => {
     try {
-      const audioPath = await getAudioPath(word);
+      const source = await createWordAudioSource(word);
 
-      const binaryData = await invoke<number[]>("read_binary_file", { path: audioPath });
-      const blob = new Blob([new Uint8Array(binaryData)], { type: "audio/mpeg" });
-      const assetUrl = URL.createObjectURL(blob);
+      if (!source) {
+        return;
+      }
 
-      const audio = new Audio(assetUrl);
+      const audio = new Audio(source.url);
+      audio.onended = () => {
+        if (source.shouldRevoke) {
+          URL.revokeObjectURL(source.url);
+        }
+      };
       audio.play();
     } catch (error) {
       console.error("Lỗi phát âm thanh trong bảng:", error);
@@ -278,7 +276,7 @@ export default function TableGrid({
                         <button
                           className="table-audio-btn active"
                           onMouseDown={(e) => e.preventDefault()}
-                          onClick={(e) => { e.stopPropagation(); playAudio(w.word); }}
+                          onClick={(e) => { e.stopPropagation(); playAudio(w); }}
                         >
                           <span className="material-symbols-outlined">volume_up</span>
                         </button>
@@ -299,7 +297,7 @@ export default function TableGrid({
                       {w.hasAudio && (
                         <button
                           className="table-audio-btn active"
-                          onClick={(e) => { e.stopPropagation(); playAudio(w.word); }}
+                          onClick={(e) => { e.stopPropagation(); playAudio(w); }}
                         >
                           <span className="material-symbols-outlined">volume_up</span>
                         </button>

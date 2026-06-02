@@ -1,22 +1,23 @@
 // -- React --
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 // -- Components --
-import Navbar from "../shared/ui/Navbar/Navbar";
 import HomePage from "../features/home/page/HomePage";
 import ReviewPage from "../features/review/page/ReviewPage";
 import VocabularyPage from "../features/vocabulary/page/VocabularyPage";
 import PracticePage from "../features/practice/page/PracticePage";
-import SettingsModal from "../features/settings/SettingsModal";
+import AccountModal from "../features/account/AccountModal";
+import WebLoginPage from "../features/account/WebLoginPage";
+import AppLayout from "./AppLayout";
 import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 
 // -- Types & Utils --
-import { Tab } from "../shared/model/tab";
 import { useAuthSession } from "./hooks/useAuthSession";
 import { useGlobalWords } from "./hooks/useGlobalWords";
 import { useVocabularySync } from "./hooks/useVocabularySync";
 import { isDesktopMode, isWebMode } from "../shared/config/appMode";
-import refreshIcon from "../assets/refresh_icon.svg";
+import { ROUTES } from "../shared/lib/routes";
 
 // -- Style --
 import "./App.css";
@@ -31,9 +32,8 @@ const getInitialTheme = (): AppTheme => {
 };
 
 function App() {
-  const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const startupSyncAccessTokenRef = useRef<string | null>(null);
   const {
     accessToken,
@@ -51,7 +51,6 @@ function App() {
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
-    handleWordAudioReady,
     handleWordDeleted,
   } = useGlobalWords({ enabled: shouldLoadWords });
   const handleSynced = useCallback(async () => {
@@ -98,100 +97,104 @@ function App() {
   }, [accessToken, isCheckingAuth, isLoading, syncNow, user]);
 
   const shouldShowWebAuthLoading = isWebMode && isCheckingAuth;
-  const shouldShowWebAccountGate = isWebMode && !isCheckingAuth && !user;
+  const shouldRenderAccountModal = isDesktopMode || Boolean(user);
+
+  const layoutElement = (
+    <AppLayout
+      theme={theme}
+      user={user}
+      isCheckingAuth={isCheckingAuth}
+      isLoggedIn={Boolean(user)}
+      isLoading={isLoading}
+      loadError={loadError}
+      isSyncing={isSyncing}
+      showSyncAction={isDesktopMode}
+      syncStatus={syncStatus}
+      pendingChangeCount={pendingChangeCount}
+      onThemeToggle={handleThemeToggle}
+      onLoginClick={() => setIsAccountModalOpen(true)}
+      onLogout={logout}
+      onSyncNow={syncNow}
+      onRetryLoad={() => void fetchGlobalWords()}
+    />
+  );
 
   return (
     <ToastProvider>
       <main className="container">
-        <Navbar
-          currentTab={currentTab}
-          theme={theme}
-          isLoggedIn={Boolean(user)}
-          isSyncing={isSyncing}
-          showSyncAction={isDesktopMode}
-          syncStatus={syncStatus}
-          pendingChangeCount={pendingChangeCount}
-          onTabChange={setCurrentTab}
-          onThemeToggle={handleThemeToggle}
-          onLoginClick={() => setIsSettingsOpen(true)}
-          onLogout={logout}
-          onSyncNow={syncNow}
-        />
-
         {shouldShowWebAuthLoading ? (
           <div className="global-loading">
             <div className="spinner"></div>
             <p>Checking your account...</p>
           </div>
-        ) : shouldShowWebAccountGate ? (
-          <div className="web-account-gate">
-            <h1>EngVocab Account</h1>
-            <p>Log in or register to manage your vocabulary online.</p>
-            <button
-              type="button"
-              className="web-account-gate-btn"
-              onClick={() => setIsSettingsOpen(true)}
-            >
-              Log in
-            </button>
-          </div>
-        ) : isLoading ? (
-          <div className="global-loading">
-            <div className="spinner"></div>
-            <p>Loading your vocabulary...</p>
-          </div>
-        ) : loadError ? (
-          <div className="global-load-error">
-            <button
-              type="button"
-              className="global-load-error-retry"
-              onClick={() => void fetchGlobalWords()}
-              aria-label="Retry loading vocabulary"
-            >
-              <img src={refreshIcon} alt="" width={48} height={48} />
-            </button>
-            <p className="global-load-error-message">
-              Failed to load vocabulary. Please try again.
-            </p>
-          </div>
         ) : (
-          <>
-            {currentTab === "home" && (
-              <HomePage words={globalWords} onNavigate={setCurrentTab} />
-            )}
-            {currentTab === "review" && (
-              <ReviewPage
-                onReviewUpdate={handleReviewUpdate}
-                onLocalChange={scheduleSync}
+          <Routes>
+            <Route
+              path={ROUTES.login}
+              element={
+                isDesktopMode ? (
+                  <Navigate to={ROUTES.home} replace />
+                ) : (
+                  <WebLoginPage
+                    isAuthenticated={Boolean(user)}
+                    isCheckingAuth={isCheckingAuth}
+                    onLogin={login}
+                    onRegister={register}
+                  />
+                )
+              }
+            />
+
+            <Route element={layoutElement}>
+              <Route
+                path="/"
+                element={<Navigate to={ROUTES.home} replace />}
               />
-            )}
-            {currentTab === "practice" && <PracticePage />}
-            {currentTab === "insights" && (
-              <VocabularyPage
-                words={globalWords}
-                onRefresh={fetchGlobalWords}
-                onWordDeleted={handleWordDeleted}
-                onWordAdded={handleWordAdded}
-                onWordAudioReady={handleWordAudioReady}
-                onLocalChange={scheduleSync}
+              <Route
+                path={ROUTES.home}
+                element={<HomePage words={globalWords} />}
               />
-            )}
-          </>
+              <Route
+                path={ROUTES.review}
+                element={
+                  <ReviewPage
+                    onReviewUpdate={handleReviewUpdate}
+                    onLocalChange={scheduleSync}
+                  />
+                }
+              />
+              <Route path={ROUTES.practice} element={<PracticePage />} />
+              <Route
+                path={ROUTES.vocabulary}
+                element={
+                  <VocabularyPage
+                    words={globalWords}
+                    onRefresh={fetchGlobalWords}
+                    onWordDeleted={handleWordDeleted}
+                    onWordAdded={handleWordAdded}
+                    onLocalChange={scheduleSync}
+                  />
+                }
+              />
+            </Route>
+          </Routes>
         )}
 
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          user={user}
-          isCheckingAuth={isCheckingAuth}
-          isSyncing={isSyncing}
-          syncError={syncError}
-          lastSyncedAt={lastSyncedAt}
-          onClose={() => setIsSettingsOpen(false)}
-          onLogin={login}
-          onRegister={register}
-          onLogout={logout}
-          onSyncNow={syncNow}
-        />
+        {shouldRenderAccountModal ? (
+          <AccountModal
+            isOpen={isAccountModalOpen}
+            user={user}
+            isCheckingAuth={isCheckingAuth}
+            isSyncing={isSyncing}
+            syncError={syncError}
+            lastSyncedAt={lastSyncedAt}
+            onClose={() => setIsAccountModalOpen(false)}
+            onLogin={login}
+            onRegister={register}
+            onLogout={logout}
+            onSyncNow={syncNow}
+          />
+        ) : null}
       </main>
     </ToastProvider>
   );

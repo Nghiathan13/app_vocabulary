@@ -11,5 +11,25 @@ services:
     volumes:
       - engvocab-postgres:/var/lib/postgresql/data
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://engvocab:engvocab@postgres:5432/engvocab?schema=public
+      JWT_SECRET: dev-docker-secret-change-me
+      PORT: "3000"
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
+      ELEVENLABS_VOICE_ID: ${ELEVENLABS_VOICE_ID:-}
+      AUDIO_STORAGE_DIR: storage/audio
+    volumes:
+      - engvocab-audio:/app/storage/audio
+
 volumes:
   engvocab-postgres:
+  engvocab-audio:

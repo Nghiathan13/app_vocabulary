@@ -1,0 +1,43 @@
+.account-modal {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.account-title {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 650;
+  color: var(--color-text-primary);
+}
+
+.account-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.account-label {
+  margin: 0 0 4px;
+
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.account-user-email,
+.account-sync-status p:last-child {
+  margin: 0;
+
+  color: var(--color-text-primary);
+}
+
+.account-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.account-error {
+  margin: 0;
+
+  color: var(--color-error);
+  font-size: 14px;
+}

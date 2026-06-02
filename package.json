@@ -7,6 +7,8 @@
     "dev": "vite",
     "dev:desktop": "vite --port 1420",
     "dev:web": "VITE_APP_MODE=web vite --port 5173",
+    "dev:server": "pnpm --dir server run dev",
+    "dev:stack": "concurrently -k -n desktop,web,server -c blue,green,magenta \"pnpm run dev:desktop\" \"pnpm run dev:web\" \"pnpm run dev:server\"",
     "build": "tsc && vite build",
     "build:web": "VITE_APP_MODE=web tsc && VITE_APP_MODE=web vite build",
     "test": "vitest run",
@@ -22,6 +24,7 @@
     "@tauri-apps/plugin-sql": "^2.4.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.16.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.13"
   },
@@ -30,6 +33,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "concurrently": "^10.0.1",
     "typescript": "~5.8.3",
     "vite": "^7.0.4",
     "vitest": "^4.1.7"

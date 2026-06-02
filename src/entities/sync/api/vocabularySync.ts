@@ -21,6 +21,9 @@ interface ServerSyncWord {
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;
+  audio_status?: string | null;
+  audio_url?: string | null;
+  hasAudio?: boolean;
 }
 
 export interface VocabularySyncResponse {
@@ -63,6 +66,9 @@ const toRemoteSyncWord = (word: ServerSyncWord): RemoteSyncWord => ({
   created_at: word.created_at,
   updated_at: word.updated_at,
   deleted_at: word.deleted_at,
+  audio_status: word.audio_status,
+  audio_url: word.audio_url,
+  hasAudio: word.hasAudio,
 });
 
 export async function syncVocabulary(
