@@ -5,12 +5,51 @@ import "./AccountAuthForm.css";
 
 type AuthMode = "login" | "register";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 interface AccountAuthFormProps {
   initialMode?: AuthMode;
   isCheckingAuth: boolean;
   onLogin: (email: string, password: string) => Promise<void>;
   onRegister: (email: string, password: string, name?: string) => Promise<void>;
   onSuccess?: () => void;
+}
+
+function getValidationError(
+  mode: AuthMode,
+  email: string,
+  password: string,
+  name: string,
+): string | null {
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    return "Enter a valid email.";
+  }
+
+  if (!EMAIL_PATTERN.test(trimmedEmail)) {
+    return "Enter a valid email.";
+  }
+
+  if (!password) {
+    return "Enter your password.";
+  }
+
+  if (password.length > 128) {
+    return "Password must be 128 characters or fewer.";
+  }
+
+  if (mode === "register") {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters.";
+    }
+
+    if (name.trim().length > 80) {
+      return "Name must be 80 characters or fewer.";
+    }
+  }
+
+  return null;
 }
 
 export default function AccountAuthForm({
@@ -27,16 +66,39 @@ export default function AccountAuthForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validationError = getValidationError(mode, email, password, name);
+  const isFormDisabled = isSubmitting || isCheckingAuth || validationError !== null;
+
+  const handleModeChange = (nextMode: AuthMode) => {
+    setMode(nextMode);
+    setSubmitError(null);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const clientError = getValidationError(mode, email, password, name);
+
+    if (clientError) {
+      setSubmitError(clientError);
+      return;
+    }
+
+    const trimmedEmail = email.trim();
+    const trimmedName = name.trim();
+
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
       if (mode === "login") {
-        await onLogin(email, password);
+        await onLogin(trimmedEmail, password);
       } else {
-        await onRegister(email, password, name);
+        await onRegister(
+          trimmedEmail,
+          password,
+          trimmedName ? trimmedName : undefined,
+        );
       }
 
       setPassword("");
@@ -55,14 +117,14 @@ export default function AccountAuthForm({
         <button
           type="button"
           className={mode === "login" ? "active" : ""}
-          onClick={() => setMode("login")}
+          onClick={() => handleModeChange("login")}
         >
           Login
         </button>
         <button
           type="button"
           className={mode === "register" ? "active" : ""}
-          onClick={() => setMode("register")}
+          onClick={() => handleModeChange("register")}
         >
           Register
         </button>
@@ -75,6 +137,7 @@ export default function AccountAuthForm({
             value={name}
             onChange={(event) => setName(event.target.value)}
             autoComplete="name"
+            maxLength={80}
           />
         </label>
       ) : null}
@@ -86,7 +149,6 @@ export default function AccountAuthForm({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           autoComplete="email"
-          required
         />
       </label>
 
@@ -97,8 +159,7 @@ export default function AccountAuthForm({
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           autoComplete={mode === "login" ? "current-password" : "new-password"}
-          minLength={8}
-          required
+          maxLength={128}
         />
       </label>
 
@@ -111,7 +172,7 @@ export default function AccountAuthForm({
         type="submit"
         variant="primary"
         fullWidth
-        disabled={isSubmitting || isCheckingAuth}
+        disabled={isFormDisabled}
       >
         {isSubmitting
           ? "Please wait..."

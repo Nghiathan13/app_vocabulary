@@ -45,6 +45,7 @@
 
   color: var(--color-text-muted);
   font-size: 14px;
+  white-space: pre-line;
 }
 
 .account-auth-form input {
