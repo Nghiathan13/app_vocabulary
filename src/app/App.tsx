@@ -5,7 +5,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 // -- Components --
 import HomePage from "../features/home/page/HomePage";
 import ReviewPage from "../features/review/page/ReviewPage";
-import VocabularyPage from "../features/vocabulary/page/VocabularyPage";
+import { VocabularyPage } from "../features/vocabulary";
 import PracticePage from "../features/practice/page/PracticePage";
 import { AccountModal, useAuthSession, WebLoginPage } from "../features/account";
 import AppLayout from "./AppLayout";

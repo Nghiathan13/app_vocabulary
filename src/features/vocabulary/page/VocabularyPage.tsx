@@ -1,5 +1,5 @@
 // -- Components --
-import Table from "../../vocabulary/components/Table";
+import Table from "../components/Table";
 
 // -- Types & Utils --
 import { WordId, WordWithId } from "../../../entities/word/model/types";
