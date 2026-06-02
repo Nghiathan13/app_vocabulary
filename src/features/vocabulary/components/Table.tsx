@@ -6,11 +6,12 @@ import { invoke } from "@tauri-apps/api/core";
 
 // -- Components --
 import TableActions from "./TableActions";
-import TableGrid, {
+import TableGrid from "./TableGrid";
+import type {
   TableActiveCell,
   TableEditableField,
   TableSortColumn,
-} from "./TableGrid";
+} from "../model/tableTypes";
 
 // -- Types & Utils --
 import { WordWithId } from "../../../entities/word/model/types";

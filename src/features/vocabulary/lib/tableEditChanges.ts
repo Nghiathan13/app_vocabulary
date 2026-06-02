@@ -1,5 +1,5 @@
 import type { WordId, WordWithId } from "../../../entities/word/model/types";
-import type { TableEditableField } from "../components/TableGrid";
+import type { TableEditableField } from "../model/tableTypes";
 import { normalizeComparableValue, parseModifiedFieldKey } from "./modifiedFields";
 
 export interface WordChange {

@@ -11,22 +11,11 @@ import Icon from "../../../shared/ui/Icon/Icon";
 import { formatDisplayDate } from "../../../shared/lib/utils";
 import { createWordAudioSource } from "../../../shared/api/wordAudio";
 import { isModifiedField } from "../lib/modifiedFields";
-
-export type TableSortColumn = "word";
-
-export type TableEditableField =
-  | "word"
-  | "ipa"
-  | "type"
-  | "meaning_vi"
-  | "level"
-  | "last_review"
-  | "next_review";
-
-export interface TableActiveCell {
-  id: WordId;
-  field: TableEditableField;
-}
+import type {
+  TableActiveCell,
+  TableEditableField,
+  TableSortColumn,
+} from "../model/tableTypes";
 
 interface TableGridProps {
   words: WordWithId[];
