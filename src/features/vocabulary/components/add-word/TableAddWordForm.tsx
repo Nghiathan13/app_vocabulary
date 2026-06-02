@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 
-import { WordType, WordWithId } from "../../../entities/word/model/types";
-import { insertWord } from "../../../entities/word/api/words";
-import { Button } from "../../../shared/ui/Button/Button";
-import Modal from "../../../shared/ui/Modal/Modal";
-import { useToast } from "../../../shared/ui/Toast/ToastProvider";
+import { WordType, WordWithId } from "../../../../entities/word/model/types";
+import { insertWord } from "../../../../entities/word/api/words";
+import { Button } from "../../../../shared/ui/Button/Button";
+import Modal from "../../../../shared/ui/Modal/Modal";
+import { useToast } from "../../../../shared/ui/Toast/ToastProvider";
 
 import "./TableAddWordForm.css";
 

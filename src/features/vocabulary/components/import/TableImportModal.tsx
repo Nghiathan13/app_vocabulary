@@ -1,8 +1,8 @@
-import { Button, IconButton } from "../../../shared/ui/Button/Button";
-import Modal from "../../../shared/ui/Modal/Modal";
+import { Button, IconButton } from "../../../../shared/ui/Button/Button";
+import Modal from "../../../../shared/ui/Modal/Modal";
 
 // -- Types & Utils --
-import { ImportPreviewFile } from "../lib/tableImport";
+import { ImportPreviewFile } from "../../lib/tableImport";
 
 interface ImportModalProps {
   isOpen: boolean;

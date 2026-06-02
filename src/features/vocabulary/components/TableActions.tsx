@@ -10,9 +10,9 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 // -- Components --
 import { Button, IconButton } from "../../../shared/ui/Button/Button";
 import Icon from "../../../shared/ui/Icon/Icon";
-import ImportModal from "./TableImportModal";
-import SaveModal from "./TableSaveModal";
-import TableAddWordForm from "./TableAddWordForm";
+import TableAddWordForm from "./add-word/TableAddWordForm";
+import ImportModal from "./import/TableImportModal";
+import SaveModal from "./save-changes/TableSaveModal";
 
 // -- Types & Utils --
 import { importWords } from "../../../entities/word/api/words";
