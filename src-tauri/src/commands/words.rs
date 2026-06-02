@@ -1,4 +1,4 @@
-use crate::db::words::{self, WordImportDraft, WordWithId};
+use crate::db::words::{self, RemoteSyncWord, SyncMergeId, WordImportDraft, WordWithId};
 
 #[tauri::command]
 pub async fn get_all_words(app: tauri::AppHandle) -> Result<Vec<WordWithId>, String> {
@@ -51,12 +51,21 @@ pub async fn update_word_review_rust(
     last_review: String,
     next_review: Option<String>,
 ) -> Result<(), String> {
-    words::update_word_review_db(
-        &app,
-        word,
-        level,
-        wrong_count,
-        last_review,
-        next_review,
-    )
+    words::update_word_review_db(&app, word, level, wrong_count, last_review, next_review)
+}
+
+#[tauri::command]
+pub async fn get_word_sync_changes(app: tauri::AppHandle) -> Result<Vec<WordWithId>, String> {
+    words::list_word_sync_changes_db(&app)
+}
+
+#[tauri::command]
+pub async fn apply_word_sync_result(
+    app: tauri::AppHandle,
+    words: Vec<RemoteSyncWord>,
+    deleted_sync_ids: Vec<String>,
+    merged_ids: Vec<SyncMergeId>,
+    synced_at: String,
+) -> Result<(), String> {
+    words::apply_word_sync_result_db(&app, words, deleted_sync_ids, merged_ids, synced_at)
 }
