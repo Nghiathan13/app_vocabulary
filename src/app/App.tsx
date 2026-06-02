@@ -58,7 +58,6 @@ function App() {
   }, [fetchGlobalWords]);
   const {
     isSyncing,
-    syncError,
     lastSyncedAt,
     pendingChangeCount,
     syncStatus,
@@ -111,6 +110,7 @@ function App() {
       showSyncAction={isDesktopMode}
       syncStatus={syncStatus}
       pendingChangeCount={pendingChangeCount}
+      lastSyncedAt={lastSyncedAt}
       onThemeToggle={handleThemeToggle}
       onLoginClick={() => setIsAccountModalOpen(true)}
       onLogout={logout}
@@ -185,8 +185,10 @@ function App() {
             isOpen={isAccountModalOpen}
             user={user}
             isCheckingAuth={isCheckingAuth}
+            showSyncAction={isDesktopMode}
             isSyncing={isSyncing}
-            syncError={syncError}
+            syncStatus={syncStatus}
+            pendingChangeCount={pendingChangeCount}
             lastSyncedAt={lastSyncedAt}
             onClose={() => setIsAccountModalOpen(false)}
             onLogin={login}
