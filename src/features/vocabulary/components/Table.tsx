@@ -37,7 +37,6 @@ interface TableProps {
   onRefresh: () => void;
   onWordDeleted: (wordId: WordWithId["id"]) => void;
   onWordAdded: (newWord: WordWithId) => void;
-  onWordAudioReady: (wordId: WordWithId["id"]) => void;
   onLocalChange: () => void;
 }
 
@@ -57,7 +56,6 @@ export default function Table({
   onRefresh,
   onWordDeleted,
   onWordAdded,
-  onWordAudioReady,
   onLocalChange,
 }: TableProps) {
   // === STATE ===
@@ -279,7 +277,6 @@ export default function Table({
         onCancel={handleCancelClick}
         onRefresh={onRefresh}
         onWordAdded={onWordAdded}
-        onWordAudioReady={onWordAudioReady}
         onLocalChange={onLocalChange}
         existingWords={words}
         wordsToExport={displayedWords}

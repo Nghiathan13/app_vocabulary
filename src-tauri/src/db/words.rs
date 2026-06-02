@@ -6,7 +6,8 @@ use tauri::Manager;
 
 const WORD_SELECT: &str =
     "rowid, word, ipa, type, meaning_vi, definition, example, band, level, wrong_count, \
-     last_review, next_review, sync_id, sync_status, updated_at, deleted_at, last_synced_at";
+     last_review, next_review, sync_id, sync_status, updated_at, deleted_at, last_synced_at, \
+     audio_status, audio_url";
 const SYNC_NOW_SQL: &str = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -33,6 +34,10 @@ pub struct WordWithId {
     pub deleted_at: Option<String>,
     #[serde(default)]
     pub last_synced_at: Option<String>,
+    #[serde(default)]
+    pub audio_status: Option<String>,
+    #[serde(default)]
+    pub audio_url: Option<String>,
     #[serde(rename = "hasAudio")]
     pub has_audio: Option<bool>,
 }
@@ -53,6 +58,8 @@ pub struct RemoteSyncWord {
     pub next_review: Option<String>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
+    pub audio_status: Option<String>,
+    pub audio_url: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -87,8 +94,12 @@ fn get_audio_files(app: &tauri::AppHandle) -> HashSet<String> {
     audio_files
 }
 
-fn map_word_row(row: &Row<'_>, has_audio: bool) -> rusqlite::Result<WordWithId> {
+fn map_word_row(row: &Row<'_>, has_local_audio: bool) -> rusqlite::Result<WordWithId> {
     let word: String = row.get(1)?;
+    let audio_status: Option<String> = row.get(17)?;
+    let audio_url: Option<String> = row.get(18)?;
+    let has_server_audio = audio_status.as_deref() == Some("ready") && audio_url.is_some();
+
     Ok(WordWithId {
         id: row.get(0)?,
         word,
@@ -107,7 +118,9 @@ fn map_word_row(row: &Row<'_>, has_audio: bool) -> rusqlite::Result<WordWithId> 
         updated_at: row.get(14)?,
         deleted_at: row.get(15)?,
         last_synced_at: row.get(16)?,
-        has_audio: Some(has_audio),
+        audio_status,
+        audio_url,
+        has_audio: Some(has_local_audio || has_server_audio),
     })
 }
 
@@ -214,7 +227,9 @@ pub fn update_word_db(app: &tauri::AppHandle, word: WordWithId) -> Result<(), St
     let conn = super::get_db_conn(app)?;
 
     conn.execute(
-        &format!("UPDATE words SET word = ?1, ipa = ?2, type = ?3, meaning_vi = ?4, definition = ?5, \
+        &format!("UPDATE words SET audio_status = CASE WHEN word != ?1 THEN NULL ELSE audio_status END, \
+         audio_url = CASE WHEN word != ?1 THEN NULL ELSE audio_url END, \
+         word = ?1, ipa = ?2, type = ?3, meaning_vi = ?4, definition = ?5, \
          example = ?6, band = ?7, level = ?8, wrong_count = ?9, last_review = ?10, \
          next_review = ?11, updated_at = {SYNC_NOW_SQL}, deleted_at = NULL, \
          sync_status = CASE WHEN sync_status = 'pending_create' THEN 'pending_create' ELSE 'pending_update' END \
@@ -401,7 +416,7 @@ pub fn apply_word_sync_result_db(
             "UPDATE words SET word = ?1, ipa = ?2, type = ?3, meaning_vi = ?4, definition = ?5, \
              example = ?6, band = ?7, level = ?8, wrong_count = ?9, last_review = ?10, \
              next_review = ?11, updated_at = ?12, deleted_at = NULL, sync_status = 'synced', \
-             last_synced_at = ?13 WHERE sync_id = ?14",
+             last_synced_at = ?13, audio_status = ?14, audio_url = ?15 WHERE sync_id = ?16",
             params![
                 word.word,
                 word.ipa,
@@ -416,6 +431,8 @@ pub fn apply_word_sync_result_db(
                 word.next_review,
                 word.updated_at,
                 synced_at,
+                word.audio_status,
+                word.audio_url,
                 word.sync_id
             ],
         )
@@ -428,16 +445,18 @@ pub fn apply_word_sync_result_db(
         tx.execute(
             "INSERT INTO words (\
              word, ipa, type, meaning_vi, definition, example, band, level, wrong_count, \
-             last_review, next_review, created_at, sync_id, sync_status, updated_at, deleted_at, last_synced_at\
+             last_review, next_review, created_at, sync_id, sync_status, updated_at, deleted_at, last_synced_at, \
+             audio_status, audio_url\
              ) VALUES (\
              ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, COALESCE(?12, datetime('now')), \
-             ?13, 'synced', ?14, NULL, ?15\
+             ?13, 'synced', ?14, NULL, ?15, ?16, ?17\
              ) ON CONFLICT(word) DO UPDATE SET \
              sync_id = excluded.sync_id, ipa = excluded.ipa, type = excluded.type, \
              meaning_vi = excluded.meaning_vi, definition = excluded.definition, example = excluded.example, \
              band = excluded.band, level = excluded.level, wrong_count = excluded.wrong_count, \
              last_review = excluded.last_review, next_review = excluded.next_review, updated_at = excluded.updated_at, \
-             deleted_at = NULL, sync_status = 'synced', last_synced_at = excluded.last_synced_at",
+             deleted_at = NULL, sync_status = 'synced', last_synced_at = excluded.last_synced_at, \
+             audio_status = excluded.audio_status, audio_url = excluded.audio_url",
             params![
                 word.word,
                 word.ipa,
@@ -453,7 +472,9 @@ pub fn apply_word_sync_result_db(
                 word.created_at,
                 word.sync_id,
                 word.updated_at,
-                synced_at
+                synced_at,
+                word.audio_status,
+                word.audio_url
             ],
         )
         .map_err(|e| e.to_string())?;

@@ -7,6 +7,7 @@
   padding-bottom: 4px;
 
   border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px var(--color-shadow);
 }
 
 .navbar-left,
@@ -35,14 +36,19 @@
 
   background: transparent;
   border: none;
+  color: var(--color-text-primary);
+  text-decoration: none;
 
   cursor: pointer;
 }
 
-.nav-logo {
+.nav-home-icon {
   display: block;
   width: 56px;
   height: 56px;
+  background-color: currentColor;
+  -webkit-mask: url("../../../assets/logo.svg") center / contain no-repeat;
+  mask: url("../../../assets/logo.svg") center / contain no-repeat;
 }
 
 /* === CENTER === */
@@ -64,8 +70,12 @@
   border-radius: 8px;
 
   color: var(--color-text-muted);
+  text-decoration: none;
 
   cursor: pointer;
+  transition:
+    color 0.22s ease,
+    background-color 0.22s ease;
 }
 
 .nav-icon-btn:hover {
@@ -80,7 +90,7 @@
   background: transparent;
 }
 
-.nav-icon-btn.active::after {
+.nav-icon-btn::after {
   position: absolute;
   left: -8px;
   right: -8px;
@@ -89,8 +99,56 @@
   height: 2px;
 
   background: var(--color-text-primary);
+  transform: scaleX(0);
+  transform-origin: center;
 
   content: "";
+  transition: transform 0.28s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+
+.nav-icon-btn.active::after {
+  transform: scaleX(1);
+}
+
+.nav-icon-stack {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.nav-icon-stack .nav-page-icon {
+  position: absolute;
+  inset: 0;
+
+  opacity: 0;
+  transform: scale(0.9);
+
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+
+.nav-icon-stack .nav-page-icon.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.nav-icon-stack .material-symbols-outlined.nav-page-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.nav-icon-btn:hover .nav-icon-stack .nav-page-icon.is-visible {
+  transform: scale(1.06);
+}
+
+.nav-icon-btn.active .nav-icon-stack .nav-page-icon.is-visible {
+  transform: scale(1);
 }
 
 /* === SVG ICONS (Review & Vocabulary) === */
@@ -128,6 +186,26 @@
 .nav-icon-btn .material-symbols-outlined {
   font-size: 32px;
   font-weight: 300;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-icon-btn,
+  .nav-icon-btn::after,
+  .nav-icon-stack .nav-page-icon {
+    transition: none;
+  }
+
+  .nav-icon-stack .nav-page-icon {
+    transform: none;
+  }
+
+  .nav-icon-stack .nav-page-icon:not(.is-visible) {
+    display: none;
+  }
+
+  .nav-icon-stack .nav-page-icon.is-visible {
+    opacity: 1;
+  }
 }
 
 /* === RIGHT === */

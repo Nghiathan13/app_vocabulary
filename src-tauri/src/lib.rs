@@ -21,6 +21,12 @@ pub fn run() {
             sql: include_str!("../migrations/002_add_word_sync_metadata.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "add_word_audio_metadata",
+            sql: include_str!("../migrations/003_add_word_audio_metadata.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

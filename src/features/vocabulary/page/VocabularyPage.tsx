@@ -12,7 +12,6 @@ interface VocabularyPageProps {
   onRefresh: () => void;
   onWordDeleted: (wordId: WordId) => void;
   onWordAdded: (newWord: WordWithId) => void;
-  onWordAudioReady: (wordId: WordId) => void;
   onLocalChange: () => void;
 }
 
@@ -21,7 +20,6 @@ export default function VocabularyPage({
   onRefresh,
   onWordDeleted,
   onWordAdded,
-  onWordAudioReady,
   onLocalChange,
 }: VocabularyPageProps) {
   return (
@@ -31,7 +29,6 @@ export default function VocabularyPage({
         onRefresh={onRefresh}
         onWordDeleted={onWordDeleted}
         onWordAdded={onWordAdded}
-        onWordAudioReady={onWordAudioReady}
         onLocalChange={onLocalChange}
       />
     </div>

@@ -151,19 +151,8 @@ body {
   line-height: 1.5;
 }
 
-.web-account-gate-btn {
-  height: 38px;
-  padding: 0 18px;
+.web-account-gate .account-auth-form {
+  width: 100%;
 
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-text-primary);
-  font: inherit;
-
-  cursor: pointer;
-}
-
-.web-account-gate-btn:hover {
-  background: var(--color-surface-hover);
+  text-align: left;
 }

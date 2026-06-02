@@ -1,43 +1,17 @@
-.settings-modal {
-  width: min(420px, calc(100vw - 32px));
-}
-
-.settings-title {
-  margin: 0;
-
-  font-size: 20px;
-  font-weight: 650;
-  color: var(--color-text-primary);
-}
-
-.settings-account,
-.settings-auth-form {
+.account-auth-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.settings-label,
-.settings-hint {
+.account-auth-hint {
   margin: 0 0 4px;
 
   font-size: 13px;
   color: var(--color-text-muted);
 }
 
-.settings-user-email,
-.settings-sync-status p:last-child {
-  margin: 0;
-
-  color: var(--color-text-primary);
-}
-
-.settings-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.settings-mode-tabs {
+.account-auth-mode-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
@@ -47,7 +21,7 @@
   border: 1px solid var(--color-border-subtle);
 }
 
-.settings-mode-tabs button {
+.account-auth-mode-tabs button {
   min-height: 34px;
 
   background: transparent;
@@ -58,13 +32,13 @@
   cursor: pointer;
 }
 
-.settings-mode-tabs button.active {
+.account-auth-mode-tabs button.active {
   background: var(--color-surface-elevated);
 
   color: var(--color-text-primary);
 }
 
-.settings-auth-form label {
+.account-auth-form label {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -73,7 +47,7 @@
   font-size: 14px;
 }
 
-.settings-auth-form input {
+.account-auth-form input {
   height: 38px;
   padding: 0 10px;
 
@@ -83,12 +57,12 @@
   font: inherit;
 }
 
-.settings-auth-form input:focus {
+.account-auth-form input:focus {
   border-color: var(--color-border-strong);
   outline: none;
 }
 
-.settings-error {
+.account-auth-error {
   margin: 0;
 
   color: var(--color-error);

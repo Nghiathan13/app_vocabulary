@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
 import { WordType, WordWithId } from "../../../entities/word/model/types";
-import { downloadAudio } from "../../../shared/api/audio";
-import { isDesktopMode } from "../../../shared/config/appMode";
 import { insertWord } from "../../../entities/word/api/words";
 import { Button } from "../../../shared/ui/Button/Button";
 import Modal from "../../../shared/ui/Modal/Modal";
@@ -21,7 +19,6 @@ interface TableAddWordFormProps {
   isOpen: boolean;
   onClose: () => void;
   onWordAdded?: (newWord: WordWithId) => void;
-  onWordAudioReady?: (wordId: WordWithId["id"]) => void;
   onLocalChange?: () => void;
 }
 
@@ -29,7 +26,6 @@ export default function TableAddWordForm({
   isOpen,
   onClose,
   onWordAdded,
-  onWordAudioReady,
   onLocalChange,
 }: TableAddWordFormProps) {
   const [word, setWord] = useState("");
@@ -83,25 +79,6 @@ export default function TableAddWordForm({
         type: "success",
       });
       onClose();
-
-      if (isDesktopMode) {
-        void (async () => {
-          const hasAudio = await downloadAudio(normalizedWord);
-          if (hasAudio) {
-            onWordAudioReady?.(newWord.id);
-            showToast({
-              message: `Audio ready for "${normalizedWord}"`,
-              type: "success",
-            });
-            return;
-          }
-
-          showToast({
-            message: `Failed to download audio for "${normalizedWord}"`,
-            type: "error",
-          });
-        })();
-      }
 
       setWord("");
       setIpa("");

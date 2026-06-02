@@ -1,39 +1,38 @@
 import { useEffect, useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
 
 // -- Types & Utils --
-import { Tab } from "../../model/tab";
 import { VocabularySyncStatus } from "../../../app/hooks/useVocabularySync";
+import { ROUTES } from "../../lib/routes";
 
 // -- Style --
-import logo from "../../../assets/logo.svg";
 import "./Navbar.css";
 
 type AppTheme = "dark" | "light";
 
 interface NavbarProps {
-  currentTab: Tab;
   theme: AppTheme;
   isLoggedIn: boolean;
   isSyncing: boolean;
   showSyncAction: boolean;
   syncStatus: VocabularySyncStatus;
   pendingChangeCount: number;
-  onTabChange: (tab: Tab) => void;
   onThemeToggle: () => void;
   onLoginClick: () => void;
   onLogout: () => void;
   onSyncNow: () => Promise<void>;
 }
 
+const navIconLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `nav-icon-btn${isActive ? " active" : ""}`;
+
 export default function Navbar({
-  currentTab,
   theme,
   isLoggedIn,
   isSyncing,
   showSyncAction,
   syncStatus,
   pendingChangeCount,
-  onTabChange,
   onThemeToggle,
   onLoginClick,
   onLogout,
@@ -87,45 +86,66 @@ export default function Navbar({
     <nav className="navbar">
       {/* === LEFT === */}
       <div className="navbar-left">
-        <button className="nav-logo-btn" onClick={() => onTabChange("home")}>
-          <img src={logo} alt="EngVocab Home" className="nav-logo" />
-        </button>
+        <NavLink
+          className="nav-logo-btn"
+          to={ROUTES.home}
+          aria-label="EngVocab Home"
+          title="Home"
+        >
+          <span className="nav-home-icon" aria-hidden="true" />
+        </NavLink>
       </div>
 
       {/* === CENTER === */}
       <div className="navbar-center">
-        <button
-          className={`nav-icon-btn ${currentTab === "review" ? "active" : ""}`}
-          onClick={() => onTabChange("review")}
+        <NavLink
+          className={navIconLinkClass}
+          to={ROUTES.review}
           aria-label="Review"
           title="Review"
         >
-          <span
-            className={currentTab === "review" ? "review-on-icon" : "review-off-icon"}
-            aria-hidden="true"
-          />
-        </button>
+          {({ isActive }) => (
+            <span className="nav-icon-stack" aria-hidden="true">
+              <span
+                className={`review-off-icon nav-page-icon ${isActive ? "" : "is-visible"}`}
+              />
+              <span
+                className={`review-on-icon nav-page-icon ${isActive ? "is-visible" : ""}`}
+              />
+            </span>
+          )}
+        </NavLink>
 
-        <button
-          className={`nav-icon-btn ${currentTab === "practice" ? "active" : ""}`}
-          onClick={() => onTabChange("practice")}
+        <NavLink
+          className={navIconLinkClass}
+          to={ROUTES.practice}
           aria-label="Practice"
           title="Practice"
         >
-          <span className="material-symbols-outlined">exercise</span>
-        </button>
+          <span className="nav-icon-stack" aria-hidden="true">
+            <span className="material-symbols-outlined nav-page-icon is-visible">
+              exercise
+            </span>
+          </span>
+        </NavLink>
 
-        <button
-          className={`nav-icon-btn ${currentTab === "insights" ? "active" : ""}`}
-          onClick={() => onTabChange("insights")}
+        <NavLink
+          className={navIconLinkClass}
+          to={ROUTES.vocabulary}
           aria-label="Vocabulary"
           title="Vocabulary"
         >
-          <span
-            className={currentTab === "insights" ? "vocabulary-on-icon" : "vocabulary-off-icon"}
-            aria-hidden="true"
-          />
-        </button>
+          {({ isActive }) => (
+            <span className="nav-icon-stack" aria-hidden="true">
+              <span
+                className={`vocabulary-off-icon nav-page-icon ${isActive ? "" : "is-visible"}`}
+              />
+              <span
+                className={`vocabulary-on-icon nav-page-icon ${isActive ? "is-visible" : ""}`}
+              />
+            </span>
+          )}
+        </NavLink>
       </div>
 
       {/* === RIGHT === */}

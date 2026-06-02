@@ -32,7 +32,6 @@ interface TableActionsProps {
   onCancel: () => void;
   onRefresh: () => void;
   onWordAdded: (newWord: WordWithId) => void;
-  onWordAudioReady: (wordId: WordWithId["id"]) => void;
   onLocalChange: () => void;
   existingWords: WordWithId[];
   wordsToExport: WordWithId[];
@@ -51,7 +50,6 @@ export default function TableActions({
   onCancel,
   onRefresh,
   onWordAdded,
-  onWordAudioReady,
   onLocalChange,
   existingWords,
   wordsToExport,
@@ -360,7 +358,6 @@ export default function TableActions({
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onWordAdded={onWordAdded}
-        onWordAudioReady={onWordAudioReady}
         onLocalChange={onLocalChange}
       />
 

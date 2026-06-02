@@ -1,14 +1,14 @@
 import type { CSSProperties } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { WordWithId } from "../../../entities/word/model/types";
-import { Tab } from "../../../shared/model/tab";
 import { Button } from "../../../shared/ui/Button/Button";
+import { ROUTES } from "../../../shared/lib/routes";
 import { getLocalDateString } from "../../../shared/lib/utils";
 import "./HomePage.css";
 
 interface HomePageProps {
   words: WordWithId[];
-  onNavigate: (tab: Tab) => void;
 }
 
 type MeterStyle = CSSProperties & {
@@ -38,7 +38,8 @@ const getHighWrongCountWords = (words: WordWithId[]) =>
     })
     .slice(0, 8);
 
-export default function HomePage({ words, onNavigate }: HomePageProps) {
+export default function HomePage({ words }: HomePageProps) {
+  const navigate = useNavigate();
   const today = getLocalDateString();
   const totalWords = words.length;
   const dueCount = words.filter(
@@ -63,7 +64,7 @@ export default function HomePage({ words, onNavigate }: HomePageProps) {
             type="button"
             className="home-empty-action"
             variant="primary"
-            onClick={() => onNavigate("insights")}
+            onClick={() => navigate(ROUTES.vocabulary)}
           >
             Open vocabulary
           </Button>
