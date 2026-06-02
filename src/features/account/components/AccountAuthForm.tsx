@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 
-import { Button } from "../../shared/ui/Button/Button";
+import { Button } from "../../../shared/ui/Button/Button";
 import "./AccountAuthForm.css";
 
 type AuthMode = "login" | "register";

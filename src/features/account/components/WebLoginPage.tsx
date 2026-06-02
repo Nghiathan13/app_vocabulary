@@ -1,8 +1,8 @@
 import { Navigate, useNavigate } from "react-router-dom";
 
+import { ROUTES } from "../../../shared/lib/routes";
 import AccountAuthForm from "./AccountAuthForm";
-import { ROUTES } from "../../shared/lib/routes";
-import "../../app/App.css";
+import "./WebLoginPage.css";
 
 interface WebLoginPageProps {
   isAuthenticated: boolean;

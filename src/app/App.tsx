@@ -7,8 +7,7 @@ import HomePage from "../features/home/page/HomePage";
 import ReviewPage from "../features/review/page/ReviewPage";
 import VocabularyPage from "../features/vocabulary/page/VocabularyPage";
 import PracticePage from "../features/practice/page/PracticePage";
-import AccountModal from "../features/account/AccountModal";
-import WebLoginPage from "../features/account/WebLoginPage";
+import { AccountModal, WebLoginPage } from "../features/account";
 import AppLayout from "./AppLayout";
 import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 

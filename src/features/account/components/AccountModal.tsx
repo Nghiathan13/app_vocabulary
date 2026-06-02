@@ -1,13 +1,13 @@
-import { AuthUser } from "../../entities/auth/api/auth";
-import { VocabularySyncStatus } from "../../app/hooks/useVocabularySync";
-import { Button } from "../../shared/ui/Button/Button";
+import { AuthUser } from "../../../entities/auth/api/auth";
+import { VocabularySyncStatus } from "../../../app/hooks/useVocabularySync";
+import { Button } from "../../../shared/ui/Button/Button";
 import {
   formatLastSyncedTime,
   formatPendingChangesDetail,
   getSyncStatusLabel,
   isOfflineSyncStatus,
-} from "../../shared/lib/syncStatus";
-import Modal from "../../shared/ui/Modal/Modal";
+} from "../../../shared/lib/syncStatus";
+import Modal from "../../../shared/ui/Modal/Modal";
 import AccountAuthForm from "./AccountAuthForm";
 import "./AccountModal.css";
 
