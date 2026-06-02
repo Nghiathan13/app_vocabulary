@@ -124,15 +124,32 @@
   mask: url("../../../assets/vocabulary-on.svg") center / contain no-repeat;
 }
 
-/* === MATERIAL ICONS (Practice & Settings) === */
+/* === MATERIAL ICONS === */
 .nav-icon-btn .material-symbols-outlined {
   font-size: 32px;
   font-weight: 300;
 }
 
 /* === RIGHT === */
+.nav-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 14px;
+
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 15px;
+
+  cursor: pointer;
+}
+
 .nav-theme-btn,
-.nav-settings-btn {
+.nav-account-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -150,19 +167,21 @@
 }
 
 .nav-theme-btn:hover,
-.nav-settings-btn:hover {
+.nav-account-btn:hover {
   background: var(--color-surface-hover);
 
   color: var(--color-text-primary);
 }
 
-.nav-settings-btn .material-symbols-outlined {
-  font-size: 32px;
-  font-weight: 300;
+.nav-login-btn:hover {
+  background: var(--color-surface-hover);
+
+  color: var(--color-text-primary);
 }
 
 .dark-mode-icon,
-.light-mode-icon {
+.light-mode-icon,
+.account-default-icon {
   display: block;
   width: 28px;
   height: 28px;
@@ -177,4 +196,78 @@
 .light-mode-icon {
   -webkit-mask: url("../../../assets/light-mode.svg") center / contain no-repeat;
   mask: url("../../../assets/light-mode.svg") center / contain no-repeat;
+}
+
+.account-default-icon {
+  -webkit-mask: url("../../../assets/account-default.svg") center / contain no-repeat;
+  mask: url("../../../assets/account-default.svg") center / contain no-repeat;
+}
+
+.nav-account-menu {
+  position: relative;
+}
+
+.nav-account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 148px;
+  padding: 6px;
+
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 28px var(--color-shadow);
+}
+
+.nav-account-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px;
+
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.nav-sync-status {
+  padding: 7px 10px 6px;
+
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.nav-account-dropdown-item:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+
+  color: var(--color-text-primary);
+}
+
+.nav-account-dropdown-item:disabled {
+  color: var(--color-text-disabled);
+
+  cursor: not-allowed;
+}
+
+.nav-account-dropdown-item .material-symbols-outlined {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.logout-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  -webkit-mask: url("../../../assets/logout-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/logout-icon.svg") center / contain no-repeat;
 }

@@ -1,8 +1,9 @@
 import { useEffect, useCallback, useRef } from "react";
 
 import { useWordStore } from "../../entities/word/model/store";
-import { WordWithId } from "../../entities/word/model/types";
+import { WordId, WordWithId } from "../../entities/word/model/types";
 import { downloadAudioStatus, getElevenLabsQuota } from "../../shared/api/audio";
+import { isDesktopMode } from "../../shared/config/appMode";
 
 const AUDIO_SYNC_RETRY_AFTER_KEY = "elevenlabsAudioSyncRetryAfter";
 const FALLBACK_RESET_DAY = 19;
@@ -43,15 +44,21 @@ export interface UseGlobalWordsResult {
     updates: Partial<WordWithId>,
   ) => void;
   handleWordAdded: (newWord: WordWithId) => void;
-  handleWordAudioReady: (wordId: number) => void;
-  handleWordDeleted: (wordId: number) => void;
+  handleWordAudioReady: (wordId: WordId) => void;
+  handleWordDeleted: (wordId: WordId) => void;
 }
 
-export function useGlobalWords(): UseGlobalWordsResult {
+export function useGlobalWords({
+  enabled = true,
+}: {
+  enabled?: boolean;
+} = {}): UseGlobalWordsResult {
   const {
     globalWords,
     isLoading,
     loadError,
+    setWords,
+    setLoading,
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
@@ -115,8 +122,14 @@ export function useGlobalWords(): UseGlobalWordsResult {
   );
 
   useEffect(() => {
+    if (!enabled) {
+      setWords([]);
+      setLoading(false);
+      return;
+    }
+
     fetchGlobalWords();
-  }, [fetchGlobalWords]);
+  }, [enabled, fetchGlobalWords, setLoading, setWords]);
 
   useEffect(() => {
     if (loadError) {
@@ -125,7 +138,13 @@ export function useGlobalWords(): UseGlobalWordsResult {
   }, [loadError]);
 
   useEffect(() => {
-    if (isLoading || loadError || audioSyncStartedRef.current) {
+    if (
+      !enabled ||
+      !isDesktopMode ||
+      isLoading ||
+      loadError ||
+      audioSyncStartedRef.current
+    ) {
       return;
     }
 
