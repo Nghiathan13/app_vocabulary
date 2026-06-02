@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { WordWithId } from "./types";
+import { WordId, WordWithId } from "./types";
 import { listWords } from "../api/words";
 
 interface WordState {
@@ -10,8 +10,8 @@ interface WordState {
   setLoading: (isLoading: boolean) => void;
   fetchGlobalWords: () => Promise<void>;
   handleWordAdded: (newWord: WordWithId) => void;
-  handleWordDeleted: (wordId: number) => void;
-  handleWordAudioReady: (wordId: number) => void;
+  handleWordDeleted: (wordId: WordId) => void;
+  handleWordAudioReady: (wordId: WordId) => void;
   handleReviewUpdate: (wordStr: string, updates: Partial<WordWithId>) => void;
 }
 

@@ -8,12 +8,20 @@ mod window;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let migrations = vec![Migration {
-        version: 1,
-        description: "create_words",
-        sql: include_str!("../migrations/001_create_words.sql"),
-        kind: MigrationKind::Up,
-    }];
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create_words",
+            sql: include_str!("../migrations/001_create_words.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "add_word_sync_metadata",
+            sql: include_str!("../migrations/002_add_word_sync_metadata.sql"),
+            kind: MigrationKind::Up,
+        },
+    ];
 
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -58,6 +66,8 @@ pub fn run() {
             commands::words::import_words_rust,
             commands::words::get_due_review_words,
             commands::words::update_word_review_rust,
+            commands::words::get_word_sync_changes,
+            commands::words::apply_word_sync_result,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

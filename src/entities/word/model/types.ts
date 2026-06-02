@@ -1,4 +1,5 @@
 export type WordType = string;
+export type WordId = number | string;
 
 export type Word = {
   word: string;
@@ -15,8 +16,13 @@ export type Word = {
 };
 
 export interface WordWithId extends Word {
-  id: number;
+  id: WordId;
   hasAudio?: boolean;
+  sync_id?: string | null;
+  sync_status?: "pending_create" | "pending_update" | "pending_delete" | "synced" | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+  last_synced_at?: string | null;
 }
 
 export type WordImportDraft = Pick<

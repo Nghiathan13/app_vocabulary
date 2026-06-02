@@ -8,10 +8,11 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../entities/word/model/types";
+import { WordId, WordWithId } from "../../../entities/word/model/types";
 import { IconButton } from "../../../shared/ui/Button/Button";
 import Icon from "../../../shared/ui/Icon/Icon";
 import { formatDisplayDate, getAudioPath } from "../../../shared/lib/utils";
+import { isDesktopMode } from "../../../shared/config/appMode";
 
 export type TableSortColumn = "word";
 
@@ -25,7 +26,7 @@ export type TableEditableField =
   | "next_review";
 
 export interface TableActiveCell {
-  id: number;
+  id: WordId;
   field: TableEditableField;
 }
 
@@ -38,13 +39,13 @@ interface TableGridProps {
   activeCell: TableActiveCell | null;
   onSortToggle: (col: TableSortColumn) => void;
   onInputChange: (
-    id: number,
+    id: WordId,
     field: TableEditableField,
     value: WordWithId[TableEditableField],
   ) => void;
   onCellActivate: (cell: TableActiveCell) => void;
   onCellDeactivate: () => void;
-  onDelete: (id: number, word: string) => void;
+  onDelete: (id: WordId, word: string) => void;
 }
 
 const getTypePillClassName = (type: string | null) => {
@@ -123,19 +124,19 @@ export default function TableGrid({
   });
 
   // === FUNCTIONS ===
-  const isActiveCell = (id: number, field: TableEditableField) =>
+  const isActiveCell = (id: WordId, field: TableEditableField) =>
     activeCell?.id === id && activeCell.field === field;
 
-  const isHoveredCell = (id: number, field: TableEditableField) =>
+  const isHoveredCell = (id: WordId, field: TableEditableField) =>
     hoveredCell?.id === id && hoveredCell.field === field;
 
-  const isEditableInputCell = (id: number, field: TableEditableField) =>
+  const isEditableInputCell = (id: WordId, field: TableEditableField) =>
     isActiveCell(id, field) || isHoveredCell(id, field);
 
-  const getCellClassName = (id: number, field: TableEditableField) => {
+  const getCellClassName = (id: WordId, field: TableEditableField) => {
     const classes = ["grid-cell"];
 
-    if (modifiedFields.has(`${id}-${field}`)) {
+    if (modifiedFields.has(`${id}::${field}`)) {
       classes.push("modified-cell");
     }
 
@@ -147,6 +148,10 @@ export default function TableGrid({
   };
 
   const playAudio = async (word: string) => {
+    if (!isDesktopMode) {
+      return;
+    }
+
     try {
       const audioPath = await getAudioPath(word);
 
@@ -162,7 +167,7 @@ export default function TableGrid({
   };
 
   // === HANDLERS ===
-  const handleCellClick = (id: number, field: TableEditableField) => {
+  const handleCellClick = (id: WordId, field: TableEditableField) => {
     if (!isEditing || isActiveCell(id, field)) {
       return;
     }
@@ -171,7 +176,7 @@ export default function TableGrid({
     onCellActivate({ id, field });
   };
 
-  const handleCellHover = (id: number, field: TableEditableField) => {
+  const handleCellHover = (id: WordId, field: TableEditableField) => {
     if (!isEditing || isActiveCell(id, field) || isHoveredCell(id, field)) {
       return;
     }
@@ -250,7 +255,7 @@ export default function TableGrid({
                 >
                   {isEditing && isEditableInputCell(w.id, "word") ? (
                     <textarea
-                      className={`table-input${modifiedFields.has(`${w.id}-word`) ? " modified" : ""}`}
+                      className={`table-input${modifiedFields.has(`${w.id}::word`) ? " modified" : ""}`}
                       value={w.word}
                       onChange={(e) => onInputChange(w.id, "word", e.target.value)}
                       onFocus={() => handleInputFocus({ id: w.id, field: "word" })}
@@ -279,7 +284,7 @@ export default function TableGrid({
                         </button>
                       )}
                       <textarea
-                        className={`table-input${modifiedFields.has(`${w.id}-ipa`) ? " modified" : ""}`}
+                        className={`table-input${modifiedFields.has(`${w.id}::ipa`) ? " modified" : ""}`}
                         value={w.ipa || ""}
                         onChange={(e) =>
                           onInputChange(w.id, "ipa", e.target.value || null)
@@ -311,7 +316,7 @@ export default function TableGrid({
                 >
                   {isEditing && isEditableInputCell(w.id, "type") ? (
                     <textarea
-                      className={`table-input${modifiedFields.has(`${w.id}-type`) ? " modified" : ""}`}
+                      className={`table-input${modifiedFields.has(`${w.id}::type`) ? " modified" : ""}`}
                       value={w.type || ""}
                       onChange={(e) =>
                         onInputChange(w.id, "type", e.target.value || null)
@@ -343,7 +348,7 @@ export default function TableGrid({
                 >
                   {isEditing && isEditableInputCell(w.id, "meaning_vi") ? (
                     <textarea
-                      className={`table-input${modifiedFields.has(`${w.id}-meaning_vi`) ? " modified" : ""}`}
+                      className={`table-input${modifiedFields.has(`${w.id}::meaning_vi`) ? " modified" : ""}`}
                       value={w.meaning_vi}
                       onChange={(e) =>
                         onInputChange(w.id, "meaning_vi", e.target.value)
@@ -365,7 +370,7 @@ export default function TableGrid({
                   {isEditing && isEditableInputCell(w.id, "level") ? (
                     <input
                       type="number"
-                      className={`table-input${modifiedFields.has(`${w.id}-level`) ? " modified" : ""}`}
+                      className={`table-input${modifiedFields.has(`${w.id}::level`) ? " modified" : ""}`}
                       value={w.level}
                       min={0}
                       onChange={(e) =>
@@ -387,7 +392,7 @@ export default function TableGrid({
                   {isEditing && isEditableInputCell(w.id, "next_review") ? (
                     <input
                       type="date"
-                      className={`table-input${modifiedFields.has(`${w.id}-next_review`) ? " modified" : ""}`}
+                      className={`table-input${modifiedFields.has(`${w.id}::next_review`) ? " modified" : ""}`}
                       value={w.next_review || ""}
                       onChange={(e) =>
                         onInputChange(w.id, "next_review", e.target.value || null)

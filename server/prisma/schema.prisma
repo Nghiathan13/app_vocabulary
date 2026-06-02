@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String      @map("password_hash")
+  name         String?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  vocabWords   VocabWord[]
+
+  @@map("users")
+}
+
+model VocabWord {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  word           String
+  normalizedWord String    @map("normalized_word")
+  ipa            String?
+  type           String?
+  meaningVi      String    @map("meaning_vi")
+  definition     String?
+  example        String?
+  band           String?
+  level          Int       @default(0)
+  wrongCount     Int       @default(0) @map("wrong_count")
+  lastReview     DateTime? @map("last_review") @db.Date
+  nextReview     DateTime? @map("next_review") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, normalizedWord])
+  @@index([userId, deletedAt])
+  @@map("vocab_words")
+}
