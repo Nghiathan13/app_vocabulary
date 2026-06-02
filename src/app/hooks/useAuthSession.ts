@@ -39,6 +39,7 @@ export function useAuthSession() {
           localStorage.removeItem(AUTH_TOKEN_KEY);
           setAccessToken(null);
           setUser(null);
+          setAuthError("Session expired. Please log in again.");
         }
       })
       .finally(() => {
