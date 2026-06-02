@@ -293,7 +293,7 @@
 
   display: flex;
   flex-direction: column;
-  min-width: 148px;
+  min-width: 220px;
   padding: 6px;
 
   background: var(--color-surface-elevated);
@@ -317,11 +317,34 @@
   cursor: pointer;
 }
 
+.nav-account-email {
+  margin: 0;
+  padding: 7px 10px 4px;
+
+  color: var(--color-text-primary);
+  font-size: 14px;
+  word-break: break-all;
+}
+
 .nav-sync-status {
-  padding: 7px 10px 6px;
+  padding: 7px 10px 4px;
+
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nav-sync-status--offline {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.nav-sync-detail {
+  margin: 0;
+  padding: 0 10px 4px;
 
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .nav-account-dropdown-item:hover:not(:disabled) {

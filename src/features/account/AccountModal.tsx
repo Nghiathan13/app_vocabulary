@@ -1,5 +1,12 @@
 import { AuthUser } from "../../entities/auth/api/auth";
+import { VocabularySyncStatus } from "../../app/hooks/useVocabularySync";
 import { Button } from "../../shared/ui/Button/Button";
+import {
+  formatLastSyncedTime,
+  formatPendingChangesDetail,
+  getSyncStatusLabel,
+  isOfflineSyncStatus,
+} from "../../shared/lib/syncStatus";
 import Modal from "../../shared/ui/Modal/Modal";
 import AccountAuthForm from "./AccountAuthForm";
 import "./AccountModal.css";
@@ -8,8 +15,10 @@ interface AccountModalProps {
   isOpen: boolean;
   user: AuthUser | null;
   isCheckingAuth: boolean;
+  showSyncAction: boolean;
   isSyncing: boolean;
-  syncError: string | null;
+  syncStatus: VocabularySyncStatus;
+  pendingChangeCount: number;
   lastSyncedAt: string | null;
   onClose: () => void;
   onLogin: (email: string, password: string) => Promise<void>;
@@ -22,8 +31,10 @@ export default function AccountModal({
   isOpen,
   user,
   isCheckingAuth,
+  showSyncAction,
   isSyncing,
-  syncError,
+  syncStatus,
+  pendingChangeCount,
   lastSyncedAt,
   onClose,
   onLogin,
@@ -31,6 +42,21 @@ export default function AccountModal({
   onLogout,
   onSyncNow,
 }: AccountModalProps) {
+  const syncStatusLabel = getSyncStatusLabel({
+    isSyncing,
+    syncStatus,
+    pendingChangeCount,
+    lastSyncedAt,
+  });
+  const pendingDetail = formatPendingChangesDetail(pendingChangeCount);
+  const lastSyncedDetail = formatLastSyncedTime(lastSyncedAt);
+  const isOfflineStatus = isOfflineSyncStatus(syncStatus);
+  const handleSyncNow = () => {
+    void onSyncNow().catch((error) => {
+      console.warn("Manual sync failed:", error);
+    });
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -47,22 +73,36 @@ export default function AccountModal({
             <p className="account-user-email">{user.email}</p>
           </div>
 
-          <div className="account-sync-status">
-            <p className="account-label">Last sync</p>
-            <p>{lastSyncedAt ? new Date(lastSyncedAt).toLocaleString() : "Not synced yet"}</p>
-          </div>
-
-          {syncError ? <p className="account-error">{syncError}</p> : null}
+          {showSyncAction ? (
+            <div className="account-sync-block">
+              <p className="account-label">Sync status</p>
+              <p
+                className={`account-sync-status-label${isOfflineStatus ? " account-sync-status-label--offline" : ""}`}
+              >
+                {syncStatusLabel}
+              </p>
+              {pendingDetail ? (
+                <p className="account-sync-detail">{pendingDetail}</p>
+              ) : null}
+              {lastSyncedDetail ? (
+                <p className="account-sync-detail">
+                  Last synced: {lastSyncedDetail}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="account-actions">
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => void onSyncNow()}
-              disabled={isSyncing}
-            >
-              {isSyncing ? "Syncing..." : "Sync now"}
-            </Button>
+            {showSyncAction ? (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleSyncNow}
+                disabled={isSyncing}
+              >
+                {isSyncing ? "Syncing..." : "Sync now"}
+              </Button>
+            ) : null}
             <Button type="button" onClick={onLogout} disabled={isSyncing}>
               Logout
             </Button>

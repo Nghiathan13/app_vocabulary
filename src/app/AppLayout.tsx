@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import Navbar from "../shared/ui/Navbar/Navbar";
 import { isWebMode } from "../shared/config/appMode";
+import type { AuthUser } from "../entities/auth/api/auth";
 import { ROUTES } from "../shared/lib/routes";
 import type { VocabularySyncStatus } from "./hooks/useVocabularySync";
 import refreshIcon from "../assets/refresh_icon.svg";
@@ -10,7 +11,7 @@ type AppTheme = "dark" | "light";
 
 interface AppLayoutProps {
   theme: AppTheme;
-  user: unknown;
+  user: AuthUser | null;
   isCheckingAuth: boolean;
   isLoggedIn: boolean;
   isLoading: boolean;
@@ -19,6 +20,7 @@ interface AppLayoutProps {
   showSyncAction: boolean;
   syncStatus: VocabularySyncStatus;
   pendingChangeCount: number;
+  lastSyncedAt: string | null;
   onThemeToggle: () => void;
   onLoginClick: () => void;
   onLogout: () => void;
@@ -37,6 +39,7 @@ export default function AppLayout({
   showSyncAction,
   syncStatus,
   pendingChangeCount,
+  lastSyncedAt,
   onThemeToggle,
   onLoginClick,
   onLogout,
@@ -52,10 +55,12 @@ export default function AppLayout({
       <Navbar
         theme={theme}
         isLoggedIn={isLoggedIn}
+        userEmail={user?.email ?? null}
         isSyncing={isSyncing}
         showSyncAction={showSyncAction}
         syncStatus={syncStatus}
         pendingChangeCount={pendingChangeCount}
+        lastSyncedAt={lastSyncedAt}
         onThemeToggle={onThemeToggle}
         onLoginClick={onLoginClick}
         onLogout={onLogout}

@@ -4,6 +4,12 @@ import { NavLink } from "react-router-dom";
 // -- Types & Utils --
 import { VocabularySyncStatus } from "../../../app/hooks/useVocabularySync";
 import { ROUTES } from "../../lib/routes";
+import {
+  formatLastSyncedTime,
+  formatPendingChangesDetail,
+  getSyncStatusLabel,
+  isOfflineSyncStatus,
+} from "../../lib/syncStatus";
 
 // -- Style --
 import "./Navbar.css";
@@ -13,10 +19,12 @@ type AppTheme = "dark" | "light";
 interface NavbarProps {
   theme: AppTheme;
   isLoggedIn: boolean;
+  userEmail: string | null;
   isSyncing: boolean;
   showSyncAction: boolean;
   syncStatus: VocabularySyncStatus;
   pendingChangeCount: number;
+  lastSyncedAt: string | null;
   onThemeToggle: () => void;
   onLoginClick: () => void;
   onLogout: () => void;
@@ -29,10 +37,12 @@ const navIconLinkClass = ({ isActive }: { isActive: boolean }) =>
 export default function Navbar({
   theme,
   isLoggedIn,
+  userEmail,
   isSyncing,
   showSyncAction,
   syncStatus,
   pendingChangeCount,
+  lastSyncedAt,
   onThemeToggle,
   onLoginClick,
   onLogout,
@@ -65,23 +75,22 @@ export default function Navbar({
     onLogout();
   };
 
-  const syncStatusText = (() => {
-    if (isSyncing || syncStatus === "syncing") {
-      return "Syncing...";
-    }
+  const handleSyncNow = () => {
+    void onSyncNow().catch((error) => {
+      console.warn("Manual sync failed:", error);
+    });
+  };
 
-    if (syncStatus === "error") {
-      return "Offline changes saved";
-    }
+  const syncStatusLabel = getSyncStatusLabel({
+    isSyncing,
+    syncStatus,
+    pendingChangeCount,
+    lastSyncedAt,
+  });
+  const pendingDetail = formatPendingChangesDetail(pendingChangeCount);
+  const lastSyncedDetail = formatLastSyncedTime(lastSyncedAt);
+  const isOfflineStatus = isOfflineSyncStatus(syncStatus);
 
-    if (pendingChangeCount > 0 || syncStatus === "pending") {
-      return "Pending changes";
-    }
-
-    return "Synced";
-  })();
-
-  // === RENDER ===
   return (
     <nav className="navbar">
       {/* === LEFT === */}
@@ -192,36 +201,49 @@ export default function Navbar({
 
             {isAccountMenuOpen ? (
               <div className="nav-account-dropdown">
-                {showSyncAction && (
-                  <div className="nav-sync-status">{syncStatusText}</div>
-                )}
+                {userEmail ? (
+                  <p className="nav-account-email">{userEmail}</p>
+                ) : null}
 
-                {showSyncAction && (
-                  <button
-                    type="button"
-                    className="nav-account-dropdown-item"
-                    onClick={() =>
-                      void onSyncNow().catch((error) => {
-                        console.warn("Manual sync failed:", error);
-                      })
-                    }
-                    disabled={isSyncing}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      aria-hidden="true"
+                {showSyncAction ? (
+                  <>
+                    <div
+                      className={`nav-sync-status${isOfflineStatus ? " nav-sync-status--offline" : ""}`}
                     >
-                      sync
-                    </span>
-                    {isSyncing ? "Syncing..." : "Sync now"}
-                  </button>
-                )}
+                      {syncStatusLabel}
+                    </div>
+
+                    {pendingDetail ? (
+                      <p className="nav-sync-detail">{pendingDetail}</p>
+                    ) : null}
+
+                    {lastSyncedDetail ? (
+                      <p className="nav-sync-detail">
+                        Last synced: {lastSyncedDetail}
+                      </p>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      className="nav-account-dropdown-item"
+                      onClick={handleSyncNow}
+                      disabled={isSyncing}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        aria-hidden="true"
+                      >
+                        sync
+                      </span>
+                      {isSyncing ? "Syncing..." : "Sync now"}
+                    </button>
+                  </>
+                ) : null}
 
                 <button
                   type="button"
                   className="nav-account-dropdown-item"
                   onClick={handleLogout}
-                  disabled={isSyncing}
                 >
                   <span className="logout-icon" aria-hidden="true" />
                   Log out

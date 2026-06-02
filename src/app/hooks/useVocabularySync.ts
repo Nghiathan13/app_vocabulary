@@ -42,13 +42,21 @@ export function useVocabularySync({
 
     try {
       const changes = await getWordSyncChanges();
-      setPendingChangeCount(changes.length);
-      return changes.length;
+      const count = changes.length;
+      setPendingChangeCount(count);
+      setSyncStatus((currentStatus) => {
+        if (currentStatus === "syncing" || currentStatus === "error") {
+          return currentStatus;
+        }
+
+        return count > 0 ? "pending" : "idle";
+      });
+      return count;
     } catch (error) {
       console.warn("Failed to read pending sync changes:", error);
-      return pendingChangeCount;
+      return 0;
     }
-  }, [pendingChangeCount]);
+  }, []);
 
   const syncNow = useCallback(async () => {
     if (!accessToken || !isDesktopMode) {
@@ -73,10 +81,11 @@ export function useVocabularySync({
 
       const result = await syncVocabulary(accessToken, changes);
       await applyWordSyncResult(result);
-      await onSynced();
       setLastSyncedAt(result.syncedAt);
       setPendingChangeCount(0);
       setSyncStatus("idle");
+      setSyncError(null);
+      await onSynced();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Sync failed";
       setSyncError(message);
