@@ -1,11 +1,7 @@
 // -- React --
 import { useEffect, useMemo, useState } from "react";
 
-// -- Library --
-import * as XLSX from "xlsx";
-
 // -- Tauri --
-import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 // -- Components --
 import { Button, IconButton } from "../../../shared/ui/Button/Button";
@@ -20,6 +16,7 @@ import { WordWithId } from "../../../entities/word/model/types";
 import { isDesktopMode } from "../../../shared/config/appMode";
 import { buildImportPreviewFiles, ImportPreviewFile } from "../lib/tableImport";
 import { buildWordChanges } from "../lib/tableEditChanges";
+import { exportWordsToXlsx } from "../lib/tableExport";
 
 interface TableActionsProps {
   isEditing: boolean;
@@ -104,35 +101,9 @@ export default function TableActions({
         return;
       }
 
-      const worksheet = XLSX.utils.json_to_sheet(
-        wordsToExport.map((word) => ({
-          Word: word.word,
-          IPA: word.ipa ?? "",
-          Type: word.type ?? "",
-          "Meaning VI": word.meaning_vi,
-          Level: word.level,
-          "Wrong Count": word.wrong_count,
-          Definition: word.definition ?? "",
-          Example: word.example ?? "",
-          Band: word.band ?? "",
-          "Last Review": word.last_review ?? "",
-          "Next Review": word.next_review ?? "",
-        })),
-      );
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Words");
-
-      const workbookBytes = new Uint8Array(
-        XLSX.write(workbook, {
-          bookType: "xlsx",
-          type: "array",
-        }),
-      );
-
-      await invoke("write_binary_file", {
+      await exportWordsToXlsx({
         path: filePath,
-        bytes: Array.from(workbookBytes),
+        words: wordsToExport,
       });
     } catch (error) {
       console.error("Error exporting words:", error);
