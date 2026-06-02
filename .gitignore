@@ -11,6 +11,7 @@ rule
 node_modules
 dist
 dist-ssr
+server/storage/
 *.local
 
 # Editor directories and files

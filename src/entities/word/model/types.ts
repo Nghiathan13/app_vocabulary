@@ -18,6 +18,8 @@ export type Word = {
 export interface WordWithId extends Word {
   id: WordId;
   hasAudio?: boolean;
+  audio_status?: string | null;
+  audio_url?: string | null;
   sync_id?: string | null;
   sync_status?: "pending_create" | "pending_update" | "pending_delete" | "synced" | null;
   updated_at?: string | null;

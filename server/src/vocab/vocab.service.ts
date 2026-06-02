@@ -5,6 +5,7 @@ import {
 } from "@nestjs/common";
 import { randomUUID } from "crypto";
 
+import { AudioService, normalizeAudioText } from "../audio/audio.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { SyncVocabularyDto, VocabWordDto } from "./vocab.dto";
 
@@ -27,7 +28,10 @@ const parseDateTime = (value?: string | null) => {
 
 @Injectable()
 export class VocabService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly audioService: AudioService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async list(userId: string) {
     const words = await this.prisma.vocabWord.findMany({
@@ -35,7 +39,7 @@ export class VocabService {
       orderBy: { word: "asc" },
     });
 
-    return words.map(this.toResponse);
+    return await this.toResponses(words);
   }
 
   async create(userId: string, dto: VocabWordDto) {
@@ -57,7 +61,9 @@ export class VocabService {
       },
     });
 
-    return this.toResponse(word);
+    this.generateAudioInBackground(word.word);
+
+    return (await this.toResponses([word]))[0];
   }
 
   async update(userId: string, id: string, dto: VocabWordDto) {
@@ -68,7 +74,9 @@ export class VocabService {
       data: this.toUpdateData(dto),
     });
 
-    return this.toResponse(word);
+    this.generateAudioInBackground(word.word);
+
+    return (await this.toResponses([word]))[0];
   }
 
   async delete(userId: string, id: string) {
@@ -81,11 +89,12 @@ export class VocabService {
       },
     });
 
-    return this.toResponse(word);
+    return (await this.toResponses([word]))[0];
   }
 
   async sync(userId: string, dto: SyncVocabularyDto) {
     const mergedIds: Array<{ localId: string; serverId: string }> = [];
+    const wordsNeedingAudio = new Set<string>();
 
     for (const change of dto.changes) {
       const incomingId = change.id ?? randomUUID();
@@ -129,6 +138,7 @@ export class VocabService {
             deletedAt: null,
           },
         });
+        wordsNeedingAudio.add(change.word);
         continue;
       }
 
@@ -139,15 +149,21 @@ export class VocabService {
           updatedAt: incomingUpdatedAt,
         },
       });
+      wordsNeedingAudio.add(change.word);
     }
 
     const allWords = await this.prisma.vocabWord.findMany({
       where: { userId },
       orderBy: { word: "asc" },
     });
+    const activeWords = allWords.filter((word) => !word.deletedAt);
+
+    for (const word of wordsNeedingAudio) {
+      this.generateAudioInBackground(word);
+    }
 
     return {
-      words: allWords.filter((word) => !word.deletedAt).map(this.toResponse),
+      words: await this.toResponses(activeWords),
       deletedIds: allWords
         .filter((word) => Boolean(word.deletedAt))
         .map((word) => word.id),
@@ -206,6 +222,47 @@ export class VocabService {
       lastReview: parseDateOnly(dto.last_review),
       nextReview: parseDateOnly(dto.next_review),
     };
+  }
+
+  private generateAudioInBackground(word: string) {
+    void this.audioService.ensureAudioForWord(word).catch((error) => {
+      console.warn(`Failed to generate audio for "${word}":`, error);
+    });
+  }
+
+  private async toResponses(
+    words: Array<{
+      id: string;
+      word: string;
+      ipa: string | null;
+      type: string | null;
+      meaningVi: string;
+      definition: string | null;
+      example: string | null;
+      band: string | null;
+      level: number;
+      wrongCount: number;
+      lastReview: Date | null;
+      nextReview: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
+      deletedAt: Date | null;
+    }>,
+  ) {
+    const metadata = await this.audioService.getMetadataByNormalizedTexts(
+      words.map((word) => normalizeAudioText(word.word)),
+    );
+
+    return words.map((word) => {
+      const audioMetadata = metadata.get(normalizeAudioText(word.word));
+
+      return {
+        ...this.toResponse(word),
+        audio_status: audioMetadata?.audio_status ?? null,
+        audio_url: audioMetadata?.audio_url ?? null,
+        hasAudio: audioMetadata?.hasAudio ?? false,
+      };
+    });
   }
 
   private toResponse(word: {

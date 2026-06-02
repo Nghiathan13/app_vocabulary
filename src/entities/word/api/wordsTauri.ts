@@ -28,6 +28,8 @@ function toTauriWord(word: WordWithId) {
     updated_at: word.updated_at,
     deleted_at: word.deleted_at,
     last_synced_at: word.last_synced_at,
+    audio_status: word.audio_status,
+    audio_url: word.audio_url,
     hasAudio: word.hasAudio,
   };
 }
@@ -117,6 +119,9 @@ export interface RemoteSyncWord {
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;
+  audio_status?: string | null;
+  audio_url?: string | null;
+  hasAudio?: boolean;
 }
 
 export interface SyncMergeId {

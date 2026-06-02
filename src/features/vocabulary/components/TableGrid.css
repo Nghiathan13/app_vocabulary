@@ -44,7 +44,7 @@
     minmax(150px, 30%) 70px 130px 50px;
   padding-right: 6px;
 
-  background-color: var(--color-surface);
+  background-color: var(--color-grid-header-bg);
   border-bottom: 1px solid var(--color-border);
 
   text-align: left;

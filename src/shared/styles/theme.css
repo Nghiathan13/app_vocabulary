@@ -12,6 +12,7 @@
   --color-surface-hover: rgba(60, 60, 60, 0.5);
   --color-surface-row-hover: rgba(30, 30, 30, 0.5);
   --color-surface-pill-hover: rgba(30, 30, 30, 0.6);
+  --color-grid-header-bg: var(--color-surface);
 
   /* Border */
   --color-border: rgb(60, 60, 60);
@@ -83,31 +84,32 @@
   --color-surface-subtle: rgb(235, 235, 235);
   --color-surface-muted: rgb(222, 222, 222);
   --color-surface-strong: rgb(210, 210, 210);
-  --color-surface-hover: rgba(214, 214, 214, 0.62);
-  --color-surface-row-hover: rgba(246, 246, 246, 0.72);
+  --color-surface-hover: rgba(210, 210, 210, 0.3);
+  --color-surface-row-hover: rgba(210, 210, 210, 0.1);
   --color-surface-pill-hover: rgba(228, 228, 228, 0.82);
+  --color-grid-header-bg: rgb(240, 240, 240);
 
   /* Border */
-  --color-border: rgb(155, 155, 155);
+  --color-border: rgb(210, 210, 210);
   --color-border-subtle: rgb(210, 210, 210);
   --color-border-faint: rgb(190, 190, 190);
   --color-border-strong: rgb(95, 95, 95);
 
   /* Text */
   --color-text-primary: rgb(0, 0, 0);
-  --color-text-secondary: rgb(32, 32, 32);
-  --color-text-muted: rgb(48, 48, 48);
+  --color-text-secondary: rgb(75, 75, 75);
+  --color-text-muted: rgb(75, 75, 75);
   --color-text-dim: rgb(68, 68, 68);
   --color-text-disabled: rgb(96, 96, 96);
-  --color-text-placeholder: rgb(88, 88, 88);
+  --color-text-placeholder: rgb(175, 175, 175);
   --color-text-inverse: rgb(0, 0, 0);
-  --color-text-label: rgb(56, 56, 56);
-  --color-text-tertiary: rgb(42, 42, 42);
+  --color-text-label: rgb(100, 100, 100);
+  --color-text-tertiary: rgb(100, 100, 100);
   --color-text-quaternary: rgb(24, 24, 24);
   --color-text-bright: rgb(0, 0, 0);
   --color-text-highlight: rgb(0, 0, 0);
   --color-text-subtle: rgb(54, 54, 54);
-  --color-text-faint: rgb(82, 82, 82);
+  --color-text-faint: rgb(100, 100, 100);
   --color-text-track: rgb(92, 92, 92);
 
   /* Overlay / shadow */
@@ -126,22 +128,22 @@
   --color-typing-incorrect: rgb(172, 70, 70);
 
   /* Progress / typing underline */
-  --color-progress-track: rgb(174, 174, 164);
-  --color-progress-fill: rgb(42, 42, 38);
+  --color-progress-track: rgb(175, 175, 175);
+  --color-progress-fill: rgb(50, 50, 50);
   --color-progress-glow: rgba(42, 42, 38, 0.18);
   --color-progress-glow-subtle: rgba(42, 42, 38, 0.08);
 
-  /* Type/category pills */
-  --color-type-phrasal-bg: rgba(96, 96, 90, 0.18);
-  --color-type-phrasal-text: rgb(34, 34, 34);
-  --color-type-adverb-bg: rgba(38, 128, 228, 0.18);
-  --color-type-adverb-text: rgb(34, 34, 34);
-  --color-type-preposition-bg: rgba(105, 96, 214, 0.18);
-  --color-type-preposition-text: rgb(34, 34, 34);
-  --color-type-noun-bg: rgba(72, 170, 56, 0.18);
-  --color-type-noun-text: rgb(34, 34, 34);
-  --color-type-adjective-bg: rgba(218, 124, 34, 0.2);
-  --color-type-adjective-text: rgb(34, 34, 34);
-  --color-type-verb-bg: rgba(24, 158, 139, 0.18);
-  --color-type-verb-text: rgb(34, 34, 34);
+  /* Type/category pills — solid tints for contrast on white */
+  --color-type-phrasal-bg: rgb(242, 242, 242);
+  --color-type-phrasal-text: rgb(128, 128, 123);
+  --color-type-adverb-bg: rgb(215, 232, 255);
+  --color-type-adverb-text: rgb(35, 145, 255);
+  --color-type-preposition-bg: rgb(232, 229, 255);
+  --color-type-preposition-text: rgb(129, 117, 255);
+  --color-type-noun-bg: rgb(223, 249, 228);
+  --color-type-noun-text: rgb(38, 212, 78);
+  --color-type-adjective-bg: rgb(255, 238, 218);
+  --color-type-adjective-text: rgb(252, 155, 75);
+  --color-type-verb-bg: rgb(224, 255, 250);
+  --color-type-verb-text: rgb(42, 207, 193);
 }

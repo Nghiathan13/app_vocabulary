@@ -1,5 +1,9 @@
 #[tauri::command]
 pub fn write_binary_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+
     std::fs::write(path, bytes).map_err(|error| error.to_string())
 }
 
