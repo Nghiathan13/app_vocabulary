@@ -8,23 +8,14 @@ import {
   type CSSProperties,
 } from "react";
 
-// -- Tauri --
-import { readDir } from "@tauri-apps/plugin-fs";
-import { appConfigDir, join } from "@tauri-apps/api/path";
-import { invoke } from "@tauri-apps/api/core";
-
 // -- Types & Utils --
 import { WordId, WordWithId } from "../../../entities/word/model/types";
 import {
   listDueReviewWords,
   updateWordReview,
 } from "../../../entities/word/api/words";
-import {
-  getAudioFileName,
-  getAudioPath,
-  getLocalDateString,
-} from "../../../shared/lib/utils";
-import { isDesktopMode } from "../../../shared/config/appMode";
+import { getLocalDateString } from "../../../shared/lib/utils";
+import { createWordAudioSource } from "../../../shared/api/wordAudio";
 import { getSpacedRepetitionUpdate } from "../lib/spacedRepetition";
 import {
   compareTypingAnswer,
@@ -153,6 +144,7 @@ export default function ReviewPage({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+  const shouldRevokeAudioUrlRef = useRef(false);
   const warmupAudioRef = useRef<HTMLAudioElement | null>(null);
   const silentWarmupUrlRef = useRef<string | null>(null);
   const pronounceTimerRef = useRef<number | null>(null);
@@ -173,37 +165,7 @@ export default function ReviewPage({
     try {
       const result = await listDueReviewWords();
 
-      if (!isDesktopMode) {
-        setReviewWords(result.map((word) => ({ ...word, hasAudio: false })));
-        setCurrentIndex(0);
-        setShowMeaning(false);
-        setTypedAnswer("");
-        setTypingResult(null);
-        setTypingFieldWidth(0);
-        setIsLoading(false);
-        return;
-      }
-
-      // --- QUÉT THƯ MỤC AUDIO ---
-      let audioFiles = new Set<string>();
-      try {
-        const configDir = await appConfigDir();
-        const audioDir = await join(configDir, "audio");
-        const entries = await readDir(audioDir);
-        audioFiles = new Set(entries.map((e) => e.name.toLowerCase()));
-      } catch (error) {
-        console.warn("Không thể quét thư mục audio:", error);
-      }
-
-      const wordsWithAudio = result.map((w) => {
-        const fileName = getAudioFileName(w.word);
-        return {
-          ...w,
-          hasAudio: audioFiles.has(fileName.toLowerCase()),
-        };
-      });
-
-      setReviewWords(wordsWithAudio);
+      setReviewWords(result);
       setCurrentIndex(0);
       setShowMeaning(false);
       setTypedAnswer("");
@@ -413,19 +375,15 @@ export default function ReviewPage({
         audioRef.current = null;
       }
 
-      if (audioUrlRef.current) {
+      if (audioUrlRef.current && shouldRevokeAudioUrlRef.current) {
         URL.revokeObjectURL(audioUrlRef.current);
-        audioUrlRef.current = null;
       }
+
+      audioUrlRef.current = null;
+      shouldRevokeAudioUrlRef.current = false;
     };
 
     if (!currentWord) {
-      clearAudio();
-      setHasAudio(false);
-      return;
-    }
-
-    if (!isDesktopMode) {
       clearAudio();
       setHasAudio(false);
       return;
@@ -436,24 +394,23 @@ export default function ReviewPage({
     const loadAudio = async () => {
       try {
         if (currentWord.hasAudio) {
-          const audioPath = await getAudioPath(currentWord.word);
+          const source = await createWordAudioSource(currentWord);
 
-          const binaryData = await invoke<number[]>("read_binary_file", {
-            path: audioPath,
-          });
           if (isCancelled) {
             return;
           }
 
-          const blob = new Blob([new Uint8Array(binaryData)], {
-            type: "audio/mpeg",
-          });
-          const assetUrl = URL.createObjectURL(blob);
+          if (!source) {
+            clearAudio();
+            setHasAudio(false);
+            return;
+          }
 
-          const audio = new Audio(assetUrl);
+          const audio = new Audio(source.url);
           audio.preload = "auto";
           audio.load();
-          audioUrlRef.current = assetUrl;
+          audioUrlRef.current = source.url;
+          shouldRevokeAudioUrlRef.current = source.shouldRevoke;
           audioRef.current = audio;
 
           setHasAudio(true);
@@ -469,7 +426,7 @@ export default function ReviewPage({
           setHasAudio(false);
         }
       } catch (error) {
-        console.error("Lỗi khi khi load audio cục bộ:", error);
+        console.error("Lỗi khi load audio:", error);
         clearAudio();
         setHasAudio(false);
       }

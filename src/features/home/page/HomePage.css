@@ -5,8 +5,8 @@
   --home-line: rgba(125, 125, 125, 0.32);
   --home-bg-start: rgb(5, 5, 5);
   --home-bg-end: rgb(0, 0, 0);
-  --home-soft-fill: rgba(255, 255, 255, 0.035);
-  --home-soft-line: rgba(255, 255, 255, 0.055);
+  --home-soft-fill: rgba(255, 255, 255, 0.05);
+  --home-soft-line: rgba(255, 255, 255, 0.1);
   --home-action-text: rgb(18, 18, 18);
 
   position: relative;
@@ -294,12 +294,12 @@
 }
 
 :root[data-theme="light"] .home-page {
-  --home-accent: rgb(92, 92, 86);
+  --home-accent: rgb(75, 75, 75);
   --home-line: rgba(75, 75, 75, 0.5);
   --home-bg-start: rgb(255, 255, 255);
   --home-bg-end: rgb(255, 255, 255);
-  --home-soft-fill: rgba(20, 20, 18, 0.045);
-  --home-soft-line: rgba(20, 20, 18, 0.16);
+  --home-soft-fill: rgba(0, 0, 0, 0.05);
+  --home-soft-line: rgba(0, 0, 0, 0.1);
   --home-action-text: rgb(255, 255, 255);
 }
 

@@ -20,6 +20,9 @@ interface ServerWord {
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;
+  audio_status?: string | null;
+  audio_url?: string | null;
+  hasAudio?: boolean;
 }
 
 const getAccessToken = () => localStorage.getItem(AUTH_TOKEN_KEY);
@@ -69,7 +72,9 @@ const toWordWithId = (word: ServerWord): WordWithId => ({
   updated_at: word.updated_at ?? null,
   deleted_at: word.deleted_at ?? null,
   last_synced_at: word.updated_at ?? null,
-  hasAudio: false,
+  audio_status: word.audio_status ?? null,
+  audio_url: word.audio_url ?? null,
+  hasAudio: Boolean(word.hasAudio),
 });
 
 const toServerWord = (word: WordWithId) => ({

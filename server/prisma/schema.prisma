@@ -43,3 +43,20 @@ model VocabWord {
   @@index([userId, deletedAt])
   @@map("vocab_words")
 }
+
+model AudioAsset {
+  id             String   @id @default(uuid())
+  text           String
+  normalizedText String   @unique @map("normalized_text")
+  provider       String
+  voiceId        String   @map("voice_id")
+  model          String
+  filePath       String?  @map("file_path")
+  status         String
+  errorMessage   String?  @map("error_message")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("audio_assets")
+}

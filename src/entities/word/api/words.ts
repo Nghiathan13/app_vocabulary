@@ -34,6 +34,9 @@ export interface RemoteSyncWord {
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;
+  audio_status?: string | null;
+  audio_url?: string | null;
+  hasAudio?: boolean;
 }
 
 export interface SyncMergeId {
