@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:desktop": "vite --port 1420",
+    "dev:web": "VITE_APP_MODE=web vite --port 5173",
     "build": "tsc && vite build",
+    "build:web": "VITE_APP_MODE=web tsc && VITE_APP_MODE=web vite build",
     "test": "vitest run",
     "preview": "vite preview",
     "tauri": "tauri"

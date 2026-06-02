@@ -14,7 +14,7 @@ import { appConfigDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../entities/word/model/types";
+import { WordId, WordWithId } from "../../../entities/word/model/types";
 import {
   listDueReviewWords,
   updateWordReview,
@@ -24,6 +24,7 @@ import {
   getAudioPath,
   getLocalDateString,
 } from "../../../shared/lib/utils";
+import { isDesktopMode } from "../../../shared/config/appMode";
 import { getSpacedRepetitionUpdate } from "../lib/spacedRepetition";
 import {
   compareTypingAnswer,
@@ -126,9 +127,13 @@ const createSilentWarmupUrl = () => {
 
 interface ReviewPageProps {
   onReviewUpdate?: (word: string, updates: Partial<WordWithId>) => void;
+  onLocalChange?: () => void;
 }
 
-export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
+export default function ReviewPage({
+  onReviewUpdate,
+  onLocalChange,
+}: ReviewPageProps) {
   // === STATE ===
   const [reviewWords, setReviewWords] = useState<WordWithId[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -151,7 +156,7 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
   const warmupAudioRef = useRef<HTMLAudioElement | null>(null);
   const silentWarmupUrlRef = useRef<string | null>(null);
   const pronounceTimerRef = useRef<number | null>(null);
-  const autoPlayedWordIdRef = useRef<number | null>(null);
+  const autoPlayedWordIdRef = useRef<WordId | null>(null);
 
   // === DERIVED STATE ===
   const currentWord = reviewWords[currentIndex];
@@ -167,6 +172,17 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
     setIsLoading(true);
     try {
       const result = await listDueReviewWords();
+
+      if (!isDesktopMode) {
+        setReviewWords(result.map((word) => ({ ...word, hasAudio: false })));
+        setCurrentIndex(0);
+        setShowMeaning(false);
+        setTypedAnswer("");
+        setTypingResult(null);
+        setTypingFieldWidth(0);
+        setIsLoading(false);
+        return;
+      }
 
       // --- QUÉT THƯ MỤC AUDIO ---
       let audioFiles = new Set<string>();
@@ -329,6 +345,8 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
           next_review: newNextReview,
         });
       }
+
+      onLocalChange?.();
     } catch (error) {
       console.error("Lỗi update review:", error);
     }
@@ -402,6 +420,12 @@ export default function ReviewPage({ onReviewUpdate }: ReviewPageProps) {
     };
 
     if (!currentWord) {
+      clearAudio();
+      setHasAudio(false);
+      return;
+    }
+
+    if (!isDesktopMode) {
       clearAudio();
       setHasAudio(false);
       return;

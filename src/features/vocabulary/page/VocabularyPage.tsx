@@ -2,7 +2,7 @@
 import Table from "../../vocabulary/components/Table";
 
 // -- Types & Utils --
-import { WordWithId } from "../../../entities/word/model/types";
+import { WordId, WordWithId } from "../../../entities/word/model/types";
 
 // -- Style --
 import "./VocabularyPage.css";
@@ -10,9 +10,10 @@ import "./VocabularyPage.css";
 interface VocabularyPageProps {
   words: WordWithId[];
   onRefresh: () => void;
-  onWordDeleted: (wordId: number) => void;
+  onWordDeleted: (wordId: WordId) => void;
   onWordAdded: (newWord: WordWithId) => void;
-  onWordAudioReady: (wordId: number) => void;
+  onWordAudioReady: (wordId: WordId) => void;
+  onLocalChange: () => void;
 }
 
 export default function VocabularyPage({
@@ -21,6 +22,7 @@ export default function VocabularyPage({
   onWordDeleted,
   onWordAdded,
   onWordAudioReady,
+  onLocalChange,
 }: VocabularyPageProps) {
   return (
     <div className="vocabulary-container">
@@ -30,6 +32,7 @@ export default function VocabularyPage({
         onWordDeleted={onWordDeleted}
         onWordAdded={onWordAdded}
         onWordAudioReady={onWordAudioReady}
+        onLocalChange={onLocalChange}
       />
     </div>
   );

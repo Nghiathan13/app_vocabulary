@@ -19,6 +19,7 @@ import {
   updateWordFields,
 } from "../../../entities/word/api/words";
 import { getAudioPath } from "../../../shared/lib/utils";
+import { isDesktopMode } from "../../../shared/config/appMode";
 import {
   getSearchMatchColumn,
   getSearchPriority,
@@ -29,13 +30,15 @@ import {
 import "./Table.css";
 
 const SEARCH_DELAY_MS = 100;
+const MODIFIED_FIELD_SEPARATOR = "::";
 
 interface TableProps {
   words: WordWithId[];
   onRefresh: () => void;
-  onWordDeleted: (wordId: number) => void;
+  onWordDeleted: (wordId: WordWithId["id"]) => void;
   onWordAdded: (newWord: WordWithId) => void;
-  onWordAudioReady: (wordId: number) => void;
+  onWordAudioReady: (wordId: WordWithId["id"]) => void;
+  onLocalChange: () => void;
 }
 
 const normalizeComparableValue = (
@@ -55,6 +58,7 @@ export default function Table({
   onWordDeleted,
   onWordAdded,
   onWordAudioReady,
+  onLocalChange,
 }: TableProps) {
   // === STATE ===
   const [isEditing, setIsEditing] = useState(false);
@@ -123,13 +127,13 @@ export default function Table({
 
   const handleSaveClick = useCallback(async () => {
     try {
-      const modifiedIds = new Set<number>();
+      const modifiedIds = new Set<string>();
       for (const field of modifiedFields) {
-        modifiedIds.add(Number(field.split("-")[0]));
+        modifiedIds.add(field.split(MODIFIED_FIELD_SEPARATOR)[0]);
       }
 
       const wordsToUpdate = editedWords.filter((word) =>
-        modifiedIds.has(word.id),
+        modifiedIds.has(String(word.id)),
       );
 
       for (const word of wordsToUpdate) {
@@ -141,6 +145,7 @@ export default function Table({
       setModifiedFields(new Set());
       setActiveCell(null);
       onRefresh();
+      onLocalChange();
     } catch (error) {
       console.error("Error saving words:", error);
       throw error;
@@ -149,7 +154,7 @@ export default function Table({
 
   const handleInputChange = useCallback(
     (
-      id: number,
+      id: WordWithId["id"],
       field: TableEditableField,
       value: WordWithId[TableEditableField],
     ) => {
@@ -164,7 +169,7 @@ export default function Table({
         field,
         originalWord[field],
       );
-      const fieldKey = `${id}-${field}`;
+      const fieldKey = `${id}${MODIFIED_FIELD_SEPARATOR}${field}`;
 
       setModifiedFields((prev) => {
         const next = new Set(prev);
@@ -188,22 +193,25 @@ export default function Table({
   );
 
   const handleDelete = useCallback(
-    async (id: number, word: string) => {
+    async (id: WordWithId["id"], word: string) => {
       try {
         // 1. Delete from Database
         await deleteWordById(id);
 
         // 2. Delete Audio File
-        try {
-          const audioPath = await getAudioPath(word);
-          await invoke("remove_file", { path: audioPath });
-        } catch (fileError) {
-          // Ignore if file doesn't exist or can't be deleted
-          console.warn("Could not delete audio file:", fileError);
+        if (isDesktopMode) {
+          try {
+            const audioPath = await getAudioPath(word);
+            await invoke("remove_file", { path: audioPath });
+          } catch (fileError) {
+            // Ignore if file doesn't exist or can't be deleted
+            console.warn("Could not delete audio file:", fileError);
+          }
         }
 
         // 3. Update global state
         onWordDeleted(id);
+        onLocalChange();
 
         // If we are editing, update the editedWords state too
         if (isEditing) {
@@ -213,7 +221,7 @@ export default function Table({
         console.error("Error deleting word:", error);
       }
     },
-    [isEditing, onWordDeleted],
+    [isEditing, onLocalChange, onWordDeleted],
   );
 
   // -- Search --
@@ -272,6 +280,7 @@ export default function Table({
         onRefresh={onRefresh}
         onWordAdded={onWordAdded}
         onWordAudioReady={onWordAudioReady}
+        onLocalChange={onLocalChange}
         existingWords={words}
         wordsToExport={displayedWords}
         editedWords={editedWords}

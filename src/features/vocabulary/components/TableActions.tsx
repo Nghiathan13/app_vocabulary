@@ -17,6 +17,7 @@ import TableAddWordForm from "./TableAddWordForm";
 // -- Types & Utils --
 import { importWords } from "../../../entities/word/api/words";
 import { WordWithId } from "../../../entities/word/model/types";
+import { isDesktopMode } from "../../../shared/config/appMode";
 import { buildImportPreviewFiles, ImportPreviewFile } from "../lib/tableImport";
 import { TableEditableField } from "./TableGrid";
 
@@ -31,7 +32,8 @@ interface TableActionsProps {
   onCancel: () => void;
   onRefresh: () => void;
   onWordAdded: (newWord: WordWithId) => void;
-  onWordAudioReady: (wordId: number) => void;
+  onWordAudioReady: (wordId: WordWithId["id"]) => void;
+  onLocalChange: () => void;
   existingWords: WordWithId[];
   wordsToExport: WordWithId[];
   editedWords: WordWithId[];
@@ -50,6 +52,7 @@ export default function TableActions({
   onRefresh,
   onWordAdded,
   onWordAudioReady,
+  onLocalChange,
   existingWords,
   wordsToExport,
   editedWords,
@@ -72,10 +75,9 @@ export default function TableActions({
     const list: WordChange[] = [];
 
     modifiedFields.forEach((fieldKey) => {
-      const [idStr, field] = fieldKey.split("-");
-      const id = Number(idStr);
-      const originalWord = existingWords.find((w) => w.id === id);
-      const editedWord = editedWords.find((w) => w.id === id);
+      const [id, field] = fieldKey.split("::");
+      const originalWord = existingWords.find((w) => String(w.id) === id);
+      const editedWord = editedWords.find((w) => String(w.id) === id);
 
       if (originalWord && editedWord) {
         list.push({
@@ -213,6 +215,7 @@ export default function TableActions({
 
       handleCloseImportModal();
       onRefresh();
+      onLocalChange();
     } catch (error) {
       console.error("Error importing words:", error);
       setIsAddingImportedWords(false);
@@ -265,22 +268,26 @@ export default function TableActions({
                 onClick={() => setIsAddModalOpen(true)}
                 data-tooltip="Add"
               />
-              <IconButton
-                type="button"
-                className="has-tooltip tooltip-center"
-                icon="import"
-                label="Import"
-                onClick={handleOpenImportModal}
-                data-tooltip="Import"
-              />
-              <IconButton
-                type="button"
-                className="has-tooltip tooltip-center"
-                icon="export"
-                label="Export"
-                onClick={handleExportClick}
-                data-tooltip="Export"
-              />
+              {isDesktopMode && (
+                <>
+                  <IconButton
+                    type="button"
+                    className="has-tooltip tooltip-center"
+                    icon="import"
+                    label="Import"
+                    onClick={handleOpenImportModal}
+                    data-tooltip="Import"
+                  />
+                  <IconButton
+                    type="button"
+                    className="has-tooltip tooltip-center"
+                    icon="export"
+                    label="Export"
+                    onClick={handleExportClick}
+                    data-tooltip="Export"
+                  />
+                </>
+              )}
             </div>
           ) : null}
         </div>
@@ -354,19 +361,22 @@ export default function TableActions({
         onClose={() => setIsAddModalOpen(false)}
         onWordAdded={onWordAdded}
         onWordAudioReady={onWordAudioReady}
+        onLocalChange={onLocalChange}
       />
 
-      <ImportModal
-        isOpen={isImportModalOpen}
-        files={importPreviewFiles}
-        isScanning={isScanningImportFiles}
-        isAdding={isAddingImportedWords}
-        canAdd={canAddImportedWords}
-        onAdd={handleAddImportedWords}
-        onClose={handleCloseImportModal}
-        onPickFiles={handleAddMoreFiles}
-        onRemoveFile={handleRemoveImportFile}
-      />
+      {isDesktopMode && (
+        <ImportModal
+          isOpen={isImportModalOpen}
+          files={importPreviewFiles}
+          isScanning={isScanningImportFiles}
+          isAdding={isAddingImportedWords}
+          canAdd={canAddImportedWords}
+          onAdd={handleAddImportedWords}
+          onClose={handleCloseImportModal}
+          onPickFiles={handleAddMoreFiles}
+          onRemoveFile={handleRemoveImportFile}
+        />
+      )}
 
       <SaveModal
         isOpen={isSaveModalOpen}
