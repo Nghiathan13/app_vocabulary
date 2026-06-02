@@ -1,11 +1,11 @@
 import { FormEvent, useState } from "react";
 
 import { Button } from "../../../shared/ui/Button/Button";
+import {
+  AuthMode,
+  getAccountValidationError,
+} from "../lib/accountValidation";
 import "./AccountAuthForm.css";
-
-type AuthMode = "login" | "register";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface AccountAuthFormProps {
   initialMode?: AuthMode;
@@ -13,43 +13,6 @@ interface AccountAuthFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
   onRegister: (email: string, password: string, name?: string) => Promise<void>;
   onSuccess?: () => void;
-}
-
-function getValidationError(
-  mode: AuthMode,
-  email: string,
-  password: string,
-  name: string,
-): string | null {
-  const trimmedEmail = email.trim();
-
-  if (!trimmedEmail) {
-    return "Enter a valid email.";
-  }
-
-  if (!EMAIL_PATTERN.test(trimmedEmail)) {
-    return "Enter a valid email.";
-  }
-
-  if (!password) {
-    return "Enter your password.";
-  }
-
-  if (password.length > 128) {
-    return "Password must be 128 characters or fewer.";
-  }
-
-  if (mode === "register") {
-    if (password.length < 8) {
-      return "Password must be at least 8 characters.";
-    }
-
-    if (name.trim().length > 80) {
-      return "Name must be 80 characters or fewer.";
-    }
-  }
-
-  return null;
 }
 
 export default function AccountAuthForm({
@@ -66,7 +29,12 @@ export default function AccountAuthForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validationError = getValidationError(mode, email, password, name);
+  const validationError = getAccountValidationError({
+    mode,
+    email,
+    password,
+    name,
+  });
   const isFormDisabled = isSubmitting || isCheckingAuth || validationError !== null;
 
   const handleModeChange = (nextMode: AuthMode) => {
@@ -77,7 +45,12 @@ export default function AccountAuthForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const clientError = getValidationError(mode, email, password, name);
+    const clientError = getAccountValidationError({
+      mode,
+      email,
+      password,
+      name,
+    });
 
     if (clientError) {
       setSubmitError(clientError);
