@@ -4,6 +4,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { AuthController } from "./auth/auth.controller";
 import { AuthService } from "./auth/auth.service";
 import { AudioController } from "./audio/audio.controller";
+import { HealthController } from "./health/health.controller";
 import { AudioService } from "./audio/audio.service";
 import { PrismaService } from "./prisma/prisma.service";
 import { VocabController } from "./vocab/vocab.controller";
@@ -16,7 +17,7 @@ import { VocabService } from "./vocab/vocab.service";
       signOptions: { expiresIn: "7d" },
     }),
   ],
-  controllers: [AuthController, AudioController, VocabController],
+  controllers: [HealthController, AuthController, AudioController, VocabController],
   providers: [AuthService, AudioService, PrismaService, VocabService],
 })
 export class AppModule {}
