@@ -27,6 +27,8 @@ Set these on the backend service:
 |----------|--------|
 | `DATABASE_URL` | From PostgreSQL service (reference variable) |
 | `JWT_SECRET` | Long random secret; never commit |
+| `JWT_ACCESS_EXPIRES_IN` | Access JWT lifetime (default `15m`) |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh session lifetime (default `30d`) |
 | `PORT` | Often `3000`; Railway may set this automatically |
 | `CORS_ORIGIN` | Production web app URL, e.g. `https://your-web-domain.com` |
 | `ELEVENLABS_API_KEY` | Server TTS |

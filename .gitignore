@@ -25,3 +25,4 @@ server/storage/
 *.sln
 *.sw?
 .env
+context.md

@@ -1,8 +1,8 @@
+import { notifyUnauthorized } from "../../auth/api/auth";
+import { AUTH_ACCESS_TOKEN_KEY } from "../../auth/lib/sessionStorage";
 import { API_BASE_URL } from "../../../shared/config/appMode";
 import { WordId, WordImportDraft, WordWithId } from "../model/types";
 import type { InsertWordParams, UpdateWordReviewParams } from "./words";
-
-const AUTH_TOKEN_KEY = "engvocab-access-token";
 
 interface ServerWord {
   id: string;
@@ -25,7 +25,7 @@ interface ServerWord {
   hasAudio?: boolean;
 }
 
-const getAccessToken = () => localStorage.getItem(AUTH_TOKEN_KEY);
+const getAccessToken = () => localStorage.getItem(AUTH_ACCESS_TOKEN_KEY);
 
 async function request<T>(
   path: string,
@@ -45,6 +45,10 @@ async function request<T>(
       ...options.headers,
     },
   });
+
+  if (response.status === 401) {
+    notifyUnauthorized();
+  }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);

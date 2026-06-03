@@ -4,7 +4,7 @@ import { AuthGuard } from "./auth.guard";
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./current-user.decorator";
 import { AuthUser } from "./auth-user";
-import { LoginDto, RegisterDto } from "./auth.dto";
+import { LoginDto, LogoutDto, RefreshDto, RegisterDto } from "./auth.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -18,6 +18,16 @@ export class AuthController {
   @Post("login")
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post("refresh")
+  refresh(@Body() dto: RefreshDto) {
+    return this.authService.refresh(dto.refreshToken);
+  }
+
+  @Post("logout")
+  logout(@Body() dto: LogoutDto) {
+    return this.authService.logout(dto.refreshToken);
   }
 
   @UseGuards(AuthGuard)

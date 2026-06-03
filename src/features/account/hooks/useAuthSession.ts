@@ -1,64 +1,163 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   AuthUser,
+  clearStoredSession,
   getCurrentUser,
   loginAccount,
+  logoutSession,
+  persistAuthResponse,
+  readStoredSession,
   registerAccount,
+  setUnauthorizedHandler,
 } from "../../../entities/auth/api/auth";
+import { listWords } from "../../../entities/word/api/words";
+import { useWordStore } from "../../../entities/word/model/store";
+import { isWebMode } from "../../../shared/config/appMode";
+import { bootstrapSession } from "../lib/bootstrapSession";
 
-const AUTH_TOKEN_KEY = "engvocab-access-token";
+export type WebSessionStatus = "guest" | "memberLoading" | "member";
 
 export function useAuthSession() {
-  const [accessToken, setAccessToken] = useState<string | null>(() =>
-    localStorage.getItem(AUTH_TOKEN_KEY),
-  );
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(Boolean(accessToken));
+  const [sessionStatus, setSessionStatus] = useState<WebSessionStatus>(() =>
+    isWebMode ? "guest" : "member",
+  );
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isBootstrapping, setIsBootstrapping] = useState(isWebMode);
+  const bootstrapStartedRef = useRef(false);
+
+  const applyAuthResponse = useCallback((response: Awaited<ReturnType<typeof loginAccount>>) => {
+    persistAuthResponse(response);
+    setAccessToken(response.accessToken);
+    setUser(response.user);
+    setAuthError(null);
+    setSessionStatus("member");
+  }, []);
+
+  const clearSession = useCallback(() => {
+    clearStoredSession();
+    setAccessToken(null);
+    setUser(null);
+    setSessionStatus("guest");
+  }, []);
+
+  const logout = useCallback(async () => {
+    const refreshToken = readStoredSession().refreshToken;
+
+    if (refreshToken) {
+      try {
+        await logoutSession(refreshToken);
+      } catch {
+        // Ignore logout API errors and clear local session anyway.
+      }
+    }
+
+    clearSession();
+    setAuthError(null);
+  }, [clearSession]);
 
   useEffect(() => {
-    if (!accessToken) {
-      setIsCheckingAuth(false);
+    setUnauthorizedHandler(() => {
+      void logout();
+      setAuthError("Session expired. Please log in again.");
+    });
+
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
+
+  useEffect(() => {
+    if (!isWebMode || bootstrapStartedRef.current) {
       return;
     }
 
+    bootstrapStartedRef.current = true;
     let isCurrent = true;
 
-    setIsCheckingAuth(true);
-    getCurrentUser(accessToken)
-      .then((currentUser) => {
-        if (isCurrent) {
-          setUser(currentUser);
-          setAuthError(null);
+    const runBootstrap = async () => {
+      const phase = await bootstrapSession();
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (phase.kind === "guest") {
+        clearSession();
+        setIsBootstrapping(false);
+        return;
+      }
+
+      setAccessToken(phase.accessToken);
+      setUser(phase.user);
+      setSessionStatus("memberLoading");
+
+      try {
+        const [currentUser, words] = await Promise.all([
+          getCurrentUser(phase.accessToken),
+          listWords(),
+        ]);
+
+        if (!isCurrent) {
+          return;
         }
-      })
-      .catch((error) => {
-        if (isCurrent) {
-          console.warn("Failed to restore auth session:", error);
-          localStorage.removeItem(AUTH_TOKEN_KEY);
-          setAccessToken(null);
-          setUser(null);
-          setAuthError("Session expired. Please log in again.");
+
+        const stored = readStoredSession();
+
+        if (stored.refreshToken) {
+          persistAuthResponse({
+            accessToken: phase.accessToken,
+            refreshToken: stored.refreshToken,
+            user: currentUser,
+          });
         }
-      })
-      .finally(() => {
-        if (isCurrent) {
-          setIsCheckingAuth(false);
+
+        setUser(currentUser);
+        setSessionStatus("member");
+        setAuthError(null);
+
+        useWordStore.setState({
+          globalWords: words,
+          isLoading: false,
+          loadError: false,
+        });
+      } catch (error) {
+        if (!isCurrent) {
+          return;
         }
-      });
+
+        console.warn("Failed to restore web session:", error);
+        clearSession();
+        setAuthError("Session expired. Please log in again.");
+      } finally {
+        if (isCurrent) {
+          setIsBootstrapping(false);
+        }
+      }
+    };
+
+    void runBootstrap();
 
     return () => {
       isCurrent = false;
     };
-  }, [accessToken]);
+  }, [clearSession]);
 
-  const applyAuthResponse = useCallback(
-    (token: string, currentUser: AuthUser) => {
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-      setAccessToken(token);
-      setUser(currentUser);
+  const completeWebLogin = useCallback(
+    async (response: Awaited<ReturnType<typeof loginAccount>>) => {
+      persistAuthResponse(response);
+      setAccessToken(response.accessToken);
+      setUser(response.user);
       setAuthError(null);
+      setSessionStatus("memberLoading");
+
+      const words = await listWords();
+      useWordStore.setState({
+        globalWords: words,
+        isLoading: false,
+        loadError: false,
+      });
+      setSessionStatus("member");
     },
     [],
   );
@@ -66,30 +165,41 @@ export function useAuthSession() {
   const login = useCallback(
     async (email: string, password: string) => {
       const response = await loginAccount({ email, password });
-      applyAuthResponse(response.accessToken, response.user);
+
+      if (isWebMode) {
+        await completeWebLogin(response);
+        return;
+      }
+
+      applyAuthResponse(response);
     },
-    [applyAuthResponse],
+    [applyAuthResponse, completeWebLogin],
   );
 
   const register = useCallback(
     async (email: string, password: string, name?: string) => {
       const response = await registerAccount({ email, password, name });
-      applyAuthResponse(response.accessToken, response.user);
+
+      if (isWebMode) {
+        await completeWebLogin(response);
+        return;
+      }
+
+      applyAuthResponse(response);
     },
-    [applyAuthResponse],
+    [applyAuthResponse, completeWebLogin],
   );
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    setAccessToken(null);
-    setUser(null);
-    setAuthError(null);
-  }, []);
+  const isCheckingAuth = isWebMode && (isBootstrapping || sessionStatus === "memberLoading");
+  const isLoggedIn = isWebMode ? sessionStatus === "member" : Boolean(user);
 
   return {
     accessToken,
     user,
+    sessionStatus,
     isCheckingAuth,
+    isBootstrapping,
+    isLoggedIn,
     authError,
     setAuthError,
     login,

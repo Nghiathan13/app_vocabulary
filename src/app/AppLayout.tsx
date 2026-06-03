@@ -1,5 +1,7 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
+import WebGuestGate from "../features/account/components/WebGuestGate";
+import type { WebSessionStatus } from "../features/account/hooks/useAuthSession";
 import Navbar from "../shared/ui/Navbar/Navbar";
 import { isWebMode } from "../shared/config/appMode";
 import type { AuthUser } from "../entities/auth/api/auth";
@@ -12,9 +14,9 @@ type AppTheme = "dark" | "light";
 interface AppLayoutProps {
   theme: AppTheme;
   user: AuthUser | null;
-  isCheckingAuth: boolean;
+  sessionStatus: WebSessionStatus;
+  isBootstrapping: boolean;
   isLoggedIn: boolean;
-  isLoading: boolean;
   loadError: boolean;
   isSyncing: boolean;
   showSyncAction: boolean;
@@ -31,9 +33,9 @@ interface AppLayoutProps {
 export default function AppLayout({
   theme,
   user,
-  isCheckingAuth,
+  sessionStatus,
+  isBootstrapping,
   isLoggedIn,
-  isLoading,
   loadError,
   isSyncing,
   showSyncAction,
@@ -46,9 +48,52 @@ export default function AppLayout({
   onSyncNow,
   onRetryLoad,
 }: AppLayoutProps) {
-  if (isWebMode && !isCheckingAuth && !user) {
-    return <Navigate to={ROUTES.login} replace />;
-  }
+  const location = useLocation();
+  const isLoginRoute = location.pathname === ROUTES.login;
+
+  const renderMain = () => {
+    if (isWebMode && isBootstrapping) {
+      return (
+        <div className="global-loading">
+          <div className="spinner"></div>
+          <p>Verifying your session...</p>
+        </div>
+      );
+    }
+
+    if (isWebMode && sessionStatus === "guest" && !isLoginRoute) {
+      return <WebGuestGate />;
+    }
+
+    if (sessionStatus === "memberLoading") {
+      return (
+        <div className="global-loading">
+          <div className="spinner"></div>
+          <p>Loading your vocabulary...</p>
+        </div>
+      );
+    }
+
+    if (loadError) {
+      return (
+        <div className="global-load-error">
+          <button
+            type="button"
+            className="global-load-error-retry"
+            onClick={onRetryLoad}
+            aria-label="Retry loading vocabulary"
+          >
+            <img src={refreshIcon} alt="" width={48} height={48} />
+          </button>
+          <p className="global-load-error-message">
+            Failed to load vocabulary. Please try again.
+          </p>
+        </div>
+      );
+    }
+
+    return <Outlet />;
+  };
 
   return (
     <>
@@ -68,28 +113,7 @@ export default function AppLayout({
         onSyncNow={onSyncNow}
       />
 
-      {isLoading ? (
-        <div className="global-loading">
-          <div className="spinner"></div>
-          <p>Loading your vocabulary...</p>
-        </div>
-      ) : loadError ? (
-        <div className="global-load-error">
-          <button
-            type="button"
-            className="global-load-error-retry"
-            onClick={onRetryLoad}
-            aria-label="Retry loading vocabulary"
-          >
-            <img src={refreshIcon} alt="" width={48} height={48} />
-          </button>
-          <p className="global-load-error-message">
-            Failed to load vocabulary. Please try again.
-          </p>
-        </div>
-      ) : (
-        <Outlet />
-      )}
+      {renderMain()}
     </>
   );
 }

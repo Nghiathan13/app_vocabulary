@@ -1,6 +1,6 @@
 // -- React --
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 // -- Components --
 import HomePage from "../features/home/page/HomePage";
@@ -12,9 +12,10 @@ import AppLayout from "./AppLayout";
 import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 
 // -- Types & Utils --
+import { saveReturnPath } from "../entities/auth/api/auth";
 import { useGlobalWords } from "./hooks/useGlobalWords";
 import { useVocabularySync } from "./hooks/useVocabularySync";
-import { isDesktopMode, isWebMode } from "../shared/config/appMode";
+import { isDesktopMode } from "../shared/config/appMode";
 import { ROUTES } from "../shared/lib/routes";
 
 // -- Style --
@@ -26,22 +27,27 @@ const THEME_STORAGE_KEY = "engvocab-theme";
 const getInitialTheme = (): AppTheme => {
   const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
 
-  return storedTheme === "light" ? "light" : "dark";
+  return storedTheme === "dark" ? "dark" : "light";
 };
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const startupSyncAccessTokenRef = useRef<string | null>(null);
   const {
     accessToken,
     user,
+    sessionStatus,
     isCheckingAuth,
+    isBootstrapping,
+    isLoggedIn,
     login,
     register,
     logout,
   } = useAuthSession();
-  const shouldLoadWords = isDesktopMode || Boolean(user);
+  const shouldLoadWords = isDesktopMode;
   const {
     globalWords,
     isLoading,
@@ -70,6 +76,14 @@ function App() {
     setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
   };
 
+  const handleLoginClick = useCallback(() => {
+    if (location.pathname !== ROUTES.login) {
+      saveReturnPath(location.pathname);
+    }
+
+    navigate(ROUTES.login);
+  }, [location.pathname, navigate]);
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -93,16 +107,15 @@ function App() {
     });
   }, [accessToken, isCheckingAuth, isLoading, syncNow, user]);
 
-  const shouldShowWebAuthLoading = isWebMode && isCheckingAuth;
-  const shouldRenderAccountModal = isDesktopMode || Boolean(user);
+  const shouldRenderAccountModal = isDesktopMode;
 
   const layoutElement = (
     <AppLayout
       theme={theme}
       user={user}
-      isCheckingAuth={isCheckingAuth}
-      isLoggedIn={Boolean(user)}
-      isLoading={isLoading}
+      sessionStatus={sessionStatus}
+      isBootstrapping={isBootstrapping}
+      isLoggedIn={isLoggedIn}
       loadError={loadError}
       isSyncing={isSyncing}
       showSyncAction={isDesktopMode}
@@ -110,7 +123,7 @@ function App() {
       pendingChangeCount={pendingChangeCount}
       lastSyncedAt={lastSyncedAt}
       onThemeToggle={handleThemeToggle}
-      onLoginClick={() => setIsAccountModalOpen(true)}
+      onLoginClick={handleLoginClick}
       onLogout={logout}
       onSyncNow={syncNow}
       onRetryLoad={() => void fetchGlobalWords()}
@@ -120,64 +133,64 @@ function App() {
   return (
     <ToastProvider>
       <main className="container">
-        {shouldShowWebAuthLoading ? (
-          <div className="global-loading">
-            <div className="spinner"></div>
-            <p>Checking your account...</p>
-          </div>
-        ) : (
-          <Routes>
+        <Routes>
+          {isDesktopMode ? (
             <Route
               path={ROUTES.login}
+              element={<Navigate to={ROUTES.home} replace />}
+            />
+          ) : null}
+
+          <Route element={layoutElement}>
+            <Route path="/" element={<Navigate to={ROUTES.home} replace />} />
+
+            {!isDesktopMode ? (
+              <Route
+                path={ROUTES.login}
+                element={
+                  isLoggedIn ? (
+                    <Navigate to={ROUTES.home} replace />
+                  ) : (
+                    <WebLoginPage
+                      isAuthenticated={isLoggedIn}
+                      isCheckingAuth={isCheckingAuth}
+                      onLogin={login}
+                      onRegister={register}
+                    />
+                  )
+                }
+              />
+            ) : null}
+
+            <Route
+              path={ROUTES.home}
+              element={<HomePage words={globalWords} />}
+            />
+            <Route
+              path={ROUTES.review}
               element={
-                isDesktopMode ? (
-                  <Navigate to={ROUTES.home} replace />
-                ) : (
-                  <WebLoginPage
-                    isAuthenticated={Boolean(user)}
-                    isCheckingAuth={isCheckingAuth}
-                    onLogin={login}
-                    onRegister={register}
-                  />
-                )
+                <ReviewPage
+                  words={globalWords}
+                  onReviewUpdate={handleReviewUpdate}
+                  onLocalChange={scheduleSync}
+                />
               }
             />
-
-            <Route element={layoutElement}>
-              <Route
-                path="/"
-                element={<Navigate to={ROUTES.home} replace />}
-              />
-              <Route
-                path={ROUTES.home}
-                element={<HomePage words={globalWords} />}
-              />
-              <Route
-                path={ROUTES.review}
-                element={
-                  <ReviewPage
-                    words={globalWords}
-                    onReviewUpdate={handleReviewUpdate}
-                    onLocalChange={scheduleSync}
-                  />
-                }
-              />
-              <Route path={ROUTES.practice} element={<PracticePage />} />
-              <Route
-                path={ROUTES.vocabulary}
-                element={
-                  <VocabularyPage
-                    words={globalWords}
-                    onRefresh={fetchGlobalWords}
-                    onWordDeleted={handleWordDeleted}
-                    onWordAdded={handleWordAdded}
-                    onLocalChange={scheduleSync}
-                  />
-                }
-              />
-            </Route>
-          </Routes>
-        )}
+            <Route path={ROUTES.practice} element={<PracticePage />} />
+            <Route
+              path={ROUTES.vocabulary}
+              element={
+                <VocabularyPage
+                  words={globalWords}
+                  onRefresh={fetchGlobalWords}
+                  onWordDeleted={handleWordDeleted}
+                  onWordAdded={handleWordAdded}
+                  onLocalChange={scheduleSync}
+                />
+              }
+            />
+          </Route>
+        </Routes>
 
         {shouldRenderAccountModal ? (
           <AccountModal

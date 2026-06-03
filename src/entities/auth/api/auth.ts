@@ -1,4 +1,18 @@
 import { API_BASE_URL } from "../../../shared/config/appMode";
+import { writeStoredSession, type StoredSession } from "../lib/sessionStorage";
+
+export type { StoredSession };
+export {
+  AUTH_ACCESS_TOKEN_KEY,
+  AUTH_REFRESH_TOKEN_KEY,
+  AUTH_USER_KEY,
+  AUTH_RETURN_PATH_KEY,
+  clearStoredSession,
+  consumeReturnPath,
+  readStoredSession,
+  saveReturnPath,
+  writeStoredSession,
+} from "../lib/sessionStorage";
 
 export interface AuthUser {
   id: string;
@@ -9,7 +23,18 @@ export interface AuthUser {
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken: string;
   user: AuthUser;
+}
+
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
+
+export function notifyUnauthorized() {
+  unauthorizedHandler?.();
 }
 
 function parseApiError(
@@ -60,6 +85,10 @@ async function request<T>(
     throw new Error("Cannot connect to server");
   }
 
+  if (response.status === 401 && unauthorizedHandler) {
+    unauthorizedHandler();
+  }
+
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     throw new Error(parseApiError(errorBody, response.status, path));
@@ -96,10 +125,34 @@ export async function loginAccount({
   });
 }
 
+export async function refreshSession(
+  refreshToken: string,
+): Promise<AuthResponse> {
+  return await request<AuthResponse>("/auth/refresh", {
+    method: "POST",
+    body: JSON.stringify({ refreshToken }),
+  });
+}
+
+export async function logoutSession(refreshToken: string): Promise<void> {
+  await request<{ success: boolean }>("/auth/logout", {
+    method: "POST",
+    body: JSON.stringify({ refreshToken }),
+  });
+}
+
 export async function getCurrentUser(token: string): Promise<AuthUser> {
   return await request<AuthUser>("/auth/me", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+}
+
+export function persistAuthResponse(response: AuthResponse) {
+  writeStoredSession({
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
+    user: response.user,
   });
 }

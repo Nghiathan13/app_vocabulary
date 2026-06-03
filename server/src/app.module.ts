@@ -14,7 +14,9 @@ import { VocabService } from "./vocab/vocab.service";
   imports: [
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? "dev-only-secret",
-      signOptions: { expiresIn: "7d" },
+      signOptions: {
+        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? "15m",
+      },
     }),
   ],
   controllers: [HealthController, AuthController, AudioController, VocabController],

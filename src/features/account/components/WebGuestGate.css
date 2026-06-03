@@ -1,0 +1,23 @@
+.web-guest-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.web-guest-gate-title {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--text-primary, #e8e8e8);
+}
+
+.web-guest-gate-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--text-muted, #909090);
+}

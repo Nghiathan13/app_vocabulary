@@ -1,5 +1,6 @@
 import { Navigate, useNavigate } from "react-router-dom";
 
+import { consumeReturnPath } from "../../../entities/auth/api/auth";
 import { ROUTES } from "../../../shared/lib/routes";
 import AccountAuthForm from "../components/AccountAuthForm";
 import "./WebLoginPage.css";
@@ -31,7 +32,9 @@ export default function WebLoginPage({
         isCheckingAuth={isCheckingAuth}
         onLogin={onLogin}
         onRegister={onRegister}
-        onSuccess={() => navigate(ROUTES.home, { replace: true })}
+        onSuccess={() =>
+          navigate(consumeReturnPath(ROUTES.home), { replace: true })
+        }
       />
     </div>
   );

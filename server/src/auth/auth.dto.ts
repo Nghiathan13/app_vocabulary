@@ -31,3 +31,15 @@ export class LoginDto {
   @MaxLength(128)
   password!: string;
 }
+
+export class RefreshDto {
+  @IsString()
+  @IsNotEmpty()
+  refreshToken!: string;
+}
+
+export class LogoutDto {
+  @IsString()
+  @IsNotEmpty()
+  refreshToken!: string;
+}
