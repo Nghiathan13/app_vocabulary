@@ -104,9 +104,11 @@ export default function AccountAuthForm({
       </div>
 
       {mode === "register" ? (
-        <label>
+        <label htmlFor="auth-name">
           <span>Name</span>
           <input
+            id="auth-name"
+            name="name"
             value={name}
             onChange={(event) => setName(event.target.value)}
             autoComplete="name"
@@ -115,9 +117,11 @@ export default function AccountAuthForm({
         </label>
       ) : null}
 
-      <label>
+      <label htmlFor="auth-email">
         <span>Email</span>
         <input
+          id="auth-email"
+          name="email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -125,9 +129,11 @@ export default function AccountAuthForm({
         />
       </label>
 
-      <label>
+      <label htmlFor="auth-password">
         <span>Password</span>
         <input
+          id="auth-password"
+          name="password"
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}

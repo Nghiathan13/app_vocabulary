@@ -14,6 +14,7 @@ type AppTheme = "dark" | "light";
 interface NavbarProps {
   theme: AppTheme;
   isLoggedIn: boolean;
+  userName: string | null;
   userEmail: string | null;
   isSyncing: boolean;
   showSyncAction: boolean;
@@ -32,6 +33,7 @@ const navIconLinkClass = ({ isActive }: { isActive: boolean }) =>
 export default function Navbar({
   theme,
   isLoggedIn,
+  userName,
   userEmail,
   isSyncing,
   showSyncAction,
@@ -116,11 +118,16 @@ export default function Navbar({
           aria-label="Practice"
           title="Practice"
         >
-          <span className="nav-icon-stack" aria-hidden="true">
-            <span className="material-symbols-outlined nav-page-icon is-visible">
-              exercise
+          {({ isActive }) => (
+            <span className="nav-icon-stack" aria-hidden="true">
+              <span
+                className={`practice-off-icon nav-page-icon ${isActive ? "" : "is-visible"}`}
+              />
+              <span
+                className={`practice-on-icon nav-page-icon ${isActive ? "is-visible" : ""}`}
+              />
             </span>
-          </span>
+          )}
         </NavLink>
 
         <NavLink
@@ -186,9 +193,17 @@ export default function Navbar({
 
             {isAccountMenuOpen ? (
               <div className="nav-account-dropdown">
-                {userEmail ? (
-                  <p className="nav-account-email">{userEmail}</p>
-                ) : null}
+                <div className="nav-account-header">
+                  <span className="account-default-icon nav-account-header-icon" aria-hidden="true" />
+                  <div className="nav-account-info">
+                    <p className="nav-account-name">{userName || "Learner"}</p>
+                    {userEmail ? (
+                      <p className="nav-account-email">{userEmail}</p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="nav-account-divider" />
 
                 {showSyncAction ? (
                   <>
@@ -209,14 +224,11 @@ export default function Navbar({
                       onClick={handleSyncNow}
                       disabled={isSyncing}
                     >
-                      <span
-                        className="material-symbols-outlined"
-                        aria-hidden="true"
-                      >
-                        sync
-                      </span>
+                      <span className="sync-icon" aria-hidden="true" />
                       {isSyncing ? "Syncing..." : "Sync now"}
                     </button>
+
+                    <div className="nav-account-divider" />
                   </>
                 ) : null}
 

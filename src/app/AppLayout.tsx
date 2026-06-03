@@ -55,6 +55,7 @@ export default function AppLayout({
       <Navbar
         theme={theme}
         isLoggedIn={isLoggedIn}
+        userName={user?.name ?? null}
         userEmail={user?.email ?? null}
         isSyncing={isSyncing}
         showSyncAction={showSyncAction}
