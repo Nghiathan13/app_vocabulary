@@ -50,8 +50,6 @@ export const insertWord: (
   params: InsertWordParams,
 ) => Promise<WordWithId> = adapter.insertWord;
 export const listWords: () => Promise<WordWithId[]> = adapter.listWords;
-export const listDueReviewWords: () => Promise<WordWithId[]> =
-  adapter.listDueReviewWords;
 export const updateWordReview: (
   params: UpdateWordReviewParams,
 ) => Promise<void> = adapter.updateWordReview;

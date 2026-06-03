@@ -156,6 +156,7 @@ function App() {
                 path={ROUTES.review}
                 element={
                   <ReviewPage
+                    words={globalWords}
                     onReviewUpdate={handleReviewUpdate}
                     onLocalChange={scheduleSync}
                   />

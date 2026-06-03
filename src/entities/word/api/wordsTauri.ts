@@ -61,10 +61,6 @@ export async function listWords(): Promise<WordWithId[]> {
   return await invoke<WordWithId[]>("get_all_words");
 }
 
-export async function listDueReviewWords(): Promise<WordWithId[]> {
-  return await invoke<WordWithId[]>("get_due_review_words");
-}
-
 export interface UpdateWordReviewParams {
   word: string;
   level: number;

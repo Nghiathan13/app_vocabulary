@@ -116,62 +116,6 @@
   font-weight: 600;
 }
 
-.type-pill-list {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-.type-pill-table {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 10px;
-
-  border-radius: 10px;
-
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.type-pill-phrasal {
-  background: var(--color-type-phrasal-bg);
-  color: var(--color-type-phrasal-text);
-}
-
-.type-pill-adverb {
-  background: var(--color-type-adverb-bg);
-  color: var(--color-type-adverb-text);
-}
-
-.type-pill-preposition {
-  background: var(--color-type-preposition-bg);
-  color: var(--color-type-preposition-text);
-}
-
-.type-pill-noun {
-  background: var(--color-type-noun-bg);
-  color: var(--color-type-noun-text);
-}
-
-.type-pill-adjective {
-  background: var(--color-type-adjective-bg);
-  color: var(--color-type-adjective-text);
-}
-
-.type-pill-verb {
-  background: var(--color-type-verb-bg);
-  color: var(--color-type-verb-text);
-}
-
-.type-pill-default {
-  background: var(--color-type-phrasal-bg);
-  color: var(--color-type-phrasal-text);
-}
-
 .word-grid-container.is-editing .grid-cell {
   cursor: text;
 }

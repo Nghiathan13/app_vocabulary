@@ -6,6 +6,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 
 // -- Types & Utils --
 import { WordId, WordWithId } from "../../../entities/word/model/types";
+import WordTypePills from "../../../entities/word/ui/WordTypePills";
 import { IconButton } from "../../../shared/ui/Button/Button";
 import Icon from "../../../shared/ui/Icon/Icon";
 import { formatDisplayDate } from "../../../shared/lib/utils";
@@ -34,54 +35,6 @@ interface TableGridProps {
   onCellDeactivate: () => void;
   onDelete: (id: WordId, word: string) => void;
 }
-
-const getTypePillClassName = (type: string | null) => {
-  const normalizedType = type?.trim().toLowerCase() || "";
-
-  if (normalizedType.includes("phrasal")) {
-    return "type-pill-table type-pill-phrasal";
-  }
-
-  if (normalizedType === "adverb" || normalizedType === "adv") {
-    return "type-pill-table type-pill-adverb";
-  }
-
-  if (normalizedType === "preposition" || normalizedType === "prep") {
-    return "type-pill-table type-pill-preposition";
-  }
-
-  if (normalizedType === "noun") {
-    return "type-pill-table type-pill-noun";
-  }
-
-  if (normalizedType === "adjective" || normalizedType === "adj") {
-    return "type-pill-table type-pill-adjective";
-  }
-
-  if (normalizedType === "verb") {
-    return "type-pill-table type-pill-verb";
-  }
-
-  return "type-pill-table type-pill-default";
-};
-
-const splitTypeLabels = (type: string | null) => {
-  return (type || "")
-    .split("/")
-    .map((part) => part.trim())
-    .filter(Boolean);
-};
-
-const formatTypeLabel = (type: string | null) => {
-  if (!type) {
-    return "";
-  }
-
-  return type
-    .split(" ")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-};
 
 export default function TableGrid({
   words,
@@ -314,16 +267,7 @@ export default function TableGrid({
                       spellCheck={false}
                     />
                   ) : w.type ? (
-                    <span className="type-pill-list">
-                      {splitTypeLabels(w.type).map((typePart) => (
-                        <span
-                          className={getTypePillClassName(typePart)}
-                          key={`${w.id}-${typePart}`}
-                        >
-                          {formatTypeLabel(typePart)}
-                        </span>
-                      ))}
-                    </span>
+                    <WordTypePills type={w.type} variant="table" />
                   ) : (
                     ""
                   )}

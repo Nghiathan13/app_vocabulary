@@ -120,15 +120,6 @@ export async function listWords(): Promise<WordWithId[]> {
   return words.map(toWordWithId);
 }
 
-export async function listDueReviewWords(): Promise<WordWithId[]> {
-  const today = new Date().toISOString().slice(0, 10);
-  const words = await listWords();
-
-  return words
-    .filter((word) => word.next_review && word.next_review <= today)
-    .sort((a, b) => (a.next_review ?? "").localeCompare(b.next_review ?? ""));
-}
-
 export async function updateWordFields(word: WordWithId): Promise<void> {
   await request<ServerWord>(`/vocab/${word.id}`, {
     method: "PATCH",

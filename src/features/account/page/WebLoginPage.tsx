@@ -1,7 +1,7 @@
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { ROUTES } from "../../../shared/lib/routes";
-import AccountAuthForm from "./AccountAuthForm";
+import AccountAuthForm from "../components/AccountAuthForm";
 import "./WebLoginPage.css";
 
 interface WebLoginPageProps {
