@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 import { WordType, WordWithId } from "../../../../entities/word/model/types";
 import { insertWord } from "../../../../entities/word/api/words";
+import { useWordStore } from "../../../../entities/word/model/store";
 import { Button } from "../../../../shared/ui/Button/Button";
 import Modal from "../../../../shared/ui/Modal/Modal";
 import { useToast } from "../../../../shared/ui/Toast/ToastProvider";
@@ -34,9 +35,11 @@ export default function TableAddWordForm({
   const [meanings, setMeanings] = useState<Record<string, string>>({});
   const [isCustomType, setIsCustomType] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
 
   const wordInputRef = useRef<HTMLInputElement>(null);
-  const { showToast } = useToast();
+  const { showToast, updateToast } = useToast();
+  const { globalWords } = useWordStore();
 
   const activeMeanings =
     !type || isCustomType
@@ -44,56 +47,85 @@ export default function TableAddWordForm({
       : type.split(" / ").map((t) => meanings[t] || "");
 
   const isFormValid = Boolean(
-    word.trim() && ipa.trim() && type && activeMeanings.every((m) => m.trim()),
+    word.trim() &&
+      ipa.trim() &&
+      type &&
+      activeMeanings.every((m) => m.trim()) &&
+      !duplicateError,
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const filteredValue = value.toLowerCase().replace(/[^a-z\s'-]/g, "");
-    setWord(filteredValue);
+    setWord(e.target.value.toLowerCase());
+    setDuplicateError(null);
   };
 
-  const handleAdd = async () => {
+  const handleWordBlur = () => {
+    const normalizedWord = word.trim().toLowerCase();
+    setWord(normalizedWord);
+    if (!normalizedWord) {
+      setDuplicateError(null);
+      return;
+    }
+    const exists = globalWords.some(
+      (w) => w.word.toLowerCase() === normalizedWord,
+    );
+    if (exists) {
+      setDuplicateError(`Word "${normalizedWord}" already exists in your list.`);
+    } else {
+      setDuplicateError(null);
+    }
+  };
+
+  const handleAdd = () => {
     if (!isFormValid || isSubmitting) return;
     setIsSubmitting(true);
 
-    try {
-      const normalizedWord = word.trim().toLowerCase();
-      const normalizedType = type.trim().toLowerCase();
-      const normalizedIpa = ipa.trim();
-      const meaning_vi = activeMeanings
-        .map((v) => v.trim().toLowerCase())
-        .join(" / ");
+    const normalizedWord = word.trim().toLowerCase();
+    const normalizedType = type.trim().toLowerCase();
+    const normalizedIpa = ipa.trim();
+    const meaning_vi = activeMeanings
+      .map((v) => v.trim().toLowerCase())
+      .join(" / ");
 
-      const newWord = await insertWord({
-        word: normalizedWord,
-        ipa: normalizedIpa,
-        type: normalizedType,
-        meaning_vi,
-      });
+    // Close the modal instantly
+    onClose();
 
-      onWordAdded?.(newWord);
-      onLocalChange?.();
-      showToast({
-        message: `Added "${normalizedWord}"`,
-        type: "success",
-      });
-      onClose();
+    // Reset inputs
+    setWord("");
+    setIpa("");
+    setType("");
+    setMeanings({});
+    setIsCustomType(false);
+    setIsSubmitting(false);
 
-      setWord("");
-      setIpa("");
-      setType("");
-      setMeanings({});
-      setIsCustomType(false);
-      wordInputRef.current?.focus();
-    } catch {
-      showToast({
-        message: "Failed to add word",
-        type: "error",
+    // Show loading toast
+    const toastId = showToast({
+      message: `Adding "${normalizedWord}"...`,
+      type: "loading",
+    });
+
+    // Run insert in the background
+    insertWord({
+      word: normalizedWord,
+      ipa: normalizedIpa,
+      type: normalizedType,
+      meaning_vi,
+    })
+      .then((newWord) => {
+        updateToast(toastId, {
+          message: `Added "${normalizedWord}"`,
+          type: "success",
+        });
+        onWordAdded?.(newWord);
+        onLocalChange?.();
+      })
+      .catch((error) => {
+        console.error("Failed to add word in background:", error);
+        updateToast(toastId, {
+          message: `Failed to add "${normalizedWord}"`,
+          type: "error",
+        });
       });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleTypeToggle = (value: string) => {
@@ -133,7 +165,7 @@ export default function TableAddWordForm({
     >
       <div className="form-body">
         <div className="field-row">
-          <div className={`field${word ? " has-value" : ""}`}>
+          <div className={`field${word ? " has-value" : ""}${duplicateError ? " has-error" : ""}`}>
             <label className="field-label" htmlFor="word">
               WORD
             </label>
@@ -144,11 +176,13 @@ export default function TableAddWordForm({
               id="word"
               value={word}
               onChange={handleInputChange}
+              onBlur={handleWordBlur}
               placeholder="executive"
               autoComplete="off"
               spellCheck={false}
               autoFocus
             />
+            {duplicateError && <p className="field-error">{duplicateError}</p>}
           </div>
 
           <div className={`field${ipa ? " has-value" : ""}`}>

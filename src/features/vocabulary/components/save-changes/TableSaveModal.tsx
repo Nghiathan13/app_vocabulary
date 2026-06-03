@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "../../../../shared/ui/Button/Button";
 import Modal from "../../../../shared/ui/Modal/Modal";
 import type { WordChange } from "../../lib/tableEditChanges";
@@ -18,22 +19,36 @@ export default function SaveModal({
   onSave,
   changes,
 }: SaveModalProps) {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveClick = async () => {
+    if (isSaving || changes.length === 0) return;
+    setIsSaving(true);
+    try {
+      await onSave();
+    } catch (error) {
+      console.error("Error saving changes:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={isSaving ? undefined : onClose}
       className="save-modal"
-      showCloseButton
+      showCloseButton={!isSaving}
       footer={
         <Button
           type="button"
           className="save-confirm-btn"
           variant="outline"
           fullWidth
-          onClick={onSave}
-          disabled={changes.length === 0}
+          onClick={handleSaveClick}
+          disabled={changes.length === 0 || isSaving}
         >
-          Save
+          {isSaving ? "Saving..." : "Save"}
         </Button>
       }
     >

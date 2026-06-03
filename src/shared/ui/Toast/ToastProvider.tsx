@@ -10,7 +10,7 @@ import {
 
 import "./Toast.css";
 
-type ToastType = "success" | "error";
+type ToastType = "success" | "error" | "loading";
 
 interface ToastOptions {
   message: string;
@@ -23,7 +23,9 @@ interface ToastItem extends ToastOptions {
 }
 
 interface ToastContextValue {
-  showToast: (options: ToastOptions) => void;
+  showToast: (options: ToastOptions) => number;
+  updateToast: (id: number, options: Partial<ToastOptions>) => void;
+  removeToast: (id: number) => void;
 }
 
 const MAX_TOASTS = 5;
@@ -40,7 +42,14 @@ function ToastContainer({ toasts }: { toasts: ToastItem[] }) {
           className={`toast toast-${toast.type}`}
           role={toast.type === "error" ? "alert" : "status"}
         >
-          {toast.message}
+          <span className="toast-message">{toast.message}</span>
+          {toast.type === "loading" && <span className="toast-spinner" />}
+          {toast.type === "success" && (
+            <span className="toast-icon toast-icon-success" />
+          )}
+          {toast.type === "error" && (
+            <span className="toast-icon toast-icon-error" />
+          )}
         </div>
       ))}
     </div>
@@ -65,9 +74,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showToast = useCallback(
-    ({ duration = DEFAULT_DURATION, ...options }: ToastOptions) => {
+    ({ duration, ...options }: ToastOptions) => {
       const id = nextIdRef.current++;
-      const toast: ToastItem = { id, duration, ...options };
+      const resolvedDuration =
+        duration !== undefined
+          ? duration
+          : options.type === "loading"
+          ? undefined
+          : DEFAULT_DURATION;
+
+      const toast: ToastItem = { id, duration: resolvedDuration, ...options };
 
       setToasts((prev) => {
         if (prev.length < MAX_TOASTS) {
@@ -86,11 +102,49 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         return [...prev.slice(1), toast];
       });
 
-      const timeout = setTimeout(() => {
-        removeToast(id);
-      }, duration);
+      if (resolvedDuration !== undefined && resolvedDuration > 0) {
+        const timeout = setTimeout(() => {
+          removeToast(id);
+        }, resolvedDuration);
 
-      timeoutsRef.current.set(id, timeout);
+        timeoutsRef.current.set(id, timeout);
+      }
+
+      return id;
+    },
+    [removeToast],
+  );
+
+  const updateToast = useCallback(
+    (id: number, options: Partial<ToastOptions>) => {
+      const existingTimeout = timeoutsRef.current.get(id);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+        timeoutsRef.current.delete(id);
+      }
+
+      setToasts((prev) =>
+        prev.map((toast) => {
+          if (toast.id !== id) return toast;
+          const updated = { ...toast, ...options };
+
+          const resolvedDuration =
+            options.duration !== undefined
+              ? options.duration
+              : updated.type === "loading"
+              ? undefined
+              : DEFAULT_DURATION;
+
+          if (resolvedDuration !== undefined && resolvedDuration > 0) {
+            const timeout = setTimeout(() => {
+              removeToast(id);
+            }, resolvedDuration);
+            timeoutsRef.current.set(id, timeout);
+          }
+
+          return { ...updated, duration: resolvedDuration };
+        }),
+      );
     },
     [removeToast],
   );
@@ -103,7 +157,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, updateToast, removeToast }}>
       {children}
       <ToastContainer toasts={toasts} />
     </ToastContext.Provider>

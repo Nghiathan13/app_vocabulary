@@ -9,9 +9,13 @@
 }
 
 .toast {
-  min-width: 220px;
-  max-width: 320px;
-  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 240px;
+  max-width: 340px;
+  padding: 10px 16px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-surface-elevated);
@@ -19,6 +23,15 @@
   color: var(--color-text-primary);
   animation: toast-in 0.25s ease-out;
   box-shadow: 0 10px 30px var(--color-shadow);
+  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.toast-message {
+  flex-grow: 1;
+}
+
+.toast-loading {
+  border-color: var(--color-border-strong, #5a5a5a);
 }
 
 .toast-success {
@@ -29,6 +42,35 @@
   border-color: var(--color-error);
 }
 
+.toast-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-surface-muted, #555);
+  border-top-color: var(--color-text-primary);
+  border-radius: 50%;
+  animation: toast-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.toast-icon {
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+.toast-icon-success {
+  color: var(--color-success);
+  -webkit-mask: url("../../../assets/circle-check.svg") center / contain no-repeat;
+  mask: url("../../../assets/circle-check.svg") center / contain no-repeat;
+}
+
+.toast-icon-error {
+  color: var(--color-error);
+  -webkit-mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
+  mask: url("../../../assets/close-icon.svg") center / contain no-repeat;
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;
@@ -37,5 +79,11 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes toast-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
