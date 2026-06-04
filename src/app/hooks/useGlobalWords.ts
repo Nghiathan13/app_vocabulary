@@ -8,6 +8,7 @@ export interface UseGlobalWordsResult {
   isLoading: boolean;
   loadError: boolean;
   fetchGlobalWords: () => Promise<void>;
+  clearGlobalWords: () => void;
   handleReviewUpdate: (
     wordStr: string,
     updates: Partial<WordWithId>,
@@ -25,6 +26,7 @@ export function useGlobalWords({
     globalWords,
     loadError,
     fetchGlobalWords,
+    clearGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
     handleWordDeleted,
@@ -45,6 +47,7 @@ export function useGlobalWords({
     isLoading,
     loadError,
     fetchGlobalWords,
+    clearGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
     handleWordDeleted,

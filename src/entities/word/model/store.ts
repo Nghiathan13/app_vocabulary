@@ -7,6 +7,7 @@ interface WordState {
   isLoading: boolean;
   loadError: boolean;
   fetchGlobalWords: () => Promise<void>;
+  clearGlobalWords: () => void;
   handleWordAdded: (newWord: WordWithId) => void;
   handleWordDeleted: (wordId: WordId) => void;
   handleReviewUpdate: (wordStr: string, updates: Partial<WordWithId>) => void;
@@ -28,6 +29,13 @@ export const useWordStore = create<WordState>((set) => ({
       set({ isLoading: false });
     }
   },
+
+  clearGlobalWords: () =>
+    set({
+      globalWords: [],
+      isLoading: false,
+      loadError: false,
+    }),
 
   handleWordAdded: (newWord) =>
     set((state) => ({

@@ -16,7 +16,9 @@ const getInitialTheme = (): AppTheme => {
   return storedTheme === "dark" ? "dark" : "light";
 };
 
-export function useAppShell({ loadWords }: { loadWords: boolean }) {
+type WordLoadMode = boolean | "authenticated";
+
+export function useAppShell({ loadWords }: { loadWords: WordLoadMode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
@@ -40,15 +42,19 @@ export function useAppShell({ loadWords }: { loadWords: boolean }) {
     setAuthError(null);
   }, [setAuthError]);
 
+  const shouldLoadWords =
+    loadWords === "authenticated" ? isLoggedIn : loadWords;
+
   const {
     globalWords,
     isLoading,
     loadError,
     fetchGlobalWords,
+    clearGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
     handleWordDeleted,
-  } = useGlobalWords({ enabled: loadWords });
+  } = useGlobalWords({ enabled: shouldLoadWords });
 
   const handleThemeToggle = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
@@ -67,10 +73,24 @@ export function useAppShell({ loadWords }: { loadWords: boolean }) {
     navigate(ROUTES.login);
   }, [location.pathname, navigate]);
 
+  const handleLogout = useCallback(async () => {
+    await logout();
+
+    if (!isDesktopMode) {
+      clearGlobalWords();
+    }
+  }, [clearGlobalWords, logout]);
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!isDesktopMode && !isLoggedIn) {
+      clearGlobalWords();
+    }
+  }, [clearGlobalWords, isLoggedIn]);
 
   return {
     navigate,
@@ -87,7 +107,7 @@ export function useAppShell({ loadWords }: { loadWords: boolean }) {
     clearAuthError,
     login,
     register,
-    logout,
+    logout: handleLogout,
     globalWords,
     isLoading,
     loadError,

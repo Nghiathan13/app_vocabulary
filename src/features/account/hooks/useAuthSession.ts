@@ -12,8 +12,6 @@ import {
   registerAccount,
   setUnauthorizedHandler,
 } from "../../../entities/auth/api/auth";
-import { listWords } from "../../../entities/word/api/words";
-import { useWordStore } from "../../../entities/word/model/store";
 import { isWebMode } from "../../../shared/config/appMode";
 import {
   bootstrapSession,
@@ -30,7 +28,6 @@ export function useAuthSession() {
   );
   const [authError, setAuthError] = useState<string | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(isWebMode);
-  const bootstrapStartedRef = useRef(false);
   const isLoggingOutRef = useRef(false);
 
   const applyAuthResponse = useCallback((response: Awaited<ReturnType<typeof loginAccount>>) => {
@@ -46,13 +43,6 @@ export function useAuthSession() {
     setAccessToken(null);
     setUser(null);
     setSessionStatus("guest");
-    if (isWebMode) {
-      useWordStore.setState({
-        globalWords: [],
-        isLoading: false,
-        loadError: false,
-      });
-    }
   }, []);
 
   const logout = useCallback(
@@ -97,11 +87,10 @@ export function useAuthSession() {
   }, [logout]);
 
   useEffect(() => {
-    if (!isWebMode || bootstrapStartedRef.current) {
+    if (!isWebMode) {
       return;
     }
 
-    bootstrapStartedRef.current = true;
     let isCurrent = true;
 
     const runBootstrap = async () => {
@@ -123,10 +112,7 @@ export function useAuthSession() {
       setSessionStatus("memberLoading");
 
       try {
-        const [currentUser, words] = await Promise.all([
-          getCurrentUser(phase.accessToken),
-          listWords(phase.accessToken),
-        ]);
+        const currentUser = await getCurrentUser(phase.accessToken);
 
         if (!isCurrent) {
           return;
@@ -145,12 +131,6 @@ export function useAuthSession() {
         setUser(currentUser);
         setSessionStatus("member");
         setAuthError(null);
-
-        useWordStore.setState({
-          globalWords: words,
-          isLoading: false,
-          loadError: false,
-        });
       } catch (error) {
         if (!isCurrent) {
           return;
@@ -161,12 +141,12 @@ export function useAuthSession() {
         if (error instanceof ApiUnauthorizedError) {
           // `unauthorizedHandler` already called `logout({ authErrorMessage })`.
         } else {
-          clearSession();
-          const message =
+          setSessionStatus("member");
+          setAuthError(
             error instanceof Error && error.message.trim()
               ? error.message
-              : SESSION_EXPIRED_AUTH_MESSAGE;
-          setAuthError(message);
+              : SESSION_EXPIRED_AUTH_MESSAGE,
+          );
         }
       } finally {
         if (isCurrent) {
@@ -182,64 +162,22 @@ export function useAuthSession() {
     };
   }, [clearSession]);
 
-  const completeWebLogin = useCallback(
-    async (response: Awaited<ReturnType<typeof loginAccount>>) => {
-      persistAuthResponse(response);
-      setAccessToken(response.accessToken);
-      setUser(response.user);
-      setAuthError(null);
-      setSessionStatus("memberLoading");
-
-      try {
-        const words = await listWords(response.accessToken);
-        useWordStore.setState({
-          globalWords: words,
-          isLoading: false,
-          loadError: false,
-        });
-        setSessionStatus("member");
-      } catch (error) {
-        if (error instanceof ApiUnauthorizedError) {
-          throw error;
-        }
-
-        clearSession();
-        const message =
-          error instanceof Error && error.message.trim()
-            ? error.message
-            : "Could not load vocabulary. Please try again.";
-        throw new Error(message);
-      }
-    },
-    [clearSession],
-  );
-
   const login = useCallback(
     async (email: string, password: string) => {
       const response = await loginAccount({ email, password });
 
-      if (isWebMode) {
-        await completeWebLogin(response);
-        return;
-      }
-
       applyAuthResponse(response);
     },
-    [applyAuthResponse, completeWebLogin],
+    [applyAuthResponse],
   );
 
   const register = useCallback(
     async (email: string, password: string, name?: string) => {
       const response = await registerAccount({ email, password, name });
 
-      if (isWebMode) {
-        await completeWebLogin(response);
-        return;
-      }
-
       applyAuthResponse(response);
     },
-    [applyAuthResponse, completeWebLogin],
+    [applyAuthResponse],
   );
 
   const isCheckingAuth = isWebMode && (isBootstrapping || sessionStatus === "memberLoading");

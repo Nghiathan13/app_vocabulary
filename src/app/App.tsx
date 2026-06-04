@@ -45,6 +45,7 @@ function AppRoutes({
     register,
     logout,
     globalWords,
+    isLoading,
     loadError,
     fetchGlobalWords,
     handleReviewUpdate,
@@ -72,6 +73,7 @@ function AppRoutes({
       sessionStatus={sessionStatus}
       isBootstrapping={isBootstrapping}
       isLoggedIn={isLoggedIn}
+      isLoading={isLoading}
       loadError={loadError}
       isSyncing={isSyncing}
       showSyncAction={showSyncAction}
@@ -110,7 +112,6 @@ function AppRoutes({
                     <Navigate to={ROUTES.home} replace />
                   ) : (
                     <WebLoginPage
-                      isAuthenticated={isLoggedIn}
                       isCheckingAuth={isCheckingAuth}
                       authError={authError}
                       onDismissAuthError={clearAuthError}
@@ -177,7 +178,7 @@ function AppRoutes({
 }
 
 function AppWeb() {
-  const shell = useAppShell({ loadWords: false });
+  const shell = useAppShell({ loadWords: "authenticated" });
 
   return (
     <AppRoutes shell={shell} sync={IDLE_VOCABULARY_SYNC} showSyncAction={false} />

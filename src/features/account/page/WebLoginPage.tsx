@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { consumeReturnPath } from "../../../entities/auth/api/auth";
 import { ROUTES } from "../../../shared/lib/routes";
@@ -7,7 +7,6 @@ import AuthSessionNotice from "../components/AuthSessionNotice";
 import "./WebLoginPage.css";
 
 interface WebLoginPageProps {
-  isAuthenticated: boolean;
   isCheckingAuth: boolean;
   authError?: string | null;
   onDismissAuthError?: () => void;
@@ -16,7 +15,6 @@ interface WebLoginPageProps {
 }
 
 export default function WebLoginPage({
-  isAuthenticated,
   isCheckingAuth,
   authError,
   onDismissAuthError,
@@ -24,10 +22,6 @@ export default function WebLoginPage({
   onRegister,
 }: WebLoginPageProps) {
   const navigate = useNavigate();
-
-  if (isAuthenticated) {
-    return <Navigate to={ROUTES.home} replace />;
-  }
 
   return (
     <div className="web-account-gate">

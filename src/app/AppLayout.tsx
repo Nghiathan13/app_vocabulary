@@ -8,6 +8,7 @@ import type { AuthUser } from "../entities/auth/api/auth";
 import { ROUTES } from "../shared/lib/routes";
 import type { VocabularySyncStatus } from "../shared/lib/syncStatus";
 import refreshIcon from "../assets/refresh_icon.svg";
+import AppRouteSkeleton from "./AppRouteSkeleton";
 
 type AppTheme = "dark" | "light";
 
@@ -17,6 +18,7 @@ interface AppLayoutProps {
   sessionStatus: WebSessionStatus;
   isBootstrapping: boolean;
   isLoggedIn: boolean;
+  isLoading: boolean;
   loadError: boolean;
   isSyncing: boolean;
   showSyncAction: boolean;
@@ -38,6 +40,7 @@ export default function AppLayout({
   sessionStatus,
   isBootstrapping,
   isLoggedIn,
+  isLoading,
   loadError,
   isSyncing,
   showSyncAction,
@@ -57,12 +60,7 @@ export default function AppLayout({
 
   const renderMain = () => {
     if (isWebMode && isBootstrapping) {
-      return (
-        <div className="global-loading">
-          <div className="spinner"></div>
-          <p>Verifying your session...</p>
-        </div>
-      );
+      return <AppRouteSkeleton />;
     }
 
     if (isWebMode && sessionStatus === "guest" && !isLoginRoute) {
@@ -75,12 +73,7 @@ export default function AppLayout({
     }
 
     if (sessionStatus === "memberLoading") {
-      return (
-        <div className="global-loading">
-          <div className="spinner"></div>
-          <p>Loading your vocabulary...</p>
-        </div>
-      );
+      return <AppRouteSkeleton />;
     }
 
     if (loadError) {
@@ -99,6 +92,10 @@ export default function AppLayout({
           </p>
         </div>
       );
+    }
+
+    if (isLoading) {
+      return <AppRouteSkeleton />;
     }
 
     return <Outlet />;
