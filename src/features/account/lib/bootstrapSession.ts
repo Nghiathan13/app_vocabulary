@@ -7,8 +7,11 @@ import {
 } from "../../../entities/auth/api/auth";
 import { isJwtExpired } from "../../../shared/lib/jwt";
 
+export const SESSION_EXPIRED_AUTH_MESSAGE =
+  "Session expired. Please log in again." as const;
+
 export type BootstrapPhase =
-  | { kind: "guest" }
+  | { kind: "guest"; authErrorMessage?: string }
   | {
       kind: "memberLoading";
       accessToken: string;
@@ -30,7 +33,10 @@ export async function bootstrapSession(): Promise<BootstrapPhase> {
   if (accessExpired) {
     if (!refreshToken) {
       clearStoredSession();
-      return { kind: "guest" };
+      return {
+        kind: "guest",
+        authErrorMessage: SESSION_EXPIRED_AUTH_MESSAGE,
+      };
     }
 
     try {
@@ -40,13 +46,19 @@ export async function bootstrapSession(): Promise<BootstrapPhase> {
       user = response.user;
     } catch {
       clearStoredSession();
-      return { kind: "guest" };
+      return {
+        kind: "guest",
+        authErrorMessage: SESSION_EXPIRED_AUTH_MESSAGE,
+      };
     }
   }
 
   if (!accessToken || isJwtExpired(accessToken)) {
     clearStoredSession();
-    return { kind: "guest" };
+    return {
+      kind: "guest",
+      authErrorMessage: SESSION_EXPIRED_AUTH_MESSAGE,
+    };
   }
 
   return {

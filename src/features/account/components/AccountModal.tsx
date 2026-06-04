@@ -4,6 +4,7 @@ import { Button } from "../../../shared/ui/Button/Button";
 import Modal from "../../../shared/ui/Modal/Modal";
 import SyncStatusDisplay from "../../../shared/ui/SyncStatusDisplay/SyncStatusDisplay";
 import AccountAuthForm from "./AccountAuthForm";
+import AuthSessionNotice from "./AuthSessionNotice";
 import "./AccountModal.css";
 
 interface AccountModalProps {
@@ -20,6 +21,8 @@ interface AccountModalProps {
   onRegister: (email: string, password: string, name?: string) => Promise<void>;
   onLogout: () => void;
   onSyncNow: () => Promise<void>;
+  authError?: string | null;
+  onDismissAuthError?: () => void;
 }
 
 export default function AccountModal({
@@ -36,6 +39,8 @@ export default function AccountModal({
   onRegister,
   onLogout,
   onSyncNow,
+  authError,
+  onDismissAuthError,
 }: AccountModalProps) {
   const handleSyncNow = () => {
     void onSyncNow().catch((error) => {
@@ -92,12 +97,20 @@ export default function AccountModal({
           </div>
         </div>
       ) : (
-        <AccountAuthForm
-          isCheckingAuth={isCheckingAuth}
-          onLogin={onLogin}
-          onRegister={onRegister}
-          onSuccess={onClose}
-        />
+        <>
+          {authError ? (
+            <AuthSessionNotice
+              message={authError}
+              onDismiss={onDismissAuthError}
+            />
+          ) : null}
+          <AccountAuthForm
+            isCheckingAuth={isCheckingAuth}
+            onLogin={onLogin}
+            onRegister={onRegister}
+            onSuccess={onClose}
+          />
+        </>
       )}
     </Modal>
   );

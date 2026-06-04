@@ -1,65 +1,61 @@
 // -- React --
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useCallback } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 // -- Components --
 import HomePage from "../features/home/page/HomePage";
 import ReviewPage from "../features/review/page/ReviewPage";
 import { VocabularyPage } from "../features/vocabulary";
 import PracticePage from "../features/practice/page/PracticePage";
-import { AccountModal, useAuthSession, WebLoginPage } from "../features/account";
+import { AccountModal, WebLoginPage } from "../features/account";
 import AppLayout from "./AppLayout";
 import { ToastProvider } from "../shared/ui/Toast/ToastProvider";
 
 // -- Types & Utils --
-import { saveReturnPath } from "../entities/auth/api/auth";
-import { useGlobalWords } from "./hooks/useGlobalWords";
-import { useVocabularySync } from "./hooks/useVocabularySync";
+import type { VocabularySyncControls } from "./lib/vocabularySyncIdle";
+import { IDLE_VOCABULARY_SYNC } from "./lib/vocabularySyncIdle";
+import { useAppShell, type AppShellState } from "./hooks/useAppShell";
+import { useDesktopStartupSync } from "./hooks/useDesktopStartupSync";
+import { useDesktopVocabularySync } from "./hooks/useDesktopVocabularySync";
 import { isDesktopMode } from "../shared/config/appMode";
 import { ROUTES } from "../shared/lib/routes";
 
 // -- Style --
 import "./App.css";
 
-type AppTheme = "dark" | "light";
-const THEME_STORAGE_KEY = "engvocab-theme";
-
-const getInitialTheme = (): AppTheme => {
-  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-
-  return storedTheme === "dark" ? "dark" : "light";
-};
-
-function App() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const startupSyncAccessTokenRef = useRef<string | null>(null);
+function AppRoutes({
+  shell,
+  sync,
+  showSyncAction,
+}: {
+  shell: AppShellState;
+  sync: VocabularySyncControls;
+  showSyncAction: boolean;
+}) {
   const {
-    accessToken,
+    theme,
+    isAccountModalOpen,
+    setIsAccountModalOpen,
     user,
     sessionStatus,
-    isCheckingAuth,
     isBootstrapping,
     isLoggedIn,
+    isCheckingAuth,
     login,
     register,
     logout,
-  } = useAuthSession();
-  const shouldLoadWords = isDesktopMode;
-  const {
     globalWords,
-    isLoading,
     loadError,
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
     handleWordDeleted,
-  } = useGlobalWords({ enabled: shouldLoadWords });
-  const handleSynced = useCallback(async () => {
-    await fetchGlobalWords();
-  }, [fetchGlobalWords]);
+    handleThemeToggle,
+    handleLoginClick,
+    authError,
+    clearAuthError,
+  } = shell;
+
   const {
     isSyncing,
     lastSyncedAt,
@@ -67,47 +63,7 @@ function App() {
     syncStatus,
     scheduleSync,
     syncNow,
-  } = useVocabularySync({
-    accessToken,
-    onSynced: handleSynced,
-  });
-
-  const handleThemeToggle = () => {
-    setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
-  };
-
-  const handleLoginClick = useCallback(() => {
-    if (location.pathname !== ROUTES.login) {
-      saveReturnPath(location.pathname);
-    }
-
-    navigate(ROUTES.login);
-  }, [location.pathname, navigate]);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
-
-  useEffect(() => {
-    if (
-      startupSyncAccessTokenRef.current === accessToken ||
-      isLoading ||
-      isCheckingAuth ||
-      !user ||
-      !accessToken ||
-      !isDesktopMode
-    ) {
-      return;
-    }
-
-    startupSyncAccessTokenRef.current = accessToken;
-    void syncNow().catch((error) => {
-      console.warn("Startup sync failed:", error);
-    });
-  }, [accessToken, isCheckingAuth, isLoading, syncNow, user]);
-
-  const shouldRenderAccountModal = isDesktopMode;
+  } = sync;
 
   const layoutElement = (
     <AppLayout
@@ -118,7 +74,7 @@ function App() {
       isLoggedIn={isLoggedIn}
       loadError={loadError}
       isSyncing={isSyncing}
-      showSyncAction={isDesktopMode}
+      showSyncAction={showSyncAction}
       syncStatus={syncStatus}
       pendingChangeCount={pendingChangeCount}
       lastSyncedAt={lastSyncedAt}
@@ -127,6 +83,8 @@ function App() {
       onLogout={logout}
       onSyncNow={syncNow}
       onRetryLoad={() => void fetchGlobalWords()}
+      authError={authError}
+      onDismissAuthError={clearAuthError}
     />
   );
 
@@ -154,6 +112,8 @@ function App() {
                     <WebLoginPage
                       isAuthenticated={isLoggedIn}
                       isCheckingAuth={isCheckingAuth}
+                      authError={authError}
+                      onDismissAuthError={clearAuthError}
                       onLogin={login}
                       onRegister={register}
                     />
@@ -192,12 +152,12 @@ function App() {
           </Route>
         </Routes>
 
-        {shouldRenderAccountModal ? (
+        {showSyncAction ? (
           <AccountModal
             isOpen={isAccountModalOpen}
             user={user}
             isCheckingAuth={isCheckingAuth}
-            showSyncAction={isDesktopMode}
+            showSyncAction
             isSyncing={isSyncing}
             syncStatus={syncStatus}
             pendingChangeCount={pendingChangeCount}
@@ -207,6 +167,8 @@ function App() {
             onRegister={register}
             onLogout={logout}
             onSyncNow={syncNow}
+            authError={authError}
+            onDismissAuthError={clearAuthError}
           />
         ) : null}
       </main>
@@ -214,4 +176,36 @@ function App() {
   );
 }
 
-export default App;
+function AppWeb() {
+  const shell = useAppShell({ loadWords: false });
+
+  return (
+    <AppRoutes shell={shell} sync={IDLE_VOCABULARY_SYNC} showSyncAction={false} />
+  );
+}
+
+function AppDesktop() {
+  const shell = useAppShell({ loadWords: true });
+  const onSynced = useCallback(async () => {
+    await shell.fetchGlobalWords();
+  }, [shell.fetchGlobalWords]);
+
+  const sync = useDesktopVocabularySync({
+    accessToken: shell.accessToken,
+    onSynced,
+  });
+
+  useDesktopStartupSync({
+    accessToken: shell.accessToken,
+    user: shell.user,
+    isLoading: shell.isLoading,
+    isCheckingAuth: shell.isCheckingAuth,
+    syncNow: sync.syncNow,
+  });
+
+  return <AppRoutes shell={shell} sync={sync} showSyncAction />;
+}
+
+export default function App() {
+  return isDesktopMode ? <AppDesktop /> : <AppWeb />;
+}

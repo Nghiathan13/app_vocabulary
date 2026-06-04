@@ -10,13 +10,9 @@ export interface InsertWordParams {
   meaning_vi: string;
 }
 
-export interface UpdateWordReviewParams {
-  word: string;
-  level: number;
-  wrongCount: number;
-  lastReview: string;
-  nextReview: string | null;
-}
+import type { UpdateWordReviewParams } from "./wordReviewParams";
+
+export type { UpdateWordReviewParams };
 
 export interface RemoteSyncWord {
   sync_id: string;
@@ -49,7 +45,8 @@ const adapter = isWebMode ? webWords : tauriWords;
 export const insertWord: (
   params: InsertWordParams,
 ) => Promise<WordWithId> = adapter.insertWord;
-export const listWords: () => Promise<WordWithId[]> = adapter.listWords;
+export const listWords: (accessToken?: string) => Promise<WordWithId[]> =
+  adapter.listWords;
 export const updateWordReview: (
   params: UpdateWordReviewParams,
 ) => Promise<void> = adapter.updateWordReview;

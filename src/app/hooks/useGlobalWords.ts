@@ -13,7 +13,6 @@ export interface UseGlobalWordsResult {
     updates: Partial<WordWithId>,
   ) => void;
   handleWordAdded: (newWord: WordWithId) => void;
-  handleWordAudioReady: (wordId: WordId) => void;
   handleWordDeleted: (wordId: WordId) => void;
 }
 
@@ -24,26 +23,22 @@ export function useGlobalWords({
 } = {}): UseGlobalWordsResult {
   const {
     globalWords,
-    isLoading,
     loadError,
-    setWords,
-    setLoading,
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
-    handleWordAudioReady,
     handleWordDeleted,
   } = useWordStore();
 
+  const isLoading = useWordStore((state) => (enabled ? state.isLoading : false));
+
   useEffect(() => {
     if (!enabled) {
-      setWords([]);
-      setLoading(false);
       return;
     }
 
-    fetchGlobalWords();
-  }, [enabled, fetchGlobalWords, setLoading, setWords]);
+    void fetchGlobalWords();
+  }, [enabled, fetchGlobalWords]);
 
   return {
     globalWords,
@@ -52,7 +47,6 @@ export function useGlobalWords({
     fetchGlobalWords,
     handleReviewUpdate,
     handleWordAdded,
-    handleWordAudioReady,
     handleWordDeleted,
   };
 }

@@ -19,7 +19,10 @@ vi.mock("../../../entities/auth/api/auth", async (importOriginal) => {
   };
 });
 
-import { bootstrapSession } from "./bootstrapSession";
+import {
+  bootstrapSession,
+  SESSION_EXPIRED_AUTH_MESSAGE,
+} from "./bootstrapSession";
 
 const storage = new Map<string, string>();
 
@@ -108,7 +111,21 @@ describe("bootstrapSession", () => {
     localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, "opaque-refresh-token");
     refreshSessionMock.mockRejectedValue(new Error("invalid"));
 
-    await expect(bootstrapSession()).resolves.toEqual({ kind: "guest" });
+    await expect(bootstrapSession()).resolves.toEqual({
+      kind: "guest",
+      authErrorMessage: SESSION_EXPIRED_AUTH_MESSAGE,
+    });
+    expect(localStorage.getItem(AUTH_ACCESS_TOKEN_KEY)).toBeNull();
+  });
+
+  it("returns guest with session message when access expired and no refresh token", async () => {
+    const expiredAccess = createToken(Math.floor(Date.now() / 1000) - 60);
+    localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, expiredAccess);
+
+    await expect(bootstrapSession()).resolves.toEqual({
+      kind: "guest",
+      authErrorMessage: SESSION_EXPIRED_AUTH_MESSAGE,
+    });
     expect(localStorage.getItem(AUTH_ACCESS_TOKEN_KEY)).toBeNull();
   });
 });

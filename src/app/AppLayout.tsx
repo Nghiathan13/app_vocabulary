@@ -28,6 +28,8 @@ interface AppLayoutProps {
   onLogout: () => void;
   onSyncNow: () => Promise<void>;
   onRetryLoad: () => void;
+  authError?: string | null;
+  onDismissAuthError?: () => void;
 }
 
 export default function AppLayout({
@@ -47,6 +49,8 @@ export default function AppLayout({
   onLogout,
   onSyncNow,
   onRetryLoad,
+  authError,
+  onDismissAuthError,
 }: AppLayoutProps) {
   const location = useLocation();
   const isLoginRoute = location.pathname === ROUTES.login;
@@ -62,7 +66,12 @@ export default function AppLayout({
     }
 
     if (isWebMode && sessionStatus === "guest" && !isLoginRoute) {
-      return <WebGuestGate />;
+      return (
+        <WebGuestGate
+          authError={authError}
+          onDismissAuthError={onDismissAuthError}
+        />
+      );
     }
 
     if (sessionStatus === "memberLoading") {

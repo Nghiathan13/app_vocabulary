@@ -14,7 +14,8 @@
     "test": "vitest run",
     "preview": "vite preview",
     "tauri": "tauri",
-    "dev:desktop:cloud": "VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app vite --port 1420",
+    "dev:desktop:cloud:vite": "VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app vite --port 1420",
+    "dev:desktop:cloud": "tauri dev --config '{\"build\":{\"beforeDevCommand\":\"pnpm run dev:desktop:cloud:vite\"}}'",
     "dev:web:cloud": "VITE_APP_MODE=web VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app vite --port 5173",
     "tauri:cloud": "VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app tauri dev --no-dev-server"
   },

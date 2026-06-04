@@ -1,8 +1,12 @@
-import { notifyUnauthorized } from "../../auth/api/auth";
+import {
+  ApiUnauthorizedError,
+  notifyUnauthorized,
+} from "../../auth/api/auth";
 import { AUTH_ACCESS_TOKEN_KEY } from "../../auth/lib/sessionStorage";
 import { API_BASE_URL } from "../../../shared/config/appMode";
 import { WordId, WordImportDraft, WordWithId } from "../model/types";
-import type { InsertWordParams, UpdateWordReviewParams } from "./words";
+import type { InsertWordParams } from "./words";
+import type { UpdateWordReviewParams } from "./wordReviewParams";
 
 interface ServerWord {
   id: string;
@@ -27,30 +31,42 @@ interface ServerWord {
 
 const getAccessToken = () => localStorage.getItem(AUTH_ACCESS_TOKEN_KEY);
 
+type WordsWebRequestOptions = RequestInit & {
+  /** When set, used instead of localStorage (bootstrap / explicit token). */
+  accessToken?: string | null;
+};
+
 async function request<T>(
   path: string,
-  options: RequestInit = {},
+  { accessToken: accessTokenOverride, ...fetchOptions }: WordsWebRequestOptions = {},
 ): Promise<T> {
-  const token = getAccessToken();
+  const token = accessTokenOverride ?? getAccessToken();
 
   if (!token) {
     throw new Error("Login required");
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
+  let response: Response;
 
-  if (response.status === 401) {
-    notifyUnauthorized();
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...fetchOptions,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...fetchOptions.headers,
+      },
+    });
+  } catch {
+    throw new Error("Cannot connect to server");
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      notifyUnauthorized();
+      throw new ApiUnauthorizedError();
+    }
+
     const errorBody = await response.json().catch(() => null);
     throw new Error(errorBody?.message ?? "Request failed");
   }
@@ -118,8 +134,8 @@ export async function insertWord({
   return toWordWithId(createdWord);
 }
 
-export async function listWords(): Promise<WordWithId[]> {
-  const words = await request<ServerWord[]>("/vocab");
+export async function listWords(accessToken?: string): Promise<WordWithId[]> {
+  const words = await request<ServerWord[]>("/vocab", { accessToken });
 
   return words.map(toWordWithId);
 }
@@ -142,21 +158,14 @@ export async function importWords(_draftWords: WordImportDraft[]): Promise<void>
 }
 
 export async function updateWordReview({
-  word,
+  source,
   level,
   wrongCount,
   lastReview,
   nextReview,
 }: UpdateWordReviewParams): Promise<void> {
-  const words = await listWords();
-  const currentWord = words.find((item) => item.word === word);
-
-  if (!currentWord) {
-    throw new Error("Word not found");
-  }
-
   await updateWordFields({
-    ...currentWord,
+    ...source,
     level,
     wrong_count: wrongCount,
     last_review: lastReview,

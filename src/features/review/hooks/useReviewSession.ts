@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { WordWithId } from "../../../entities/word/model/types";
 import { getDueReviewWords } from "../../../entities/word/lib/wordStats";
 import { getLocalDateString } from "../../../shared/lib/utils";
@@ -35,6 +35,8 @@ export function useReviewSession({
     useState<ReviewMode>(getInitialReviewMode);
   const [typedAnswer, setTypedAnswer] = useState("");
   const [typingResult, setTypingResult] = useState<TypingResult | null>(null);
+  /** Keep progress after grade (`onReviewUpdate`); reset on later `words` refresh (e.g. desktop sync). */
+  const preserveProgressOnNextWordsChangeRef = useRef(false);
 
   const currentWord = reviewWords[0] as WordWithId | undefined;
   const isTypingMode = reviewMode === "typing";
@@ -81,7 +83,7 @@ export function useReviewSession({
       const newLastReview = getLocalDateString(0);
 
       await updateWordReview({
-        word: currentWord.word,
+        source: currentWord,
         level: newLevel,
         wrongCount: nextWrongCount,
         lastReview: newLastReview,
@@ -95,6 +97,7 @@ export function useReviewSession({
       setShowMeaning(false);
       setTypedAnswer("");
       setTypingResult(null);
+      preserveProgressOnNextWordsChangeRef.current = true;
 
       if (onReviewUpdate) {
         onReviewUpdate(currentWord.word, {
@@ -113,6 +116,12 @@ export function useReviewSession({
 
   useEffect(() => {
     setReviewWords(getDueReviewWords(words, getLocalDateString()));
+
+    if (preserveProgressOnNextWordsChangeRef.current) {
+      preserveProgressOnNextWordsChangeRef.current = false;
+    } else {
+      setCurrentIndex(0);
+    }
   }, [words]);
 
   useEffect(() => {

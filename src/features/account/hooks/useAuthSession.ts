@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  ApiUnauthorizedError,
   AuthUser,
   clearStoredSession,
   getCurrentUser,
@@ -14,7 +15,10 @@ import {
 import { listWords } from "../../../entities/word/api/words";
 import { useWordStore } from "../../../entities/word/model/store";
 import { isWebMode } from "../../../shared/config/appMode";
-import { bootstrapSession } from "../lib/bootstrapSession";
+import {
+  bootstrapSession,
+  SESSION_EXPIRED_AUTH_MESSAGE,
+} from "../lib/bootstrapSession";
 
 export type WebSessionStatus = "guest" | "memberLoading" | "member";
 
@@ -27,6 +31,7 @@ export function useAuthSession() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(isWebMode);
   const bootstrapStartedRef = useRef(false);
+  const isLoggingOutRef = useRef(false);
 
   const applyAuthResponse = useCallback((response: Awaited<ReturnType<typeof loginAccount>>) => {
     persistAuthResponse(response);
@@ -41,27 +46,51 @@ export function useAuthSession() {
     setAccessToken(null);
     setUser(null);
     setSessionStatus("guest");
+    if (isWebMode) {
+      useWordStore.setState({
+        globalWords: [],
+        isLoading: false,
+        loadError: false,
+      });
+    }
   }, []);
 
-  const logout = useCallback(async () => {
-    const refreshToken = readStoredSession().refreshToken;
-
-    if (refreshToken) {
-      try {
-        await logoutSession(refreshToken);
-      } catch {
-        // Ignore logout API errors and clear local session anyway.
+  const logout = useCallback(
+    async (options?: { authErrorMessage?: string | null }) => {
+      if (isLoggingOutRef.current) {
+        return;
       }
-    }
 
-    clearSession();
-    setAuthError(null);
-  }, [clearSession]);
+      isLoggingOutRef.current = true;
+
+      try {
+        const refreshToken = readStoredSession().refreshToken;
+
+        if (refreshToken) {
+          try {
+            await logoutSession(refreshToken);
+          } catch {
+            // Ignore logout API errors and clear local session anyway.
+          }
+        }
+
+        clearSession();
+
+        if (options?.authErrorMessage !== undefined) {
+          setAuthError(options.authErrorMessage);
+        } else {
+          setAuthError(null);
+        }
+      } finally {
+        isLoggingOutRef.current = false;
+      }
+    },
+    [clearSession],
+  );
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
-      void logout();
-      setAuthError("Session expired. Please log in again.");
+      void logout({ authErrorMessage: SESSION_EXPIRED_AUTH_MESSAGE });
     });
 
     return () => setUnauthorizedHandler(null);
@@ -84,6 +113,7 @@ export function useAuthSession() {
 
       if (phase.kind === "guest") {
         clearSession();
+        setAuthError(phase.authErrorMessage ?? null);
         setIsBootstrapping(false);
         return;
       }
@@ -95,7 +125,7 @@ export function useAuthSession() {
       try {
         const [currentUser, words] = await Promise.all([
           getCurrentUser(phase.accessToken),
-          listWords(),
+          listWords(phase.accessToken),
         ]);
 
         if (!isCurrent) {
@@ -127,8 +157,17 @@ export function useAuthSession() {
         }
 
         console.warn("Failed to restore web session:", error);
-        clearSession();
-        setAuthError("Session expired. Please log in again.");
+
+        if (error instanceof ApiUnauthorizedError) {
+          // `unauthorizedHandler` already called `logout({ authErrorMessage })`.
+        } else {
+          clearSession();
+          const message =
+            error instanceof Error && error.message.trim()
+              ? error.message
+              : SESSION_EXPIRED_AUTH_MESSAGE;
+          setAuthError(message);
+        }
       } finally {
         if (isCurrent) {
           setIsBootstrapping(false);
@@ -151,15 +190,28 @@ export function useAuthSession() {
       setAuthError(null);
       setSessionStatus("memberLoading");
 
-      const words = await listWords();
-      useWordStore.setState({
-        globalWords: words,
-        isLoading: false,
-        loadError: false,
-      });
-      setSessionStatus("member");
+      try {
+        const words = await listWords(response.accessToken);
+        useWordStore.setState({
+          globalWords: words,
+          isLoading: false,
+          loadError: false,
+        });
+        setSessionStatus("member");
+      } catch (error) {
+        if (error instanceof ApiUnauthorizedError) {
+          throw error;
+        }
+
+        clearSession();
+        const message =
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : "Could not load vocabulary. Please try again.";
+        throw new Error(message);
+      }
     },
-    [],
+    [clearSession],
   );
 
   const login = useCallback(

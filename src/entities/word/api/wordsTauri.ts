@@ -57,27 +57,21 @@ export async function insertWord({
   });
 }
 
-export async function listWords(): Promise<WordWithId[]> {
+export async function listWords(_accessToken?: string): Promise<WordWithId[]> {
   return await invoke<WordWithId[]>("get_all_words");
 }
 
-export interface UpdateWordReviewParams {
-  word: string;
-  level: number;
-  wrongCount: number;
-  lastReview: string;
-  nextReview: string | null;
-}
+import type { UpdateWordReviewParams } from "./wordReviewParams";
 
 export async function updateWordReview({
-  word,
+  source,
   level,
   wrongCount,
   lastReview,
   nextReview,
 }: UpdateWordReviewParams): Promise<void> {
   await invoke<void>("update_word_review_rust", {
-    word,
+    word: source.word,
     level,
     wrongCount,
     lastReview,

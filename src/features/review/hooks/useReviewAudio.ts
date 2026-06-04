@@ -169,8 +169,6 @@ export function useReviewAudio({ currentWord }: UseReviewAudioProps) {
 
   return {
     hasAudio,
-    playAudio: playCurrentAudio,
-    stopAudio: stopCurrentAudio,
     handlePronounce,
   };
 }

@@ -5,12 +5,12 @@ import {
   getWordSyncChanges,
 } from "../../entities/word/api/words";
 import { syncVocabulary } from "../../entities/sync/api/vocabularySync";
-import { isDesktopMode } from "../../shared/config/appMode";
 import type { VocabularySyncStatus } from "../../shared/lib/syncStatus";
 
 const AUTO_SYNC_DELAY_MS = 2500;
 
-export function useVocabularySync({
+/** Desktop-only: SQLite change queue ↔ Railway sync. */
+export function useDesktopVocabularySync({
   accessToken,
   onSynced,
 }: {
@@ -34,11 +34,6 @@ export function useVocabularySync({
   }, []);
 
   const refreshPendingChangeCount = useCallback(async () => {
-    if (!isDesktopMode) {
-      setPendingChangeCount(0);
-      return 0;
-    }
-
     try {
       const changes = await getWordSyncChanges();
       const count = changes.length;
@@ -58,7 +53,7 @@ export function useVocabularySync({
   }, []);
 
   const syncNow = useCallback(async () => {
-    if (!accessToken || !isDesktopMode) {
+    if (!accessToken) {
       return;
     }
 
@@ -106,7 +101,7 @@ export function useVocabularySync({
   }, [accessToken, clearDebounceTimer, onSynced]);
 
   const scheduleSync = useCallback(() => {
-    if (!accessToken || !isDesktopMode) {
+    if (!accessToken) {
       return;
     }
 
@@ -129,7 +124,7 @@ export function useVocabularySync({
   }, [accessToken, clearDebounceTimer, refreshPendingChangeCount, syncNow]);
 
   useEffect(() => {
-    if (!accessToken || !isDesktopMode) {
+    if (!accessToken) {
       setPendingChangeCount(0);
       setSyncStatus("idle");
       clearDebounceTimer();

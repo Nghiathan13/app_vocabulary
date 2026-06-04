@@ -29,6 +29,25 @@ export interface AuthResponse {
 
 let unauthorizedHandler: (() => void) | null = null;
 
+/** Thrown after global 401 handler runs — callers must not clear session again. */
+export class ApiUnauthorizedError extends Error {
+  constructor(message = "Session expired. Please log in again.") {
+    super(message);
+    this.name = "ApiUnauthorizedError";
+  }
+}
+
+const AUTH_PATHS_WITHOUT_GLOBAL_HANDLER = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh",
+  "/auth/logout",
+]);
+
+function shouldRunUnauthorizedHandler(path: string): boolean {
+  return !AUTH_PATHS_WITHOUT_GLOBAL_HANDLER.has(path);
+}
+
 export function setUnauthorizedHandler(handler: (() => void) | null) {
   unauthorizedHandler = handler;
 }
@@ -85,13 +104,24 @@ async function request<T>(
     throw new Error("Cannot connect to server");
   }
 
-  if (response.status === 401 && unauthorizedHandler) {
-    unauthorizedHandler();
-  }
-
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new Error(parseApiError(errorBody, response.status, path));
+    const message = parseApiError(errorBody, response.status, path);
+
+    if (
+      response.status === 401 &&
+      shouldRunUnauthorizedHandler(path) &&
+      unauthorizedHandler
+    ) {
+      unauthorizedHandler();
+      throw new ApiUnauthorizedError(
+        message === "Request failed"
+          ? "Session expired. Please log in again."
+          : message,
+      );
+    }
+
+    throw new Error(message);
   }
 
   return await response.json();

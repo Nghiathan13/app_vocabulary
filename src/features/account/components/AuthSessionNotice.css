@@ -1,0 +1,36 @@
+.auth-session-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 28rem;
+  margin: 0 auto 1.25rem;
+  padding: 0.875rem 1rem;
+  text-align: center;
+
+  background: color-mix(in srgb, var(--color-error, #e57373) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-error, #e57373) 35%, transparent);
+  border-radius: 8px;
+}
+
+.auth-session-notice-message {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--color-error, #e57373);
+}
+
+.auth-session-notice-dismiss {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted, #909090);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-session-notice-dismiss:hover {
+  color: var(--color-text-primary, #e8e8e8);
+}

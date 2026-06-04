@@ -56,9 +56,7 @@ export function useTypingField({
   return {
     typingInputRef,
     typingMeasureRef,
-    typingFieldWidth,
     typingFieldText,
     typingFieldStyle,
-    resetTypingFieldWidth: () => setTypingFieldWidth(0),
   };
 }

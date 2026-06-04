@@ -100,6 +100,9 @@ export class VocabService {
       const incomingId = change.id ?? randomUUID();
       const normalizedWord = normalizeWord(change.word);
       const incomingUpdatedAt = parseDateTime(change.updated_at);
+      const existingByGlobalId = await this.prisma.vocabWord.findUnique({
+        where: { id: incomingId },
+      });
       const existingById = await this.prisma.vocabWord.findFirst({
         where: { id: incomingId, userId },
       });
@@ -107,6 +110,8 @@ export class VocabService {
         where: { userId_normalizedWord: { userId, normalizedWord } },
       });
       const existing = existingById ?? existingByWord;
+      const isIncomingIdTakenByAnotherUser =
+        Boolean(existingByGlobalId) && existingByGlobalId?.userId !== userId;
 
       if (existing && existing.id !== incomingId) {
         mergedIds.push({ localId: incomingId, serverId: existing.id });
@@ -142,10 +147,16 @@ export class VocabService {
         continue;
       }
 
+      const serverId = isIncomingIdTakenByAnotherUser ? randomUUID() : incomingId;
+
+      if (serverId !== incomingId) {
+        mergedIds.push({ localId: incomingId, serverId });
+      }
+
       await this.prisma.vocabWord.create({
         data: {
           ...this.toCreateData(userId, change),
-          id: incomingId,
+          id: serverId,
           updatedAt: incomingUpdatedAt,
         },
       });
