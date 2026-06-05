@@ -236,8 +236,9 @@
   color: var(--color-text-muted);
 }
 
-.pronounce-btn .material-symbols-outlined {
-  font-size: 20px;
+.pronounce-btn .ui-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .review-meaning {
@@ -299,8 +300,9 @@
   color: var(--color-text-muted);
 }
 
-.typing-audio-btn .material-symbols-outlined {
-  font-size: 24px;
+.typing-audio-btn .ui-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .review-typing-field {

@@ -12,7 +12,7 @@ import {
   registerAccount,
   setUnauthorizedHandler,
 } from "../../../entities/auth/api/auth";
-import { isWebMode } from "../../../shared/config/appMode";
+import { isDesktopMode, isWebMode } from "../../../shared/config/appMode";
 import {
   bootstrapSession,
   SESSION_EXPIRED_AUTH_MESSAGE,
@@ -85,6 +85,23 @@ export function useAuthSession() {
 
     return () => setUnauthorizedHandler(null);
   }, [logout]);
+
+  useEffect(() => {
+    if (!isDesktopMode) {
+      return;
+    }
+
+    const stored = readStoredSession();
+
+    if (!stored.accessToken || !stored.user) {
+      return;
+    }
+
+    setAccessToken(stored.accessToken);
+    setUser(stored.user);
+    setSessionStatus("member");
+    setAuthError(null);
+  }, []);
 
   useEffect(() => {
     if (!isWebMode) {

@@ -57,16 +57,10 @@
   color: var(--color-text-faint);
 }
 
-.home-empty-action:active {
-  transform: translateY(1px) scale(0.99);
-}
-
 .home-metric-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
-
-  animation: home-enter 0.32s ease-out both;
 }
 
 .home-sr-title {
@@ -87,11 +81,6 @@
   border: 1px solid var(--home-line);
   border-radius: 16px;
   box-shadow: none;
-
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.18s ease;
 }
 
 .home-card:hover {
@@ -126,8 +115,6 @@
   gap: 14px;
   margin-top: 14px;
   padding-bottom: 4px;
-
-  animation: home-enter 0.36s ease-out both;
 }
 
 .home-progress-card,
@@ -303,18 +290,6 @@
   --home-action-text: rgb(255, 255, 255);
 }
 
-@keyframes home-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (max-width: 980px) {
   .home-dashboard-grid {
     grid-template-columns: 1fr;
@@ -349,22 +324,5 @@
   .home-empty-state {
     align-items: stretch;
     flex-direction: column;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-metric-grid,
-  .home-dashboard-grid {
-    animation: none;
-  }
-
-  .home-card,
-  .home-empty-action {
-    transition: none;
-  }
-
-  .home-card:hover,
-  .home-empty-action:active {
-    transform: none;
   }
 }

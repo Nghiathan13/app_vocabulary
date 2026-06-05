@@ -196,8 +196,9 @@ input.table-input {
   z-index: 100;
 }
 
-.table-audio-btn span {
-  font-size: 20px;
+.table-audio-btn .ui-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .table-audio-btn.active {

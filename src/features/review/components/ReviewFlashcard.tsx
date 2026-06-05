@@ -1,5 +1,6 @@
 import type { WordWithId } from "../../../entities/word/model/types";
 import WordTypePills from "../../../entities/word/ui/WordTypePills";
+import Icon from "../../../shared/ui/Icon/Icon";
 
 interface ReviewFlashcardProps {
   word: WordWithId;
@@ -31,7 +32,7 @@ export default function ReviewFlashcard({
                 hasAudio ? "Pronunciation (A)" : "Không có file âm thanh"
               }
             >
-              <span className="material-symbols-outlined">volume_up</span>
+              <Icon name="volume" />
             </button>
             <span>/{word.ipa}/</span>
           </p>

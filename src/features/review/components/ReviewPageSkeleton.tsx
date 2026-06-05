@@ -1,6 +1,8 @@
 export default function ReviewPageSkeleton() {
   return (
     <section className="route-skeleton route-skeleton-review" aria-label="Loading page">
+      <div className="skeleton-review-mode-space" />
+
       <div className="skeleton-progress">
         <div className="skeleton-progress-track" />
       </div>

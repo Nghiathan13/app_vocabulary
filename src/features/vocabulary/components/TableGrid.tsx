@@ -221,7 +221,7 @@ export default function TableGrid({
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={(e) => { e.stopPropagation(); playAudio(w); }}
                         >
-                          <span className="material-symbols-outlined">volume_up</span>
+                          <Icon name="volume" />
                         </button>
                       )}
                       <textarea
@@ -242,7 +242,7 @@ export default function TableGrid({
                           className="table-audio-btn active"
                           onClick={(e) => { e.stopPropagation(); playAudio(w); }}
                         >
-                          <span className="material-symbols-outlined">volume_up</span>
+                          <Icon name="volume" />
                         </button>
                       )}
                       {w.ipa && <span className="ipa-text">{w.ipa}</span>}

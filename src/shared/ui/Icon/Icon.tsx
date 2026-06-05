@@ -8,7 +8,8 @@ export type IconName =
   | "export"
   | "import"
   | "search"
-  | "sort";
+  | "sort"
+  | "volume";
 
 interface IconProps {
   name: IconName;

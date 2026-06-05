@@ -4,10 +4,7 @@ export default function VocabularyPageSkeleton() {
       className="route-skeleton route-skeleton-vocabulary"
       aria-label="Loading page"
     >
-      <div className="skeleton-toolbar">
-        <div className="skeleton-search" />
-      </div>
-
+      <div className="skeleton-vocabulary-actions-space" />
       <div className="skeleton-table" />
     </section>
   );

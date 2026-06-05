@@ -4,6 +4,10 @@ import {
 } from "../../word/api/words";
 import { WordWithId } from "../../word/model/types";
 import { API_BASE_URL } from "../../../shared/config/appMode";
+import {
+  ApiUnauthorizedError,
+  notifyUnauthorized,
+} from "../../auth/api/auth";
 
 interface ServerSyncWord {
   id: string;
@@ -85,6 +89,11 @@ export async function syncVocabulary(
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      notifyUnauthorized();
+      throw new ApiUnauthorizedError();
+    }
+
     const errorBody = await response.json().catch(() => null);
     throw new Error(errorBody?.message ?? "Sync failed");
   }

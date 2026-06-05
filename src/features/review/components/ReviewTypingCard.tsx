@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 
 import type { WordWithId } from "../../../entities/word/model/types";
 import WordTypePills from "../../../entities/word/ui/WordTypePills";
+import Icon from "../../../shared/ui/Icon/Icon";
 import { getTypingAnswer } from "../lib/typing";
 import type { TypingFieldStyle, TypingResult } from "../model/reviewTypes";
 
@@ -42,7 +43,7 @@ export default function ReviewTypingCard({
               hasAudio ? "Pronunciation (A)" : "Không có file âm thanh"
             }
           >
-            <span className="material-symbols-outlined">volume_up</span>
+            <Icon name="volume" />
           </button>
           <WordTypePills type={word.type} variant="review" />
         </div>

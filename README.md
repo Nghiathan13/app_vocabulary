@@ -1,168 +1,285 @@
-# engvocab
+# EngVocab
 
-A desktop English vocabulary app built with Tauri 2 and React. Words are stored locally in SQLite. Review uses spaced repetition with flashcard and typing modes. Vocabulary can be managed in a searchable table with Excel import/export, and pronunciation audio can be synced via ElevenLabs TTS.
+EngVocab is a vocabulary learning app built around a local-first desktop experience and an online account sync workflow. The desktop app works offline with SQLite, while the web app and account sync use a NestJS API backed by PostgreSQL.
 
-## Features
+The project is designed as a practical full-stack product: desktop app, web client, REST API, authentication, cloud database, deployment, CI, and local/offline sync behavior.
 
-- **Add vocabulary** — enter word, IPA, type, and meaning; optional TTS download on save
-- **Spaced repetition review** — due words based on `next_review`; custom interval schedule on pass/fail
-- **Typing review mode** — flashcard or typing mode; typing answers checked against the target word
-- **Local SQLite storage** — vocabulary persisted on device via Tauri SQL plugin
-- **Vocabulary table** — virtualized table with search, inline edit, save, and delete
-- **Excel import/export** — bulk import from `.xlsx` files; export current vocabulary
-- **ElevenLabs TTS audio** — download pronunciation MP3s; background sync for missing audio on startup (optional; see Environment variables)
-- **Basic chart** — bar chart of word counts grouped by repetition level (`reps`)
+## Highlights
 
-## Tech stack
+- Local-first desktop app with offline vocabulary storage.
+- Web app with login/register and server-backed vocabulary data.
+- Account sync between desktop SQLite and PostgreSQL.
+- Spaced repetition review with flashcard and typing modes.
+- Searchable vocabulary table with inline editing, save preview, delete, import, and export.
+- Home dashboard with learning progress and vocabulary summaries.
+- Optional pronunciation audio metadata and backend audio cache support.
+- Dark and light theme support.
 
-- **Frontend:** React 19, TypeScript, Vite 7
-- **Desktop:** Tauri 2 (Rust)
-- **Database:** SQLite via `@tauri-apps/plugin-sql`
-- **UI / libraries:** Recharts, TanStack React Virtual, SheetJS (`xlsx`)
-- **Testing:** Vitest (pure logic in feature `lib/` modules)
-- **HTTP (Rust):** reqwest (ElevenLabs API)
+## Tech Stack
 
-Requires Node.js, npm, and a Rust toolchain with Tauri 2 system dependencies.
+**Client**
 
-## Architecture
+- React 19
+- TypeScript
+- Vite
+- React Router
+- TanStack React Virtual
+- SheetJS for Excel import/export
+- Vitest for unit tests
 
+**Desktop**
+
+- Tauri 2
+- Rust commands for native integration
+- SQLite via Tauri SQL plugin
+
+**Backend**
+
+- NestJS
+- Prisma
+- PostgreSQL
+- JWT authentication
+- bcrypt password hashing
+- Docker and Docker Compose
+
+**Deployment**
+
+- Vercel for web frontend
+- Railway for backend and PostgreSQL
+- GitHub Actions for frontend, backend, and Tauri Rust checks
+
+## Product Overview
+
+EngVocab supports two usage modes.
+
+**Desktop mode**
+
+The desktop app stores vocabulary locally in SQLite, so users can add, edit, delete, and review words without a network connection. When the user logs in and the backend is available, local pending changes can sync to the account backend.
+
+**Web mode**
+
+The web app requires an account. Vocabulary is read and written directly through the backend API, so data is persisted in PostgreSQL and can be shared with the desktop app through sync.
+
+## System Overview
+
+```txt
+Desktop app (Tauri + SQLite)
+        |
+        | sync when logged in
+        v
+NestJS REST API  --->  PostgreSQL
+        ^
+        |
+Web app (Vite + React)
 ```
-src/
-├── app/              App shell, tab routing, useGlobalWords hook
-├── features/         Feature pages and UI
-│   ├── add-word/
-│   ├── review/
-│   ├── vocabulary/   Table, chart, import/export
-│   └── practice/     Placeholder
-├── entities/word/    Domain types + SQLite repository (words.ts)
-├── shared/           Navbar, Toast, audio API, utils, tab model
-└── main.tsx
 
-src-tauri/            Rust backend, migrations, file/audio commands
-```
+The desktop app remains usable without an account. The account system is only required for sync and web access.
 
-Features and the app shell call `entities/word/api/words.ts` for SQLite access. Tauri commands handle filesystem operations and ElevenLabs requests.
+## Core Features
 
-**Word repository** (`entities/word/api/words.ts`):
+### Vocabulary Management
 
-- `insertWord` — add a single word
-- `listWords` — all words, ordered by word
-- `listDueReviewWords` — words due for review
-- `updateWordReview` — update reps and review dates after a session
-- `updateWordFields` — full row update from the vocabulary table
-- `deleteWordById` — delete by row id
-- `importWords` — transactional bulk import (`INSERT OR IGNORE`)
+- Add words with IPA, type, Vietnamese meaning, definition, example, band, level, and review data.
+- Edit words inline in a virtualized table.
+- Preview modified fields before saving changes.
+- Delete words locally and sync deletes to the backend.
+- Import and export vocabulary with Excel files in desktop mode.
 
-Dependency direction: `features` → `entities` / `shared`; `entities` does not import from `features`.
+### Review
 
-## Data model
+- Review due words based on `next_review`.
+- Flashcard mode for quick self-checking.
+- Typing mode for active recall.
+- Review results update level, wrong count, last review, and next review.
 
-SQLite table `words` (see `src-tauri/migrations/001_create_words.sql`):
+### Account and Sync
 
-| Column        | Type    | Notes                          |
-|---------------|---------|--------------------------------|
-| `word`        | TEXT    | NOT NULL, UNIQUE               |
-| `ipa`         | TEXT    | Optional                       |
-| `type`        | TEXT    | Optional (e.g. noun, verb)     |
-| `meaning`     | TEXT    | Optional                       |
-| `reps`        | INTEGER | Default 0; spaced rep count    |
-| `last_review` | TEXT    | Date string                    |
-| `next_review` | TEXT    | Due date for review queue      |
-| `created_at`  | DATETIME| Auto timestamp                 |
+- Register and log in with email/password.
+- JWT-based API authentication.
+- Desktop stores changes locally first.
+- Pending local changes sync when the user is logged in and the backend is reachable.
+- Web reads and writes directly to PostgreSQL through the API.
 
-The app reads SQLite `rowid` as `id` in queries. `created_at` is not shown in the UI today.
+### Audio
 
-Migrations run automatically through the Tauri SQL plugin (`sqlite:vocabulary.db` in `tauri.conf.json`).
+The codebase includes backend audio asset support and optional TTS generation. Audio generation depends on valid provider credentials and the `TTS_ENABLED` setting. Core vocabulary, review, sync, and account features work without audio.
 
-## Release
+## Getting Started
 
-Installable Linux packages are available on the GitHub Releases page.
+### Prerequisites
 
-Current release: `v0.1.0`
+- Node.js 22
+- pnpm
+- npm for the backend package
+- Docker and Docker Compose for local PostgreSQL
+- Rust toolchain and Tauri system dependencies for desktop development
 
-Available packages:
-- `.deb` for Debian/Ubuntu-based systems
-- `.rpm` for RPM-based systems
-
-AppImage is not included in the first release because AppImage bundling failed during `linuxdeploy`.
-
-## Development
+### Install Dependencies
 
 ```bash
 pnpm install
-pnpm run tauri dev       # desktop app (Vite + Tauri)
-pnpm run dev:desktop     # frontend only (http://localhost:1420)
-pnpm run build           # production frontend build
-pnpm run test            # Vitest unit tests
+
+cd server
+npm install
+cp .env.example .env
+cd ..
 ```
 
-### Cloud backend (Railway)
+The default `server/.env.example` is configured for local Docker PostgreSQL.
 
-Point the frontend at the deployed API without running `server/` locally:
+## Local Development
+
+### Full Local Stack
 
 ```bash
-# Terminal 1 — Vite for Tauri
+pnpm run dev:local
+```
+
+This command:
+
+- starts local PostgreSQL through Docker Compose,
+- runs Prisma deploy migrations,
+- starts the Tauri desktop app,
+- starts the desktop Vite server at `http://localhost:1420`,
+- starts the web Vite server at `http://localhost:5173`,
+- starts the NestJS backend at `http://localhost:3000`.
+
+Open the web app manually at:
+
+```txt
+http://localhost:5173
+```
+
+### Desktop Against Deployed Backend
+
+```bash
 pnpm run dev:desktop:cloud
+```
 
-# Terminal 2 — Tauri shell
-pnpm run tauri:cloud
+This opens the desktop app and points it at the deployed Railway API.
 
-# Web only
+### Web Against Deployed Backend
+
+```bash
 pnpm run dev:web:cloud
 ```
 
-These set `VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app`. You can also set that variable in a local `.env` for custom targets (see [`.env.example`](.env.example)).
+This starts web mode locally and points it at the deployed Railway API.
 
-## Web Deploy
+## Useful Commands
+
+```bash
+pnpm run build          # desktop frontend production build
+pnpm run build:web      # web frontend production build
+pnpm run test           # frontend unit tests
+pnpm run tauri dev      # Tauri desktop dev mode
+
+cd server
+npm run build           # backend build
+npm run prisma:studio   # inspect local PostgreSQL data
+```
+
+## Backend
+
+The backend lives in `server/` and exposes REST endpoints for:
+
+- authentication,
+- user session restore,
+- vocabulary CRUD,
+- vocabulary sync,
+- health checks,
+- audio file serving when audio assets are available.
+
+For local Docker:
+
+```bash
+docker compose -f server/docker-compose.yml up -d postgres
+
+cd server
+npm run prisma:migrate:deploy
+npm run dev
+```
+
+To run both local PostgreSQL and the API as containers:
+
+```bash
+docker compose -f server/docker-compose.yml up --build
+```
+
+## Deployment
+
+### Backend on Railway
+
+Railway runs the NestJS API from `server/Dockerfile` and uses Railway PostgreSQL.
+
+Required production variables include:
+
+```txt
+DATABASE_URL
+JWT_SECRET
+JWT_ACCESS_EXPIRES_IN
+JWT_REFRESH_EXPIRES_IN
+PORT
+CORS_ORIGIN
+```
+
+Optional audio variables:
+
+```txt
+TTS_ENABLED
+ELEVENLABS_API_KEY
+ELEVENLABS_VOICE_ID
+AUDIO_STORAGE_DIR
+```
+
+Run Prisma deploy migrations after schema changes:
+
+```bash
+cd server
+DATABASE_URL="<railway-postgres-url>" npm run prisma:migrate:deploy
+```
+
+### Web on Vercel
 
 Vercel build settings:
 
-- Framework: Vite
-- Install command: `pnpm install --frozen-lockfile`
-- Build command: `pnpm run build:web`
-- Output directory: `dist`
+```txt
+Install command: pnpm install --frozen-lockfile
+Build command: pnpm run build:web
+Output directory: dist
+```
 
-Environment variables:
+Required Vercel environment variables:
 
 ```txt
 VITE_APP_MODE=web
-VITE_API_BASE_URL=https://appvocabulary-production.up.railway.app
+VITE_API_BASE_URL=https://your-api-domain
 ```
 
-After Vercel deploys, add the Vercel domain to Railway backend `CORS_ORIGIN`:
+The repo includes `vercel.json` rewrites so browser routes such as `/home`, `/vocabulary`, `/review`, and `/login` resolve to the React app.
 
-```txt
-http://localhost:5173,http://localhost:1420,https://your-vercel-domain.vercel.app
-```
+## CI
 
-Then redeploy the Railway backend.
+GitHub Actions currently checks:
 
-## Environment variables
+- frontend desktop build,
+- frontend web build,
+- frontend unit tests,
+- Tauri Rust `cargo check`,
+- backend build.
 
-Create a `.env` file at the repo root (not committed; see `.gitignore`):
+## Current Status
 
-```bash
-ELEVENLABS_API_KEY=your_api_key
-ELEVENLABS_VOICE_ID=your_voice_id
-```
+EngVocab is in active development. The main product flows are implemented: desktop offline vocabulary, account login/register, web vocabulary, PostgreSQL backend, sync, review, deployment, and CI.
 
-ElevenLabs TTS is **optional**. Core vocabulary and review features work without it. When keys are missing or invalid, audio download and sync commands fail and the app logs warnings; word CRUD and review continue to work.
+Planned next improvements:
 
-Rust loads these via `dotenvy` in `src-tauri/src/lib.rs`.
+- stronger auth lifecycle and session handling,
+- improved sync conflict handling,
+- production-grade audio storage,
+- more complete review analytics,
+- a dedicated web architecture if the web product grows beyond the current shared React app.
 
-## Verification
+## Environment Notes
 
-```bash
-npm run test
-npm run build
-```
-
-Current test coverage: **22 tests** for spaced repetition logic, typing answer comparison, and table search — no repository or end-to-end tests yet.
-
-## Known limitations
-
-- **Practice tab** — placeholder UI only; no practice content yet
-- **No repository integration tests** — SQLite access is not covered by unit tests
-- **Large production bundle** — Vite reports a JS chunk over 500 kB; no code-splitting yet
-- **Tab id naming** — the vocabulary UI uses internal tab id `insights` while the feature folder is `vocabulary`
-- **Review page data** — fetches its own due-word list separately from `useGlobalWords` in the app shell
+Do not commit `.env` files or provider secrets. Local examples are provided in `.env.example` and `server/.env.example`.
